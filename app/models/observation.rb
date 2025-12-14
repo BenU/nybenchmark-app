@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Observation < ApplicationRecord
   has_paper_trail
   belongs_to :entity
@@ -7,9 +9,10 @@ class Observation < ApplicationRecord
   validate :value_must_be_present
 
   private
+
   def value_must_be_present
-    if value_numeric.blank? && value_text.blank?
-      errors.add(:base, "Either numeric value or text value must be present")
-    end
+    return unless value_numeric.blank? && value_text.blank?
+
+    errors.add(:base, "Either numeric value or text value must be present")
   end
 end
