@@ -1,0 +1,7 @@
+# The default owner for everything in the repo
+* @BenU
+
+# Explicit ownership for critical paths (redundant but good for clarity)
+db/seeds.rb @BenU
+app/models/ @BenU
+.github/    @BenU
