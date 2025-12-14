@@ -87,5 +87,3 @@ jobs:
           name: screenshots
           path: tmp/screenshots
           if-no-files-found: ignore
-
-# End of CI Workflow - Verified by Ben
