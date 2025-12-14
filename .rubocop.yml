@@ -1,8 +1,32 @@
-# Omakase Ruby styling for Rails
-inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+plugins:
+  - rubocop-rails
+  - rubocop-performance
+  - rubocop-capybara
 
-# Overwrite or add rules to create your own house style
-#
-# # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
-# Layout/SpaceInsideArrayLiteralBrackets:
-#   Enabled: false
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.4
+  Exclude:
+    - 'db/**/*'
+    - 'config/**/*'
+    - 'bin/**/*'
+    - 'node_modules/**/*'
+    - 'vendor/**/*'
+
+# Documentation is good, but forcing it on every class in a solo project is overkill.
+# You can enable this later if you hire a team.
+Style/Documentation:
+  Enabled: false
+
+# Enforce double quotes (Rails standard) rather than single quotes
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+# Allow slightly longer methods (default is 10, bumped to 15)
+# useful for your financial calculation models which might get verbose.
+Metrics/MethodLength:
+  Max: 15
+
+# Security Rule: Enforce JSON safety (Critical for data integrity)
+Security/JSONLoad:
+  Enabled: true
