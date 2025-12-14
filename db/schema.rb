@@ -1,0 +1,79 @@
+# This file is auto-generated from the current state of the database. Instead
+# of editing this file, please use the migrations feature of Active Record to
+# incrementally modify your database, and then regenerate this schema definition.
+#
+# This file is the source Rails uses to define your schema when running `bin/rails
+# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
+# be faster and is potentially less error prone than running all of your
+# migrations from scratch. Old migrations may fail to apply correctly if those
+# migrations use external dependencies or application code.
+#
+# It's strongly recommended that you check this file into your version control system.
+
+ActiveRecord::Schema[8.1].define(version: 2025_12_14_201857) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
+
+  create_table "documents", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "doc_type", null: false
+    t.bigint "entity_id", null: false
+    t.integer "fiscal_year", null: false
+    t.text "notes"
+    t.text "source_url", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["entity_id"], name: "index_documents_on_entity_id"
+  end
+
+  create_table "entities", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "kind", default: "city", null: false
+    t.string "name"
+    t.string "slug", null: false
+    t.string "state", default: "NY", null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_entities_on_slug", unique: true
+  end
+
+  create_table "metrics", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "key", null: false
+    t.string "label", null: false
+    t.string "unit"
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_metrics_on_key", unique: true
+  end
+
+  create_table "observations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "document_id", null: false
+    t.bigint "entity_id", null: false
+    t.integer "fiscal_year", null: false
+    t.bigint "metric_id", null: false
+    t.text "notes"
+    t.string "page_reference", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "value_numeric", precision: 20, scale: 2
+    t.text "value_text"
+    t.index ["document_id"], name: "index_observations_on_document_id"
+    t.index ["entity_id"], name: "index_observations_on_entity_id"
+    t.index ["metric_id"], name: "index_observations_on_metric_id"
+  end
+
+  create_table "versions", force: :cascade do |t|
+    t.datetime "created_at"
+    t.string "event", null: false
+    t.bigint "item_id", null: false
+    t.string "item_type", null: false
+    t.text "object"
+    t.string "whodunnit"
+    t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
+  end
+
+  add_foreign_key "documents", "entities"
+  add_foreign_key "observations", "documents"
+  add_foreign_key "observations", "entities"
+  add_foreign_key "observations", "metrics"
+end

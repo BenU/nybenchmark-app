@@ -1,24 +1,29 @@
-# README
+# New York Benchmarking App
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+**Data collection, validation, and analysis engine for the New York Benchmarking Project.**
 
-Things you may want to cover:
+This is the backend Rails application for the [NY Benchmarking Project](https://github.com/yourusername/nybenchmark-website). It is designed to ingest financial documents (ACFRs, Budgets), extract standardized metrics, and provide a rigid audit trail to ensure data integrity.
 
-* Ruby version
+## Prerequisites
+* **Ruby:** 3.4.7
+* **Docker:** Required for the database.
+* **PostgreSQL:** Version 17 (Running via Docker).
 
-* System dependencies
+## Getting Started
 
-* Configuration
+### 1. Database Setup (Docker)
+**You must start Docker every time you restart your computer.**
 
-* Database creation
+1.  Open **Docker Desktop**.
+2.  Run the following command in the project root:
+    ```bash
+    docker compose up -d
+    ```
+    *This starts the database on port `5433`.*
 
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+### 2. Application Setup
+Once the database is running:
+```bash
+bundle install
+bin/rails db:prepare
+bin/rails test
