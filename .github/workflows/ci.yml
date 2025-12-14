@@ -22,7 +22,7 @@ jobs:
           bundler-cache: true
       
       - name: Security Audit (Gems)
-        run: bundle audit --update
+      run: bundle exec bundle-audit --update
       
       - name: Scan for secrets (TruffleHog)
         uses: trufflesecurity/trufflehog@main
