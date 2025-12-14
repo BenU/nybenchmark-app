@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  entity: one
+  metric: one
+  document: one
+  fiscal_year: 1
+  value_numeric: 9.99
+  value_text: MyText
+  page_reference: MyString
+  notes: MyText
+
+two:
+  entity: two
+  metric: two
+  document: two
+  fiscal_year: 1
+  value_numeric: 9.99
+  value_text: MyText
+  page_reference: MyString
+  notes: MyText
