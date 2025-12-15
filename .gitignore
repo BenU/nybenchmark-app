@@ -33,3 +33,15 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+# ... (Keep everything you already have) ...
+
+# Ignore Kamal secrets (CRITICAL for security)
+.kamal/secrets-common
+.kamal/secrets
+
+# Ignore Mac system files
+.DS_Store
+
+# Ignore local database files if you use SQLite in dev
+/db/*.sqlite3
+/db/*.sqlite3-*
