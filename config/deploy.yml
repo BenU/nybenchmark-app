@@ -18,8 +18,6 @@ proxy:
     interval: 5
     timeout: 5
 
-  deploy_timeout: 120
-  drain_timeout: 120
 
 # 4. Registry Credentials
 registry:
@@ -28,11 +26,15 @@ registry:
   password:
     - KAMAL_REGISTRY_PASSWORD
 
-# 5. Builder (Use AMD64 for DigitalOcean)
+# 5. Sufficient Deployment Timeout
+deploy_timeout: 120
+drain_timeout: 120
+
+# 6. Builder (Use AMD64 for DigitalOcean)
 builder:
   arch: amd64
 
-# 6. Environment Variables
+# 7. Environment Variables
 env:
   secret:
     - RAILS_MASTER_KEY
@@ -43,7 +45,7 @@ env:
     POSTGRES_DB: nybenchmark_app_production
     SOLID_QUEUE_IN_PUMA: true
 
-# 7. Database Accessory
+# 8. Database Accessory
 accessories:
   db:
     image: postgres:17
