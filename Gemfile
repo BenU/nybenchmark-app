@@ -8,6 +8,9 @@ gem "rails", "~> 8.1.1"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 # Data Integrity & Auditing
 gem "paper_trail"
+
+gem "aws-sdk-s3", require: false
+
 # Authorization (Optional but recommended for the future)
 # gem "pundit"
 gem "propshaft"
