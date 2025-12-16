@@ -1,13 +1,11 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+expenditures:
+  key: total_expenditures
+  label: Total General Fund Expenditures
+  unit: USD
+  description: Total spending from the general fund.
 
-one:
-  key: MyString1
-  label: MyString
-  unit: MyString
-  description: MyText
-
-two:
-  key: MyString2
-  label: MyString
-  unit: MyString
-  description: MyText
+revenue:
+  key: total_revenue
+  label: Total General Fund Revenue
+  unit: USD
+  description: Total revenue collected into the general fund.

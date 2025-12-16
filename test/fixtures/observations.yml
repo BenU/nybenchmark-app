@@ -1,21 +1,18 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
-one:
+nyc_expenditures:
   entity: one
-  metric: one
-  document: one
-  fiscal_year: 1
-  value_numeric: 9.99
-  value_text: MyText
-  page_reference: MyString
-  notes: MyText
+  metric: expenditures
+  document: nyc_budget
+  fiscal_year: 2024
+  value_numeric: 105000000.00
+  page_reference: "p. 45"
+  notes: Verified against table 4.
 
-two:
+albany_revenue_text:
   entity: two
-  metric: two
-  document: two
-  fiscal_year: 1
-  value_numeric: 9.99
-  value_text: MyText
-  page_reference: MyString
-  notes: MyText
+  metric: revenue
+  document: albany_acfr
+  fiscal_year: 2023
+  value_numeric: ~
+  value_text: "Pending Audit"
+  page_reference: "p. 12"
+  notes: Text value example
