@@ -39,6 +39,8 @@ env:
   secret:
     - RAILS_MASTER_KEY
     - POSTGRES_PASSWORD
+    - DO_SPACES_KEY
+    - DO_SPACES_SECRET
   clear:
     DB_HOST: nybenchmark_app-db
     POSTGRES_USER: nybenchmark_app
