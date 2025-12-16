@@ -22,4 +22,42 @@ class DocumentTest < ActiveSupport::TestCase
     assert_not document.valid?
     assert_includes document.errors[:entity], "must exist"
   end
+
+  test "can attach a valid pdf" do
+    document = documents(:nyc_budget)
+    document.file.attach(
+      io: Rails.root.join("test/fixtures/files/sample.pdf").open,
+      filename: "sample.pdf",
+      content_type: "application/pdf"
+    )
+    assert document.valid?
+    assert document.file.attached?
+  end
+
+  test "rejects non-pdf files" do
+    document = documents(:nyc_budget)
+    document.file.attach(
+      io: Rails.root.join("test/fixtures/files/sample.txt").open,
+      filename: "sample.txt",
+      content_type: "text/plain"
+    )
+
+    assert_not document.valid?
+    assert_includes document.errors[:file], "must be a PDF"
+  end
+
+  test "rejects large files" do
+    document = documents(:nyc_budget)
+    document.file.attach(
+      io: Rails.root.join("test/fixtures/files/sample.pdf").open,
+      filename: "sample.pdf",
+      content_type: "application/pdf"
+    )
+
+    # Simulate a 25MB file
+    document.file.blob.byte_size = 25.megabytes
+
+    assert_not document.valid?
+    assert_includes document.errors[:file], "must be under 20MB"
+  end
 end
