@@ -1,10 +1,9 @@
-i# config/deploy.yml
 service: nybenchmark_app
 
 # 1. Image Location
 image: ghcr.io/benu/nybenchmark_app
 
-# 2. Server IP (Your DigitalOcean Droplet)
+# 2. Server IP
 servers:
   web:
     - 68.183.56.0
@@ -25,7 +24,11 @@ registry:
   password:
     - KAMAL_REGISTRY_PASSWORD
 
-# 5. Environment Variables
+# 5. Builder (Use AMD64 for DigitalOcean)
+builder:
+  arch: amd64
+
+# 6. Environment Variables
 env:
   secret:
     - RAILS_MASTER_KEY
@@ -36,7 +39,7 @@ env:
     POSTGRES_DB: nybenchmark_app_production
     SOLID_QUEUE_IN_PUMA: true
 
-# 6. Database Accessory (Postgres 17)
+# 7. Database Accessory
 accessories:
   db:
     image: postgres:17
