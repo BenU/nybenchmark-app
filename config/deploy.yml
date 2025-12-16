@@ -16,6 +16,10 @@ proxy:
   healthcheck:
     path: /up
     interval: 5
+    timeout: 5
+
+  deploy_timeout: 120
+  drain_timeout: 120
 
 # 4. Registry Credentials
 registry:
