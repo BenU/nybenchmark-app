@@ -1,17 +1,15 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+nyc_budget:
+  entity: one  # Links to New York City in entities.yml
+  title: Adopted Budget 2024
+  doc_type: budget
+  fiscal_year: 2024
+  source_url: https://nyc.gov/budget2024.pdf
+  notes: Preliminary capture
 
-one:
-  entity: one
-  title: MyString
-  doc_type: MyString
-  fiscal_year: 1
-  source_url: MyText
-  notes: MyText
-
-two:
-  entity: two
-  title: MyString
-  doc_type: MyString
-  fiscal_year: 1
-  source_url: MyText
-  notes: MyText
+albany_acfr:
+  entity: two  # Links to Albany in entities.yml
+  title: Annual Comprehensive Financial Report 2023
+  doc_type: acfr
+  fiscal_year: 2023
+  source_url: https://albany.gov/acfr2023.pdf
+  notes: Final audit
