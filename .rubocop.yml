@@ -30,3 +30,6 @@ Metrics/MethodLength:
 # Security Rule: Enforce JSON safety (Critical for data integrity)
 Security/JSONLoad:
   Enabled: true
+
+Rails/I18nLocaleTexts:
+  Enabled: false
