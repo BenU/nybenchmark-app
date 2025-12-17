@@ -2,7 +2,7 @@
 
 class DocumentsController < ApplicationController
   # HTTP Basic Auth using credentials
-  http_basic_authenticate_with name: "admin", password: "password", only: %i[new create]
+  before_action :authenticate_admin, only: %i[new create]
 
   def show
     @document = Document.find(params[:id])
@@ -16,7 +16,7 @@ class DocumentsController < ApplicationController
     @document = Document.new(document_params)
 
     if @document.save
-      redirect_to root_path, notice: "Document uploaded successfully."
+      redirect_to @document, notice: "Document uploaded successfully."
     else
       render :new, status: :unprocessable_content
     end
@@ -26,5 +26,14 @@ class DocumentsController < ApplicationController
 
   def document_params
     params.expect(document: %i[title doc_type fiscal_year entity_id source_url notes file])
+  end
+
+  # Define the authentication logic securely
+  def authenticate_admin
+    authenticate_or_request_with_http_basic do |username, password|
+      # Use fetch to ensure the app crashes loudly if you forget to set these ENVs
+      username == ENV.fetch("HTTP_AUTH_USER") &&
+        password == ENV.fetch("HTTP_AUTH_PASSWORD")
+    end
   end
 end

@@ -6,9 +6,13 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @entity = entities(:one)
 
-    # We will match these credentials in the controller later
-    @username = "admin"
-    @password = "password"
+    # 1. Define Test Credentials
+    @username = "test_admin"
+    @password = "test_password"
+
+    # 2. Inject them into the Environment for this test run
+    ENV["HTTP_AUTH_USER"] = @username
+    ENV["HTTP_AUTH_PASSWORD"] = @password
   end
 
   test "should deny access to new without auth" do
@@ -41,7 +45,7 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
            headers: { "Authorization" => auth_header }
     end
 
-    assert_redirected_to root_url
+    assert_redirected_to document_url
     # Verify the file is actually attached
     assert Document.last.file.attached?
   end

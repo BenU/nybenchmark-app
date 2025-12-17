@@ -41,6 +41,8 @@ env:
     - POSTGRES_PASSWORD
     - DO_SPACES_KEY
     - DO_SPACES_SECRET
+    - HTTP_AUTH_USER
+    - HTTP_AUTH_PASSWORD
   clear:
     DB_HOST: nybenchmark_app-db
     POSTGRES_USER: nybenchmark_app
