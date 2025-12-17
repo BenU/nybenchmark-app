@@ -45,7 +45,7 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
            headers: { "Authorization" => auth_header }
     end
 
-    assert_redirected_to document_url
+    assert_redirected_to document_url(Document.last)
     # Verify the file is actually attached
     assert Document.last.file.attached?
   end
