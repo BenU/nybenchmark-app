@@ -6,6 +6,9 @@ ruby "3.4.7"
 
 gem "rails", "~> 8.1.1"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
+# To see data
+gem "csv"
+
 # Data Integrity & Auditing
 gem "paper_trail"
 
