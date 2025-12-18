@@ -8,3 +8,16 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+/* * SAFE MODE: PICO DEFAULTS
+ * We are leaving this standard to let Pico.css handle 
+ * all colors (Blue/Azure) and Dark Mode automatically.
+ */
+
+/* Optional: Slight tweak to ensure text contrast if Pico defaults miss something */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --pico-color: #e3e6e8;
+    --pico-background-color: #13171f;
+  }
+}
