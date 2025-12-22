@@ -27,3 +27,7 @@ Once the database is running:
 bundle install
 bin/rails db:prepare
 bin/rails test
+
+## License
+
+MIT License. See [LICENSE](LICENSE).
