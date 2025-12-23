@@ -1,3 +1,19 @@
+one:
+  entity: one  # Links to New York City in entities.yml
+  title: ACFR 2024
+  doc_type: acfr
+  fiscal_year: 2024
+  source_url: https://comptroller.nyc.gov/wp-content/uploads/documents/ACFR-2024.pdf
+  notes: final report
+
+two:
+  entity: two  # Links to Albany in entities.yml
+  title: Annual Comprehensive Financial Report 2023
+  doc_type: acfr
+  fiscal_year: 2023
+  source_url: https://www.albanycountyny.gov/home/showpublisheddocument/47703/638538615080430000
+  notes: Final audit
+
 nyc_budget:
   entity: one  # Links to New York City in entities.yml
   title: Adopted Budget 2024
@@ -8,8 +24,8 @@ nyc_budget:
 
 albany_acfr:
   entity: two  # Links to Albany in entities.yml
-  title: Annual Comprehensive Financial Report 2023
+  title: Annual Comprehensive Financial Report 2024
   doc_type: acfr
-  fiscal_year: 2023
-  source_url: https://albany.gov/acfr2023.pdf
+  fiscal_year: 2022
+  source_url: https://albany.gov/acfr2022.pdf
   notes: Final audit
