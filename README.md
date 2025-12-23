@@ -1,32 +1,43 @@
-# New York Benchmarking App
+# NY Benchmarking App
 
-**Data collection, validation, and analysis engine for the New York Benchmarking Project.**
+A civic-tech Rails application for collecting, verifying, and analyzing financial data from New York State local governments.
 
-This is the backend Rails application for the [NY Benchmarking Project](https://github.com/yourusername/nybenchmark-website). It is designed to ingest financial documents (ACFRs, Budgets), extract standardized metrics, and provide a rigid audit trail to ensure data integrity.
+## Mission
 
-## Prerequisites
-* **Ruby:** 3.4.7
-* **Docker:** Required for the database.
-* **PostgreSQL:** Version 17 (Running via Docker).
+**Mission:** A civic-tech data engine to extract and curate data from financial documents (ACFRs, Budgets) across New York State’s 62 cities, in order to verify, standardize, visualize, and analyze government efficiency and effectiveness with full auditability.
 
-## Getting Started
+This project prioritizes correctness, transparency, and reproducibility over automation. Every data point is explicitly traceable back to its original source document and page reference.
 
-### 1. Database Setup (Docker)
-**You must start Docker every time you restart your computer.**
+## Project Context
 
-1.  Open **Docker Desktop**.
-2.  Run the following command in the project root:
-    ```bash
-    docker compose up -d
-    ```
-    *This starts the database on port `5433`.*
+This repository contains the Rails application that powers the NY Benchmarking project.
 
-### 2. Application Setup
-Once the database is running:
-```bash
-bundle install
-bin/rails db:prepare
-bin/rails test
+- Static site / blog: https://nybenchmark.org
+- Application: https://app.nybenchmark.org
+
+High-level architecture, domain modeling decisions, operating assumptions, and a structured AI context used to support accurate and efficient AI-assisted development are documented in:
+
+👉 **[AI Context](AI-CONTEXT.md)**
+
+## Core Concepts
+
+- **Entities** represent government bodies (e.g., cities).
+- **Documents** are source financial files (PDFs) tied to a fiscal year.
+- **Metrics** define standardized data points.
+- **Observations** are individual, citable facts extracted from documents.
+
+Observations form the intersection of Entity + Document + Metric and always include a citation to the original source.
+
+## Status
+
+- Core domain models implemented with validations
+- Production deployment live
+- Preliminary data seeded for select cities
+- Styling intentionally minimal
+
+**Near-term priorities**
+- Index and show pages for core models
+- TDD of document archiving workflows
 
 ## License
 
