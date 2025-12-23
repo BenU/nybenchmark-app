@@ -1,8 +1,32 @@
-**Project Context: New York Benchmarking App**
+# Project Context: New York Benchmarking App
 
-**Mission:** A civic-tech data engine to extract and curate data from financial documents (ACFRs, Budgets) across New York State’s 62 cities, in order to verify, standardize, visualize, and analyze government efficiency and effectiveness with full auditability.
+## Mission:
 
-**Tech Stack:**
+A civic-tech data engine to extract and curate data from financial documents (ACFRs, Budgets) across New York State’s 62 cities, in order to verify, standardize, visualize, and analyze government efficiency and effectiveness with full auditability.
+
+## How This Document Is Used
+
+This document serves as a shared source of truth for both human contributors and AI-assisted development. It is intended to provide sufficient architectural, domain, and process context so that AI tools can offer accurate, conservative, and workflow-compliant guidance when helping build and maintain this project.
+
+## Workflow Constraints
+
+- The `main` branch is protected; direct pushes are not allowed.
+- All changes must follow this sequence:
+  1. Create a feature or chore branch from `main`
+  2. Push the branch to GitHub
+  3. All CI checks must pass on GitHub
+  4. Merge the PR into `main` on GitHub
+  5. Delete the remote branch
+  6. Run `git pull origin main` locally to sync
+
+## Explicit Non-Goals
+
+- Fully automated document ingestion or data extraction
+- Unverified or uncited data points
+- Silent data transformations without traceable provenance
+- Optimizing for speed or scale at the expense of correctness
+
+## Tech Stack:
 
 * **Framework:** Rails 8.1.1 (API \+ HTML hybrid)  
 * **Ruby:** 3.4.7  
@@ -11,7 +35,7 @@
 * **Frontend:** Hotwire / standard Rails views (Minimal CSS currently)  
 * **Background Jobs:** Solid Queue (Rails 8 default)
 
-**Infrastructure & Deployment:**
+## Infrastructure & Deployment:
 
 * **Host:** DigitalOcean Droplet (Ubuntu/Docker) \+ DigitalOcean Spaces (S3-compatible object storage)  
 * **Deployment:** Kamal 2 (Deploying from local Mac to DO Droplet)  
@@ -20,9 +44,11 @@
   * `nybenchmark.org` (Jekyll Static Site \- Hosted on GitHub Pages)  
   * `app.nybenchmark.org` (Rails Application \- Hosted on DO)
 
-**Models & Domain Logic (Strict Rails Definition)**
+## Models & Domain Logic (Strict Rails Definition)
 
-**Global Architecture:**
+### Global Architecture:
+
+* **Invariant:** Every persisted data point must be traceable to a source document and page reference.
 
 * **Auditing:** All models below include \`has\_paper\_trail\` to track create/update/destroy events.
 
@@ -60,7 +86,7 @@
 
 * **Associations:**
 
-    \* `belongs_to :entity`
+    * `belongs_to :entity`
 
     * `has_many :observations, dependent: :destroy`
 
@@ -142,9 +168,9 @@
 
 ## Testing & Quality Assurance (Strict TDD)
 
-**Framework:** Minitest (Standard Rails)
+### Framework: Minitest (Standard Rails)
 
-**Philosophy:** Test-Driven Development (Red-Green-Refactor)
+### Philosophy: Test-Driven Development (Red-Green-Refactor)
 
 1.  **TDD First:** Before writing any implementation code, you must propose or write the failing test case.
 
@@ -164,15 +190,15 @@
 
 **Goal:** The test suite is the source of truth. If the tests pass, the PR is mergeable.
 
-### **AI Context Update: Infrastructure & Auth**
+## Infrastructure & Authentication Details
 
-**1\. Container Registry Authentication (GitHub)**
+### Container Registry Authentication (GitHub)
 
 * **Component: GitHub Personal Access Token (Classic).**  
 * **Purpose: Authenticates the Kamal deployment tool with the GitHub Container Registry (`ghcr.io`).**  
 * **Scopes: `write:packages`, `delete:packages` (Required to push/pull Docker images).**  
 * **Management: The token is stored locally in `.env` as `KAMAL_REGISTRY_PASSWORD`. It is never committed to Git. Kamal injects it into the build process securely.**  
-  **2\. Cloud Storage (DigitalOcean Spaces)**  
+### Cloud Storage (DigitalOcean Spaces)
 * **Service: DigitalOcean Spaces (S3-Compatible Object Storage).**  
 * **Bucket Name: `nybenchmark-production` (Region: `nyc3`).**  
 * **Purpose: Persistent storage for user-uploaded files (PDFs). Since Docker containers are ephemeral (files inside them vanish on restart), all `ActiveStorage` attachments are offloaded here.**  
@@ -181,12 +207,11 @@
   * **Access: A dedicated "Limited Access" key pair (`DO_SPACES_KEY` / `DO_SPACES_SECRET`) handles Read/Write/Delete permissions solely for this bucket.**  
   * **Integration: Rails uses the `aws-sdk-s3` gem to communicate with the Space via `config/storage.yml`.**
 
-**Current Status:**
+## Current Status:
 
 * Production is LIVE (`kamal deploy` working).  
 * Core models and validations are tested.  
 * Cloudflare RUM analytics enabled.  
 * rudimentary css styling with pico.css CDN link  
 * Seeded preliminary data for Yonkers and New Rochelle  
-* **Next Priority:** TDD of actual pdf document archiving, then building the Google Sheets ingestion script.
-
+* **Next Priority:** TDD and implimentation of UI of index and show pages for the models and current observations

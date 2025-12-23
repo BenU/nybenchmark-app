@@ -12,7 +12,7 @@ This project prioritizes correctness, transparency, and reproducibility over aut
 
 This repository contains the Rails application that powers the NY Benchmarking project.
 
-- Static site / blog: https://nybenchmark.org  
+- Static site / blog: https://nybenchmark.org
 - Application: https://app.nybenchmark.org
 
 High-level architecture, domain modeling decisions, operating assumptions, and a structured AI context used to support accurate and efficient AI-assisted development are documented in:
@@ -38,17 +38,6 @@ Observations form the intersection of Entity + Document + Metric and always incl
 **Near-term priorities**
 - Index and show pages for core models
 - TDD of document archiving workflows
-- Improved data-entry and validation tooling
-
-## Development
-
-- Rails 8 (API + HTML hybrid)
-- PostgreSQL
-- Hotwire for frontend interactions
-- Minitest with strict TDD discipline
-
-See **[AI Context](AI-CONTEXT.md)** 
-for detailed architectural notes, design constraints, and testing philosophy.
 
 ## License
 
