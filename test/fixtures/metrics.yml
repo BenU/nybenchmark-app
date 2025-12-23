@@ -1,3 +1,15 @@
+one:
+  key: metric_one
+  label: Test Metric One
+  unit: USD
+  description: A generic metric for testing.
+
+two:
+  key: metric_two
+  label: Test Metric Two
+  unit: Count
+  description: Another generic metric.
+  
 expenditures:
   key: total_expenditures
   label: Total General Fund Expenditures
