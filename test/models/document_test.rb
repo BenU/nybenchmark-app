@@ -60,4 +60,38 @@ class DocumentTest < ActiveSupport::TestCase
     assert_not document.valid?
     assert_includes document.errors[:file], "must be under 20MB"
   end
+
+  test "should enforce uniqueness of doc_type per entity and fiscal_year" do
+    # 'one' is already defined in fixtures as a 2024 budget
+    existing_doc = documents(:one)
+
+    # Try to build a duplicate (Same Entity + Same Year + Same Type)
+    duplicate_doc = Document.new(
+      entity: existing_doc.entity,
+      title: "Duplicate Upload",
+      doc_type: existing_doc.doc_type,
+      fiscal_year: existing_doc.fiscal_year,
+      source_url: "http://different-url.com"
+    )
+
+    # Should be invalid
+    assert_not duplicate_doc.valid?
+    assert_includes duplicate_doc.errors[:doc_type], "already exists for this entity and year"
+  end
+
+  test "should allow same doc_type for different years" do
+    existing_doc = documents(:one)
+
+    # Same Entity + Same Type + DIFFERENT Year
+    new_year_doc = Document.new(
+      entity: existing_doc.entity,
+      title: "Next Year Budget",
+      doc_type: existing_doc.doc_type,
+      fiscal_year: existing_doc.fiscal_year + 1,
+      source_url: "http://example.com/2025.pdf"
+    )
+
+    # Should be valid
+    assert new_year_doc.valid?
+  end
 end
