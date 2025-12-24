@@ -8,6 +8,12 @@ class Document < ApplicationRecord
 
   validates :title, :doc_type, :fiscal_year, :source_url, presence: true
 
+  # Enforces that an entity can only have one document of a specific type per year.
+  validates :doc_type, uniqueness: {
+    scope: %i[entity_id fiscal_year],
+    message: "already exists for this entity and year"
+  }
+
   # Custom Security Validations
   validate :correct_file_type
   validate :correct_file_size
