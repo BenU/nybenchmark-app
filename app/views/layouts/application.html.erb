@@ -1,28 +1,14 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Nybenchmark App" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Nybenchmark App">
-    <meta name="mobile-web-app-capable" content="yes">
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
-
-    <%= yield :head %>
-
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23002D72%22/><text x=%2250%22 y=%2255%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-weight=%22900%22 font-size=%2250%22 fill=%22%23ffffff%22>NYB</text></svg>">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= javascript_importmap_tags %>
+    <%= render "shared/head" %>
   </head>
 
   <body>
+    <%= render "shared/navbar" %>
+
     <%= yield %>
+
+    <%= render "shared/footer" %>
   </body>
 </html>
