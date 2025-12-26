@@ -11,3 +11,10 @@ two:
   kind: city
   state: NY
   slug: albany
+
+three:
+  name: Yonkers
+  kind: city
+  state: NY
+  slug: yonkers
+

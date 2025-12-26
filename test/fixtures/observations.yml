@@ -4,6 +4,7 @@ one:
   metric: one           # <--- CRITICAL: Links to the metric 'one' above
   fiscal_year: 2024
   value_numeric: 100.00
+  value_text: ~
   page_reference: "p. 1"
   notes: "Fixture for testing dependency restrictions"
 
@@ -12,7 +13,8 @@ two:
   document: two
   metric: two
   fiscal_year: 2023
-  value_numeric: 500.00
+  value_numeric: ~
+  value_text:  "mystring1"
   page_reference: "p. 2"
   
 nyc_expenditures:
@@ -28,8 +30,17 @@ albany_revenue_text:
   entity: two
   metric: revenue
   document: albany_acfr
-  fiscal_year: 2023
+  fiscal_year: 2022
   value_numeric: ~
   value_text: "Pending Audit"
   page_reference: "p. 12"
   notes: Text value example
+
+yonkers_revenue:
+  entity: three
+  metric: one
+  document: yonkers_budget
+  fiscal_year: 2023
+  page_reference: "p. 10"
+  value_numeric: 500000.00
+  value_text: ~

@@ -29,3 +29,11 @@ albany_acfr:
   fiscal_year: 2022
   source_url: https://albany.gov/acfr2022.pdf
   notes: Final audit
+
+yonkers_budget:
+  entity: three
+  title: Annual Comprehensive Financial Report 2022
+  doc_type: acfr
+  fiscal_year: 2023
+  source_url: https://yonkers.gov/acfr2023.pdf
+  notes: Final audit
