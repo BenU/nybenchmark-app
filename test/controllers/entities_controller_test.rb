@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class EntitiesControllerTest < ActionDispatch::IntegrationTest
@@ -9,13 +11,13 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
   test "should get index" do
     get entities_url
     assert_response :success
-    
+
     # Pico.css Semantic Check: Main container presence
     assert_select "main.container"
-    
+
     # Content Check: Should list entities
     assert_select "h1", "New York Entities"
-    
+
     # Verify the table lists the entity name
     assert_select "table" do
       assert_select "tr", minimum: 1
@@ -32,7 +34,7 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
     assert_select "hgroup" do
       assert_select "h1", @entity.name
       # Checks for state or subtitle
-      assert_select "p", text: /New York/ 
+      assert_select "p", text: /New York/
     end
 
     # Hub Requirements: Verify Sections exist for the related data
