@@ -31,9 +31,10 @@ This document serves as a shared source of truth for both human contributors and
 * **Framework:** Rails 8.1.1 (API \+ HTML hybrid)  
 * **Ruby:** 3.4.7  
 * **Database:** PostgreSQL 17 (Running via Docker in dev/prod)  
-* **Testing:** Minitest (Standard Rails 8 suite) with Fixtures  
+* **Testing:** Minitest (Standard Rails 8 suite) with Fixtures Locked to v5.x to ensure stability with Rails 8.1.  
 * **Frontend:** Hotwire / standard Rails views (Minimal CSS currently)  
 * **Background Jobs:** Solid Queue (Rails 8 default)
+* **CSS:** pico.css and minimum to start
 
 ## Infrastructure & Deployment:
 
@@ -82,7 +83,7 @@ This document serves as a shared source of truth for both human contributors and
 
 ### 2\. Document (\`app/models/document.rb\`)
 
-* **Role:** A specific source file (PDF) from a specific year.
+* **Role:** A specific source file (PDF) or government website from a specific year.
 
 * **Associations:**
 
@@ -96,13 +97,18 @@ This document serves as a shared source of truth for both human contributors and
 
     * `validates :title, :doc_type, :fiscal_year, :source_url, presence: true`
 
+    * `validates :doc_type, uniqueness: {
+    scope: %i[entity_id fiscal_year],
+    message: "already exists for this entity and year"
+      }`
+
     * **Security:** File must be `application/pdf` and `< 20MB`.
 
 * **Attributes:**
 
     * `title` (String): Human-readable name (e.g., "2024 Adopted Budget").
 
-    * `doc_type` (String): Category of document (e.g., `budget`, `acfr`, `audit`).
+    * `doc_type` (String): Category of document.  Strict business domain types with supported types: `acfr, budget, school_budget, school_financials, demographics, public_safety, tax_return, tax_instructions`.
 
     * `fiscal_year` (Integer): The financial year this document covers (YYYY).
 
@@ -154,6 +160,8 @@ This document serves as a shared source of truth for both human contributors and
 
     * **XOR Logic:** Must have either `value_numeric` OR `value_text`. Both cannot be blank.
 
+    * **Denormalization of Year:** `fiscal_year` is stored on the Observation for efficiency but MUST match `document.fiscal_year` (validated on save).
+
 * **Attributes:**
 
     * `value_numeric` (Decimal): The raw number (e.g., `500000.00`). Used for graphing/stats.
@@ -182,11 +190,13 @@ This document serves as a shared source of truth for both human contributors and
 
     * **System Tests:** Required for all user-facing features (CRUD actions). Use `ApplicationSystemTestCase`.
 
-3\.  **Fixtures:** Use Rails standard Fixtures (\`test/fixtures\`) for sample data. Avoid FactoryBot to keep dependencies low for open source contributors unless requested otherwise.
+3.  **Fixtures:** Use Rails standard Fixtures (\`test/fixtures\`) for sample data. Avoid FactoryBot to keep dependencies low for open source contributors unless requested otherwise.
 
-4\.  **Coverage:** Aim for high test coverage. We value "happy paths" (everything works) and "sad paths" (handling errors/edge cases).
+    * Fixtures must use semantic keys (e.g., yonkers_acfr_2024) matching sources.csv. Tests enforce strict data integrity.
 
-5\.  **Output:** When providing code, always include the verification command (e.g., \`bin/rails test test/models/user\_test.rb\`).
+4.  **Coverage:** Aim for high test coverage. We value "happy paths" (everything works) and "sad paths" (handling errors/edge cases).
+
+5.  **Output:** When providing code, always include the verification command (e.g., \`bin/rails test test/models/user\_test.rb\`).
 
 **Goal:** The test suite is the source of truth. If the tests pass, the PR is mergeable.
 
@@ -206,6 +216,19 @@ This document serves as a shared source of truth for both human contributors and
   * **CDN: Enabled (for fast global delivery via edge caching).**  
   * **Access: A dedicated "Limited Access" key pair (`DO_SPACES_KEY` / `DO_SPACES_SECRET`) handles Read/Write/Delete permissions solely for this bucket.**  
   * **Integration: Rails uses the `aws-sdk-s3` gem to communicate with the Space via `config/storage.yml`.**
+
+## Workflow Constraints
+
+### Git & GitHub
+* **Branching:** Never push directly to `main`. Use feature branches (e.g., `feature/add-ui`).
+* **Merging:** PRs must pass CI (Tests + Rubocop) before merging.
+* **Cleanup:** Delete local/remote branches after merge.
+
+### Deployment (Alpha Stage)
+* **Strategy:** "Nuke and Pave" is currently permitted for schema/seed overhauls.
+* **Reset Command (Production):**
+    `kamal app exec -i -- bin/rails r "Entity.destroy_all; Metric.destroy_all"` (Respects dependency order).
+* **Seeding:** Must run `kamal app exec -i -- bin/rails db:seed` manually after deploy.
 
 ## Current Status:
 
