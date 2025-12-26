@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class SiteNavigationTest < ActionDispatch::IntegrationTest
@@ -12,10 +14,10 @@ class SiteNavigationTest < ActionDispatch::IntegrationTest
         # Brand / Home Link
         assert_select "ul" do
           assert_select "li strong" do
-             assert_select "a[href=?]", root_path, text: "NY Benchmark"
+            assert_select "a[href=?]", root_path, text: "NY Benchmark"
           end
         end
-        
+
         # Menu Links
         assert_select "ul" do
           assert_select "li" do
