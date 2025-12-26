@@ -1,0 +1,31 @@
+<main class="container">
+  <hgroup>
+    <h1>New York Entities</h1>
+    <p>Select a local government to view financial performance and documents.</p>
+  </hgroup>
+
+  <figure>
+    <table role="grid">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Type</th>
+          <th scope="col">State</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @entities.each do |entity| %>
+          <tr>
+            <td><%= entity.name %></td>
+            <td><%= entity.kind.capitalize %></td>
+            <td><%= entity.state %></td>
+            <td>
+              <%= link_to "View Hub", entity_path(entity.slug), role: "button", class: "outline" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </figure>
+</main>
