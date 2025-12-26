@@ -1,0 +1,79 @@
+<main class="container">
+  <hgroup>
+    <h1><%= @entity.name %></h1>
+    <p><%= @entity.kind.capitalize %> in <%= @entity.state %> (New York)</p>
+  </hgroup>
+
+  <hr />
+
+  <div class="grid">
+    <section id="documents">
+      <hgroup>
+        <h2>Financial Documents</h2>
+        <p>Official sources ingested.</p>
+      </hgroup>
+      
+      <% if @documents.any? %>
+        <figure>
+          <table>
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Title</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @documents.each do |doc| %>
+                <tr>
+                  <td><%= doc.fiscal_year %></td>
+                  <td><%= link_to doc.title, document_path(doc) %></td>
+                  <td><small><%= doc.doc_type.upcase %></small></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </figure>
+      <% else %>
+        <article>No documents found for this entity.</article>
+      <% end %>
+    </section>
+
+    <section id="observations">
+      <hgroup>
+        <h2>Recent Data</h2>
+        <p>Latest extracted metrics.</p>
+      </hgroup>
+
+      <% if @observations.any? %>
+        <figure>
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Value</th>
+                <th>Year</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @observations.each do |obs| %>
+                <tr>
+                  <td><%= obs.metric.label %></td>
+                  <td>
+                    <%= obs.value_numeric ? number_with_delimiter(obs.value_numeric) : obs.value_text %>
+                    <% if obs.metric.unit && obs.value_numeric %>
+                      <small><%= obs.metric.unit %></small>
+                    <% end %>
+                  </td>
+                  <td><%= obs.fiscal_year %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </figure>
+      <% else %>
+        <article>No data points extracted yet.</article>
+      <% end %>
+    </section>
+  </div>
+</main>

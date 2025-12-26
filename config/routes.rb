@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   root "welcome#index"
+  resources :entities, only: [:index, :show], param: :slug
   resources :documents, only: [:new, :create, :show]
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
