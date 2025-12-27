@@ -16,7 +16,7 @@
 
         <dt>Source URL</dt>
         <dd>
-          <%= link_to truncate(@document.source_url, length: 50), @document.source_url, target: "_blank" %>
+          <%= safe_external_link(@document.source_url) %>
         </dd>
 
         <% if @document.notes.present? %>
