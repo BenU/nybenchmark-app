@@ -4,16 +4,59 @@ require "test_helper"
 
 class DocumentsControllerTest < ActionDispatch::IntegrationTest
   setup do
+    # Fixtures
     @entity = entities(:one)
+    @document = documents(:one)
 
-    # 1. Define Test Credentials
+    # 1. SETUP FOR READ TESTS: Attach a fake PDF to the fixture
+    # This ensures the "View PDF" button appears in the 'show' test.
+    @document.file.attach(
+      io: StringIO.new("%PDF-1.4 fake content"),
+      filename: "test.pdf",
+      content_type: "application/pdf"
+    )
+
+    # 2. Define Test Credentials
     @username = "test_admin"
     @password = "test_password"
 
-    # 2. Inject them into the Environment for this test run
+    # 3. Inject them into the Environment for this test run
     ENV["HTTP_AUTH_USER"] = @username
     ENV["HTTP_AUTH_PASSWORD"] = @password
   end
+
+  # ==========================================
+  # PUBLIC ACTIONS (Index, Show)
+  # No Authentication Required
+  # ==========================================
+
+  test "should get index without auth" do
+    get documents_url
+    assert_response :success
+
+    assert_select "h1", "Financial Documents"
+    assert_select "table"
+    # Ensure the document we setup is listed
+    assert_select "td", text: @document.title
+  end
+
+  test "should show document hub with pdf link" do
+    get document_url(@document)
+    assert_response :success
+
+    # Metadata Check
+    assert_select "h1", @document.title
+    assert_select "dd a[href=?]", @document.source_url
+
+    # VERIFY PDF ACCESS:
+    # Checks that a link to the ActiveStorage blob exists
+    assert_select "a[target='_blank']", text: "View Full PDF"
+  end
+
+  # ==========================================
+  # ADMIN ACTIONS (New, Create)
+  # Authentication Required
+  # ==========================================
 
   test "should deny access to new without auth" do
     get new_document_url

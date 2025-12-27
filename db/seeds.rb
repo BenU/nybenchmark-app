@@ -1,155 +1,139 @@
+# db/seeds.rb
 require 'csv'
-require 'fileutils'
+require 'yaml'
 
-puts "🌱 Starting Seed Process..."
+puts "🌱 Starting Database Seed..."
 
-# --- Configuration ---
-SEEDS_DIR = Rails.root.join('db', 'seeds')
-DOCS_DIR  = SEEDS_DIR.join('documents')
-SOURCES_CSV = SEEDS_DIR.join('sources.csv')
-OBSERVATIONS_CSV = SEEDS_DIR.join('observations.csv')
+# ====================================================
+# 1. ENTITIES (The Governments)
+# ====================================================
+puts "\n--- Seeding Entities ---"
+entities_list = [
+  { name: "Yonkers", slug: "yonkers", kind: "city" },
+  { name: "New Rochelle", slug: "new_rochelle", kind: "city" },
+  { name: "Albany", slug: "albany", kind: "city" },
+  { name: "New York City", slug: "nyc", kind: "city" },
+  { name: "Syracuse", slug: "syracuse", kind: "city" },
+  { name: "Buffalo", slug: "buffalo", kind: "city" }
+]
 
-# --- Helper: Extract URL from text ---
-def extract_url(text)
-  # Matches http/https URL until whitespace
-  match = text.to_s.match(%r{(https?://[^\s]+)})
-  match ? match[1] : text
+entities_list.each do |data|
+  e = Entity.find_or_initialize_by(slug: data[:slug])
+  e.assign_attributes(name: data[:name], kind: data[:kind], state: 'NY')
+  e.save!
+  print "."
 end
+puts "\n✅ Entities synced."
 
-# --- Helper: Clean Numeric Values ---
-def clean_numeric(value)
-  return nil if value.blank?
-  # Remove $, %, commas, and whitespace. Handle "(123)" as negative if needed.
-  cleaned = value.to_s.gsub(/[$,\s%]/, '')
-  return nil unless cleaned.match?(/^-?\d+(\.\d+)?$/)
-  cleaned.to_f
-end
+# ====================================================
+# 2. METRICS (Definitions)
+# ====================================================
+puts "\n--- Seeding Metrics ---"
+metrics_path = Rails.root.join('db', 'seeds', 'metrics.yml')
 
-# --- Step 0: Scoped Cleaning (Idempotency) ---
-puts "🧹 Cleaning up data for import targets..."
-
-# Identify the slugs we are about to import
-slugs_to_import = ['yonkers', 'new_rochelle', 'shared']
-
-# Find existing entities matching these slugs
-target_entities = Entity.where(slug: slugs_to_import)
-
-# Delete observations ONLY for these entities
-# This preserves data for 'buffalo' or 'albany' if they exist
-if target_entities.exists?
-  count = Observation.where(entity: target_entities).count
-  puts "   - Removing #{count} old observations for #{slugs_to_import.join(', ')}"
-  Observation.where(entity: target_entities).destroy_all
-  
-  # Optional: Remove documents for these entities if you want a full file reset
-  # Document.where(entity: target_entities).destroy_all 
-end
-
-# --- Step 1: Create Entities ---
-puts "🏗️  Creating Entities..."
-entities = {}
-
-# Create standard cities
-['yonkers', 'new_rochelle'].each do |slug|
-  name = slug.titleize
-  entities[slug] = Entity.find_or_create_by!(slug: slug) do |e|
-    e.name = name
-    e.state = "NY"
-    e.kind = "city"
+if File.exist?(metrics_path)
+  YAML.load_file(metrics_path).each do |key, data|
+    m = Metric.find_or_initialize_by(key: data['key'])
+    m.update!(label: data['label'], unit: data['unit'], description: data['description'])
+    print "."
   end
 end
+puts "\n✅ Metrics synced."
 
-# Create a special Entity for statewide/shared documents
-# Changed kind to 'state' per your request
-entities['shared'] = Entity.find_or_create_by!(slug: 'shared') do |e|
-  e.name = "New York State" # More accurate name
-  e.state = "NY"
-  e.kind = "state" 
-end
+# ====================================================
+# 3. DOCUMENTS (From sources.csv)
+# ====================================================
+puts "\n--- Seeding Documents ---"
+sources_path = Rails.root.join('db', 'seeds', 'sources.csv')
+doc_lookup = {} 
 
-# --- Step 2: Import Sources (Documents) ---
-puts "📚 Importing Documents..."
-doc_lookup = {} # Map Doc_Key -> Document Object
-
-CSV.foreach(SOURCES_CSV, headers: true) do |row|
-  doc_key = row['Doc_Key']
-  entity_slug = row['Entity']
+CSV.foreach(sources_path, headers: true) do |row|
+  entity = Entity.find_by(slug: row['Entity'])
   
-  # Find the owner entity (City or Shared)
-  owner_entity = entities[entity_slug]
-  unless owner_entity
-    puts "   ⚠️  Skipping document #{doc_key}: Entity '#{entity_slug}' not found."
+  if entity.nil?
+    puts "   ⚠️  Skipping Doc #{row['Doc_Key']}: Entity '#{row['Entity']}' not found."
     next
   end
 
-  # Determine Source URL
-  if row['Type'] == 'web'
-    source_url = extract_url(row['Filename_or_URL'])
-  else
-    source_url = "Local PDF Import" 
-  end
+  doc = Document.find_or_initialize_by(
+    entity: entity,
+    fiscal_year: row['Fiscal_Year'],
+    doc_type: row['Type']
+  )
 
-  # Find or Create Document
-  # We search by title AND entity to ensure we don't duplicate if re-running
-  document = Document.find_or_create_by!(title: row['Title'], entity: owner_entity) do |d|
-    d.fiscal_year = row['Fiscal_Year']
-    d.doc_type = row['Type']
-    d.source_url = source_url
-  end
+  doc.title = row['Title']
+  
+  # 1. Set Valid URL (Required by Validation)
+  doc.source_url = row['Source_URL']
 
-  # Attach PDF if applicable and not already attached
-  if row['Type'] == 'pdf' && !document.file.attached?
-    filename = row['Filename_or_URL']
-    file_path = DOCS_DIR.join(filename)
-
+  # 2. Attach Local File (If filename provided in CSV)
+  filename = row['Local_Filename']
+  if filename.present?
+    file_path = Rails.root.join('db', 'seeds', 'documents', filename)
+    
     if File.exist?(file_path)
-      document.file.attach(
-        io: File.open(file_path),
-        filename: filename,
-        content_type: 'application/pdf'
-      )
-      puts "   📎 Attached: #{filename}"
+      # Only attach if not already attached (Optimizes re-seeding)
+      unless doc.file.attached?
+        doc.file.attach(io: File.open(file_path), filename: filename)
+        print "📎"
+      end
     else
-      puts "   ❌ File Missing: #{filename} (Expected at #{file_path})"
+      puts "\n   ⚠️  Warning: File '#{filename}' listed in CSV but not found in db/seeds/documents/."
     end
   end
 
-  doc_lookup[doc_key] = document
+  if doc.save
+    doc_lookup[row['Doc_Key']] = doc # Save for linking Observations
+    print "."
+  else
+    puts "\n   ❌ Error saving #{doc.title}: #{doc.errors.full_messages.join(', ')}"
+  end
 end
+puts "\n✅ Documents synced."
 
-# --- Step 3: Import Observations ---
-puts "📊 Importing Observations..."
+# ====================================================
+# 4. OBSERVATIONS (From observations.csv)
+# ====================================================
+puts "\n--- Seeding Observations ---"
+obs_path = Rails.root.join('db', 'seeds', 'observations.csv')
 
-CSV.foreach(OBSERVATIONS_CSV, headers: true) do |row|
-  entity_slug = row['Entity']
-  metric_key  = row['Metric']
-  doc_key     = row['Doc_Key']
-  raw_value   = row['Value']
-  
-  entity = entities[entity_slug]
-  document = doc_lookup[doc_key]
-  
-  # Create Metric if missing
-  metric = Metric.find_or_create_by!(key: metric_key) do |m|
-    m.label = metric_key.titleize
+CSV.foreach(obs_path, headers: true) do |row|
+  entity = Entity.find_by(slug: row['Entity'])
+  doc = doc_lookup[row['Doc_Key']] # Precise lookup
+
+  # Auto-Create Metric if missing
+  metric = Metric.find_or_create_by(key: row['Metric']) do |m|
+    m.label = row['Metric'].titleize
+    m.description = "Auto-generated from seed."
   end
 
-  # Determine Value (Numeric or Text)
-  val_numeric = clean_numeric(raw_value)
-  val_text = val_numeric ? nil : raw_value
+  if entity && doc
+    obs = Observation.find_or_initialize_by(
+      entity: entity,
+      metric: metric,
+      document: doc,
+      fiscal_year: doc.fiscal_year
+    )
+    
+    obs.page_reference = row['Page_Ref'] || "n/a"
 
-  # Create Observation
-  Observation.create!(
-    entity: entity,
-    metric: metric,
-    document: document,
-    fiscal_year: document&.fiscal_year || 2024,
-    page_reference: row['Page_Ref'].presence || "N/A",
-    value_numeric: val_numeric,
-    value_text: val_text
-  )
-rescue ActiveRecord::RecordInvalid => e
-  puts "   ⚠️  Skipping #{metric_key} for #{entity_slug}: #{e.message}"
+    # Handle numeric vs text values
+    raw_val = row['Value'].to_s.gsub(',', '').strip
+    if raw_val.match?(/^-?\d+(\.\d+)?$/)
+      obs.value_numeric = raw_val.to_f
+      obs.value_text = nil
+    else
+      obs.value_numeric = nil
+      obs.value_text = row['Value']
+    end
+
+    if obs.save
+      print "."
+    else
+      puts "   ❌ Failed Obs: #{obs.errors.full_messages}"
+    end
+  else
+    puts "   ⚠️  Skipping Obs: Doc_Key '#{row['Doc_Key']}' not found."
+  end
 end
-
-puts "✅ Seeding Complete!"
+puts "\n🎉 Seed Complete!"

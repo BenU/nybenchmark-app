@@ -4,6 +4,11 @@ class DocumentsController < ApplicationController
   # HTTP Basic Auth using credentials
   before_action :authenticate_admin, only: %i[new create]
 
+  def index
+    # Eager load :entity to avoid N+1 queries when listing names
+    @documents = Document.includes(:entity).order(fiscal_year: :desc)
+  end
+
   def show
     @document = Document.find(params[:id])
   end

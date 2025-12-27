@@ -94,4 +94,74 @@ class DocumentTest < ActiveSupport::TestCase
     # Should be valid
     assert new_year_doc.valid?
   end
+
+  test "should strictly validate source_url format" do
+    valid_urls = [
+      "http://example.com",
+      "https://www.yonkersny.gov/file.pdf",
+      "https://subdomain.example.co.uk/path?query=param",
+      "https://127.0.0.1/document",
+      " https://google.com "
+    ]
+
+    invalid_urls = [
+      "Local PDF Import",      # Plain text
+      "www.example.com",       # Missing protocol (http://)
+      "ftp://example.com",     # Wrong protocol
+      "http:example.com",      # Malformed
+      "javascript:alert(1)",   # XSS vector
+      "http://" # Missing host
+    ]
+
+    # 1. Assert Valid URLs pass
+    valid_urls.each do |url|
+      doc = Document.new(title: "Valid", doc_type: "budget", fiscal_year: 2024, entity: entities(:one), source_url: url)
+      doc.validate
+      assert_empty doc.errors[:source_url], "Expected #{url} to be valid"
+    end
+
+    # 2. Assert Invalid URLs fail
+    invalid_urls.each do |url|
+      doc = Document.new(title: "Invalid", doc_type: "budget", fiscal_year: 2024, entity: entities(:one),
+                         source_url: url)
+      doc.validate
+      assert_includes doc.errors[:source_url], "must be a valid HTTP/HTTPS URL", "Expected #{url} to fail validation"
+    end
+  end
+
+  test "can handle both url-only and url-with-pdf scenarios" do
+    # Scenario 1: URL Only (e.g. Reference to a website)
+    doc_url_only = Document.create!(
+      title: "Website Only",
+      doc_type: "budget",
+      fiscal_year: 2021,
+      entity: entities(:three),
+      source_url: "https://example.com"
+    )
+
+    assert doc_url_only.persisted?
+    assert_equal "https://example.com", doc_url_only.source_url
+    assert_not doc_url_only.file.attached? # No PDF, perfectly valid
+
+    # Scenario 2: URL + PDF (e.g. Audited File)
+    doc_with_pdf = Document.new(
+      title: "With PDF",
+      doc_type: "acfr",
+      fiscal_year: 2024,
+      entity: entities(:two),
+      source_url: "https://example.com/download"
+    )
+
+    # Attach the file (Simulating the seed script)
+    doc_with_pdf.file.attach(
+      io: StringIO.new("fake pdf content"),
+      filename: "audit.pdf",
+      content_type: "application/pdf"
+    )
+    doc_with_pdf.save!
+
+    assert doc_with_pdf.persisted?
+    assert doc_with_pdf.file.attached? # Has PDF
+    assert_equal "audit.pdf", doc_with_pdf.file.filename.to_s # Filename stored in ActiveStorage
+  end
 end

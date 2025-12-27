@@ -1,0 +1,47 @@
+<main class="container">
+  <hgroup>
+    <h1><%= @document.title %></h1>
+    <p>
+      <%= link_to @document.entity.name, entity_path(@document.entity.slug) %> 
+      • <%= @document.fiscal_year %>
+    </p>
+  </hgroup>
+
+  <div class="grid">
+    <article>
+      <header><strong>Document Details</strong></header>
+      <dl>
+        <dt>Type</dt>
+        <dd><%= @document.doc_type.humanize %></dd>
+
+        <dt>Source URL</dt>
+        <dd>
+          <%= link_to truncate(@document.source_url, length: 50), @document.source_url, target: "_blank" %>
+        </dd>
+
+        <% if @document.notes.present? %>
+          <dt>Notes</dt>
+          <dd><%= @document.notes %></dd>
+        <% end %>
+      </dl>
+
+      <footer>
+        <% if @document.file.attached? %>
+          <%= link_to "View Full PDF", rails_blob_path(@document.file, disposition: "inline"), 
+              target: "_blank", 
+              role: "button", 
+              class: "contrast" %>
+        <% else %>
+          <button disabled>PDF Not Available</button>
+        <% end %>
+      </footer>
+    </article>
+
+    <section>
+      <article>
+        <header><strong>Extraction Status</strong></header>
+        <p><em>Automated data extraction pending.</em></p>
+      </article>
+    </section>
+  </div>
+</main>

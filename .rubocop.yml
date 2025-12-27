@@ -33,3 +33,14 @@ Security/JSONLoad:
 
 Rails/I18nLocaleTexts:
   Enabled: false
+
+# Tests are naturally long because of setup data and assertions.
+# We exclude them from length metrics to preserve readability.
+
+Metrics/ClassLength:
+  Exclude:
+    - 'test/**/*'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'test/**/*'
