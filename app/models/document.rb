@@ -8,6 +8,9 @@ class Document < ApplicationRecord
 
   validates :title, :doc_type, :fiscal_year, :source_url, presence: true
 
+  normalizes :source_url, with: ->(url) { url.strip }
+  validate :source_url_must_be_valid_http
+
   # Enforces that an entity can only have one document of a specific type per year.
   validates :doc_type, uniqueness: {
     scope: %i[entity_id fiscal_year],
@@ -30,5 +33,20 @@ class Document < ApplicationRecord
     return unless file.attached? && file.byte_size > 20.megabytes
 
     errors.add(:file, "must be under 20MB")
+  end
+
+  def source_url_must_be_valid_http
+    # Allow blank if you want to support documents without online links yet
+    return if source_url.blank?
+
+    uri = URI.parse(source_url)
+
+    # Check 1: Is it a generic URI?
+    # Check 2: Is it specifically HTTP or HTTPS?
+    # Check 3: Does it have a host (e.g. "google.com")?
+    errors.add(:source_url, "must be a valid HTTP/HTTPS URL") unless uri.is_a?(URI::HTTP) && uri.host.present?
+  rescue URI::InvalidURIError
+    # This catches "http:example" or characters not allowed in URLs
+    errors.add(:source_url, "must be a valid HTTP/HTTPS URL")
   end
 end

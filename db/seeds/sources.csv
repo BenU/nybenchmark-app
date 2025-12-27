@@ -1,13 +1,13 @@
-Doc_Key,Entity,Fiscal_Year,Type,Title,Filename_or_URL
-yonkers_pop_2020,yonkers,2020,demographics,US Census Population 2020,https://www.census.gov/data/tables/time-series/demo/popest/2020s-total-cities-and-towns.html
-yonkers_crime_2023,yonkers,2023,public_safety,FBI Crime Data 2023,https://www.neighborhoodscout.com/ny/yonkers/crime
-yonkers_census_2023,yonkers,2023,demographics,US Census QuickFacts 2023,https://www.census.gov/quickfacts/fact/table/yonkerscitynewyork/PST045224
-yonkers_acfr_2024,yonkers,2024,acfr,City of Yonkers ACFR 2024,yonkers_2024_city_of_yonkers_ny_acfr_6_30_2024.pdf
-yonkers_school_budget_2024,yonkers,2024,school_budget,Yonkers Public Schools Adopted Budget 2024-25,yonkers_2024_yonkers_public_schools_2024_2025_adopted.pdf
-nr_census_2023,new_rochelle,2023,demographics,US Census New Rochelle 2023,https://www.census.gov/quickfacts/fact/table/newrochellecitynewyork/PST045224
-nr_acfr_2024,new_rochelle,2024,acfr,New Rochelle ACFR 2024,new_rochelle_2024_acfr_december_31_2024.pdf
-nr_school_audit_2024,new_rochelle,2024,school_financials,New Rochelle School District Financials 2024,new_rochelle_2024_city_school_district_of_new_rochelle_bas.pdf
-nr_census_2024,new_rochelle,2024,demographics,US Census New Rochelle 2024,https://www.census.gov/quickfacts/fact/table/newrochellecitynewyork
-nr_crime_2024,new_rochelle,2024,public_safety,New Rochelle Crime Data 2024,https://www.neighborhoodscout.com/ny/new-rochelle/crime
-shared_sales_tax_2024,shared,2024,tax_return,NYS Sales and Use Tax Return 2024,new_york_state_and_local_quarterly_sales_tax_2024.pdf
-shared_it201_2024,shared,2024,tax_instructions,NYS IT-201 Instructions 2024,2024_nys_instructions_for_form_it_201_full_year.pdf
+Doc_Key,Entity,Fiscal_Year,Type,Title,Source_URL,Local_Filename
+yonkers_pop_2020,yonkers,2020,demographics,US Census Population 2020,https://www.census.gov/data/tables/time-series/demo/popest/2020s-total-cities-and-towns.html,
+yonkers_crime_2023,yonkers,2023,public_safety,FBI Crime Data 2023,https://www.neighborhoodscout.com/ny/yonkers/crime,
+yonkers_census_2023,yonkers,2023,demographics,US Census QuickFacts 2023,https://www.census.gov/quickfacts/fact/table/yonkerscitynewyork/PST045224,
+yonkers_acfr_2024,yonkers,2024,acfr,City of Yonkers ACFR 2024,https://www.yonkersny.gov/ArchiveCenter/ViewFile/Item/681,yonkers_2024_city_of_yonkers_ny_acfr_6_30_2024.pdf
+yonkers_school_budget_2024,yonkers,2024,school_budget,Yonkers Public Schools Adopted Budget 2024-25,https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5371/Yps/5c182a45-50ab-4cf4-871d-4469245339e9/Adopted-Budget.pdf?disposition=inline,yonkers_2024_yonkers_public_schools_2024_2025_adopted.pdf
+nr_census_2023,new_rochelle,2023,demographics,US Census QuickFacts 2023,https://www.census.gov/quickfacts/fact/table/newrochellecitynewyork/PST045223,
+nr_acfr_2024,new_rochelle,2024,acfr,New Rochelle ACFR 2024,https://www.newrochelleny.gov/DocumentCenter/View/21775/2024-Year-End-Financial-Report,new_rochelle_2024_acfr_december_31_2024.pdf
+nr_school_audit_2024,new_rochelle,2024,school_financials,New Rochelle School District Audit,https://core-docs.s3.us-east-1.amazonaws.com/documents/asset/uploaded_file/2207/NRPS/5092372/CSD_New_Rochelle_External_Audit_June_30__2024.pdf,new_rochelle_2024_city_school_district_of_new_rochelle_bas.pdf
+nr_census_2024,new_rochelle,2024,demographics,US Census Population Estimate 2024,https://www.census.gov/data/tables/time-series/demo/popest/2020s-total-cities-and-towns.html,
+nr_crime_2024,new_rochelle,2024,public_safety,Neighborhood Scout Crime Data,https://www.neighborhoodscout.com/ny/new-rochelle/crime,
+shared_sales_tax_2024,nyc,2024,tax_return,NYS Sales Tax 2024,https://www.tax.ny.gov/pdf/2024/st/st100_424.pdf,new_york_state_and_local_quarterly_sales_tax_2024.pdf
+shared_it201_2024,albany,2024,tax_instructions,NYS IT-201 Instructions,https://www.tax.ny.gov/pdf/2024/inc/it201i_2024.pdf,2024_nys_instructions_for_form_it_201_full_year.pdf

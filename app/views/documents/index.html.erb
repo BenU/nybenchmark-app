@@ -1,0 +1,33 @@
+<main class="container">
+  <hgroup>
+    <h1>Financial Documents</h1>
+    <p>Archive of budgets, financial reports, and audits.</p>
+  </hgroup>
+
+  <figure>
+    <table role="grid">
+      <thead>
+        <tr>
+          <th scope="col">Year</th>
+          <th scope="col">Entity</th>
+          <th scope="col">Title</th>
+          <th scope="col">Type</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @documents.each do |doc| %>
+          <tr>
+            <td><%= doc.fiscal_year %></td>
+            <td><%= link_to doc.entity.name, entity_path(doc.entity.slug) %></td>
+            <td><%= doc.title %></td>
+            <td><small><%= doc.doc_type.upcase %></small></td>
+            <td>
+              <%= link_to "View", document_path(doc), role: "button", class: "outline" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </figure>
+</main>
