@@ -1,0 +1,26 @@
+<main class="container">
+  <h1>Metrics</h1>
+
+  <figure>
+    <table role="grid">
+      <thead>
+        <tr>
+          <th scope="col">Label</th>
+          <th scope="col">Unit</th>
+          <th scope="col">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @metrics.each do |metric| %>
+          <tr>
+            <td>
+              <%= link_to metric.label, metric_path(metric) %>
+            </td>
+            <td><%= metric.unit %></td>
+            <td><%= metric.description %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </figure>
+</main>

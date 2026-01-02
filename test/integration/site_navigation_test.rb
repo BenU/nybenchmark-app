@@ -25,6 +25,10 @@ class SiteNavigationTest < ActionDispatch::IntegrationTest
           end
           # Future links (Documents, Metrics) will go here
         end
+
+        assert_select "li" do
+          assert_select "a[href=?]", metrics_path, text: "Metrics"
+        end
       end
     end
 

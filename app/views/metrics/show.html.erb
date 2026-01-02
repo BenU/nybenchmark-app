@@ -1,0 +1,28 @@
+<main class="container">
+  <hgroup>
+    <h1><%= @metric.label %></h1>
+  </hgroup>
+
+  <article>
+    <header>
+      <strong>Metric Details</strong>
+    </header>
+    
+    <p>
+      <%= @metric.description %>
+    </p>
+
+    <div class="grid">
+      <div>
+        <strong>Unit:</strong> <%= @metric.unit %>
+      </div>
+      <div>
+        <strong>Code:</strong> <%= @metric.key %>
+      </div>
+    </div>
+  </article>
+
+  <div>
+    <%= link_to "Back to Metrics", metrics_path, role: "button", class: "secondary" %>
+  </div>
+</main>
