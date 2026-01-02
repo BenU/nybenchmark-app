@@ -1,4 +1,4 @@
-# NY Benchmarking App
+ NY Benchmarking App
 
 A civic-tech Rails application for collecting, verifying, and analyzing financial data from New York State local governments.
 
@@ -83,6 +83,21 @@ A Rails 8.1 application designed to provide transparency and benchmarking for Ne
 ## 🚢 Deployment (Production)
 
 This application uses **Kamal** for zero-downtime deployments to a DigitalOcean Droplet.
+
+### 🔐 Deployment Prerequisites
+To deploy this application via Kamal, you must configure the following in your local `.env` file (never commit this file):
+
+**1. Container Registry (GitHub)**
+* **Token:** GitHub Personal Access Token (Classic).
+* **Scopes:** `write:packages`, `delete:packages`.
+* **Variable:** `KAMAL_REGISTRY_PASSWORD`.
+* **Purpose:** Authenticates Kamal to push Docker images to `ghcr.io`.
+
+**2. Cloud Storage (DigitalOcean Spaces)**
+* **Service:** S3-Compatible Object Storage (Region: `nyc3`).
+* **Bucket:** `nybenchmark-production`.
+* **Variables:** `DO_SPACES_KEY`, `DO_SPACES_SECRET`.
+* **Purpose:** Persistent storage for user uploads (PDFs).
 
 ### Key Deployment Commands
 
