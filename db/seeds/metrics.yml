@@ -1,0 +1,247 @@
+# db/seeds/metrics.yml
+
+bond_credit_rating_moodys:
+  key: bond_credit_rating_moodys
+  label: "Bond Credit Rating (Moody's)"
+  unit: Text
+  description: "The creditworthiness rating assigned to the entity's debt obligations by Moody's."
+
+bond_credit_rating_sp:
+  key: bond_credit_rating_sp
+  label: "Bond Credit Rating (S&P Global)"
+  unit: Text
+  description: "The creditworthiness rating assigned to the entity's debt obligations by S&P Global Ratings."
+
+city_ftes_excluding_doe:
+  key: city_ftes_excluding_doe
+  label: "City FTEs (Excluding Dept of Ed)"
+  unit: FTE
+  description: "Full-Time Equivalent employees working for the city, excluding Department of Education staff."
+
+city_only_operating_expenses:
+  key: city_only_operating_expenses
+  label: "City-Only Operating Expenses"
+  unit: USD
+  description: "Total operating expenses for municipal functions, excluding education-related costs."
+
+combined_total_revenues:
+  key: combined_total_revenues
+  label: "Combined Total Revenues"
+  unit: USD
+  description: "The aggregate revenue from all sources for both the city and its dependent school district (if applicable)."
+
+debt_service_annual_payment:
+  key: debt_service_annual_payment
+  label: "Debt Service (Annual Payment)"
+  unit: USD
+  description: "The total amount paid annually for principal and interest on outstanding debt."
+
+dept_of_ed_fte:
+  key: dept_of_ed_fte
+  label: "Dept of Ed FTEs"
+  unit: FTE
+  description: "Full-Time Equivalent employees working specifically for the Department of Education."
+
+education_active_employees_opeb:
+  key: education_active_employees_opeb
+  label: "Education Active Employees (OPEB)"
+  unit: Count
+  description: "Number of active education employees eligible for Other Post-Employment Benefits."
+
+education_expenses:
+  key: education_expenses
+  label: "Education Expenses"
+  unit: USD
+  description: "Total expenditures allocated specifically to the school district or education department."
+
+equalization_rate:
+  key: equalization_rate
+  label: "Equalization Rate"
+  unit: Percent
+  description: "The ratio of total assessed value of taxable property to the total market value."
+
+estimated_actual_taxable_value:
+  key: estimated_actual_taxable_value
+  label: "Estimated Actual Taxable Value"
+  unit: USD
+  description: "The estimated market value of all taxable property within the jurisdiction."
+
+federal_aid_capital_city:
+  key: federal_aid_capital_city
+  label: "Federal Aid - Capital (City Only)"
+  unit: USD
+  description: "Federal grants and aid restricted for capital projects for the city."
+
+federal_aid_capital_education:
+  key: federal_aid_capital_education
+  label: "Federal Aid - Capital (Education Only)"
+  unit: USD
+  description: "Federal grants and aid restricted for capital projects for education."
+
+federal_aid_operational_city:
+  key: federal_aid_operational_city
+  label: "Federal Aid - Operational (City Only)"
+  unit: USD
+  description: "Federal aid used for general city operations."
+
+federal_aid_operational_education:
+  key: federal_aid_operational_education
+  label: "Federal Aid - Operational (Education Only)"
+  unit: USD
+  description: "Federal aid used for general education operations."
+
+fines_forfeitures_collected:
+  key: fines_forfeitures_collected
+  label: "Fines & Forfeitures Collected"
+  unit: USD
+  description: "Revenue generated from tickets, court fees, and other forfeitures."
+
+gov_organization:
+  key: gov_organization
+  label: "Government Organization Structure"
+  unit: Text
+  description: "The legal or structural classification of the local government (e.g., Mayor-Council, Council-Manager)."
+
+local_income_tax_rate:
+  key: local_income_tax_rate
+  label: "Local Income Tax Rate"
+  unit: Percent
+  description: "The percentage rate of income tax levied specifically by the local entity."
+
+median_household_income:
+  key: median_household_income
+  label: "Median Household Income"
+  unit: USD
+  description: "The median income of households within the jurisdiction (sourced from Census data)."
+
+net_position_total_deficit:
+  key: net_position_total_deficit
+  label: "Net Position / Total Deficit"
+  unit: USD
+  description: "The difference between total assets/deferred outflows and total liabilities/deferred inflows."
+
+safety_employees_count:
+  key: safety_employees_count
+  label: "Number of Safety Employees (Police & Fire)"
+  unit: Count
+  description: "Total count of uniformed police officers and firefighters."
+
+police_fire_pension_liability:
+  key: police_fire_pension_liability
+  label: "Police & Fire Pension Liability (PFRS)"
+  unit: USD
+  description: "The entity's share of the net pension liability for the Police and Fire Retirement System."
+
+population_2020:
+  key: population_2020
+  label: "Population (2020 Census)"
+  unit: Count
+  description: "Total population count from the 2020 Decennial Census."
+
+population_2024_estimate:
+  key: population_2024_estimate
+  label: "Population (2024 Estimate)"
+  unit: Count
+  description: "Latest Census Bureau population estimate for 2024."
+
+poverty_rate:
+  key: poverty_rate
+  label: "Poverty Rate"
+  unit: Percent
+  description: "The percentage of the population living below the federal poverty line."
+
+property_taxes_city_only:
+  key: property_taxes_city_only
+  label: "Property Taxes Collected (City Only)"
+  unit: USD
+  description: "Revenue collected from real property taxes for municipal purposes only."
+
+sales_tax_rate_combined:
+  key: sales_tax_rate_combined
+  label: "Sales Tax Rate (Combined)"
+  unit: Percent
+  description: "The total sales tax rate applied in the jurisdiction (State + County + City)."
+
+state_aid_capital_city:
+  key: state_aid_capital_city
+  label: "State Aid - Capital (City Only)"
+  unit: USD
+  description: "New York State aid restricted for city capital projects."
+
+state_aid_capital_education:
+  key: state_aid_capital_education
+  label: "State Aid - Capital (Education)"
+  unit: USD
+  description: "New York State aid restricted for education capital projects."
+
+state_aid_operational_city:
+  key: state_aid_operational_city
+  label: "State Aid - Operational (City Only)"
+  unit: USD
+  description: "New York State AIM and other operational aid for the city."
+
+state_aid_operational_education:
+  key: state_aid_operational_education
+  label: "State Aid - Operational (Education)"
+  unit: USD
+  description: "New York State Foundation Aid and other operational aid for schools."
+
+taxable_assessed_value:
+  key: taxable_assessed_value
+  label: "Taxable Assessed Value"
+  unit: USD
+  description: "The total value of property upon which taxes are levied."
+
+opeb_active_employees_combined:
+  key: opeb_active_employees_combined
+  label: "Total City & Ed OPEB Active Employees"
+  unit: Count
+  description: "Total number of active employees (City + Schools) currently accruing OPEB benefits."
+
+opeb_retired_employees_combined:
+  key: opeb_retired_employees_combined
+  label: "Total City & Ed OPEB Retired Employees"
+  unit: Count
+  description: "Total number of retirees (City + Schools) currently receiving OPEB benefits."
+
+total_direct_tax_rate:
+  key: total_direct_tax_rate
+  label: "Total Direct Tax Rate"
+  unit: Rate
+  description: "The weighted average tax rate applied to property owners."
+
+total_educational_revenues:
+  key: total_educational_revenues
+  label: "Total Educational Revenues"
+  unit: USD
+  description: "All revenues collected specifically for education purposes."
+
+total_general_revenues_city:
+  key: total_general_revenues_city
+  label: "Total General Revenues (City Only)"
+  unit: USD
+  description: "Revenues for the city's general fund, excluding education and special funds."
+
+total_govt_expenses_combined:
+  key: total_govt_expenses_combined
+  label: "Total Govt Expenses (City + Schools)"
+  unit: USD
+  description: "Aggregate spending for the entire local government (municipal + education)."
+
+total_opeb_liability:
+  key: total_opeb_liability
+  label: "Total OPEB Liability"
+  unit: USD
+  description: "The total actuarial liability for Other Post-Employment Benefits (healthcare)."
+
+unassigned_fund_balance:
+  key: unassigned_fund_balance
+  label: "Unassigned Fund Balance (Rainy Day)"
+  unit: USD
+  description: "The portion of the General Fund not restricted or committed; often used as a 'Rainy Day Fund'."
+
+violent_crime_rate:
+  key: violent_crime_rate
+  label: "Violent Crime Rate (per 1,000)"
+  unit: Rate
+  description: "The number of reported violent crimes per 1,000 residents."
