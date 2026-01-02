@@ -1,49 +1,79 @@
 # Project Context: New York Benchmarking App
 
-## Mission:
+## 1. Mission
 
-A civic-tech data engine to extract and curate data from financial documents (ACFRs, Budgets) across New York State’s 62 cities, in order to verify, standardize, visualize, and analyze government efficiency and effectiveness with full auditability.
+A civic-tech data engine to extract and curate data from financial documents (ACFRs, Budgets) across all of New York State’s political entities, starting with its 62 cities, in order to verify, standardize, visualize, and analyze government efficiency and effectiveness with full auditability.  Ultimately the project will explore similar data from the 62 counties in New York as well as towns, villages and districts.
 
-## How This Document Is Used
+## 2. 🤖 AI Interaction Guidelines
+When requesting code generation or debugging from AI assistants, strictly provide the following context files to ensure adherence to the project's domain and schema:
 
-This document serves as a shared source of truth for both human contributors and AI-assisted development. It is intended to provide sufficient architectural, domain, and process context so that AI tools can offer accurate, conservative, and workflow-compliant guidance when helping build and maintain this project.
+### For UI/View Tasks (e.g., "Create an Index Page"):
+1. **AI-CONTEXT.md** (This file - for domain rules/mission)
+2. **db/schema.rb** (Source of truth for database columns)
+3. **config/routes.rb** (To understand current paths)
+4. **Target Model(s)** (e.g., `app/models/metric.rb`)
+5. **Target Fixtures** (e.g., `test/fixtures/metrics.yml`) - ensures tests use real data)
+6. **Current/Failing Tests** (e.g., `test/models/metrics_test.rb`)
 
-## Workflow Constraints
+### For Logic/Backend Tasks:
+1. **AI-CONTEXT.md**
+2. **db/schema.rb** (Source of truth for database columns)
+3. **Related Models** (including parents/children for associations)
+4. **Existing Tests** (to prevent regression)
 
-- The `main` branch is protected; direct pushes are not allowed.
+## 3. Tech Stack & Architecture
+* **Framework:** Rails 8.1.1 (API + HTML hybrid)
+* **Ruby:** 3.4.7
+* **Database:** PostgreSQL 17 (Running via Docker in dev/prod)
+* **Testing:** Minitest (Standard Rails 8 suite) with Fixtures.
+* **Frontend:** Hotwire / standard Rails views / pico.css (Minimal CSS).
+* **Storage:** DigitalOcean Spaces (S3-compatible).
+    * **Integration:** Uses `aws-sdk-s3` gem via ActiveStorage.
+    * **Constraint:** Docker containers are ephemeral. All user-uploaded files MUST use ActiveStorage (S3), never local disk.
+    * **CDN:** Enabled (Asset delivery is proxied).
+
+## 4. Development & Git Workflow (Strict)
+
+### Branch and Commit Message Conventions
+Use a prefix for both your branch name and commit message to categorize the change.
+
+| Prefix     | Description                                           |
+| :--------- | :---------------------------------------------------- |
+| `feat`     | A new feature                                         |
+| `fix`      | A bug fix                                             |
+| `docs`     | Documentation changes                                 |
+| `style`    | Code style changes (formatting, etc.)                 |
+| `refactor` | Code changes that neither fix a bug nor add a feature |
+| `test`     | Adding or correcting tests                            |
+| `chore`    | Routine maintenance, dependency updates               |
+| `ci`       | Changes to CI/CD workflow files                       |
+
+**Example:**
+* **Branch:** `git checkout -b feat/add-user-avatars`
+* **Commit:** `git commit -m "feat: Add user profile avatars"`
+
+### Workflow Constraints
+- The `main` branch is protected; direct pushes are prohibited by GitHub Workflow.
 - All changes must follow this sequence:
-  1. Create a feature or chore branch from `main`
-  2. Push the branch to GitHub
-  3. All CI checks must pass on GitHub
-  4. Merge the PR into `main` on GitHub
-  5. Delete the remote branch
-  6. Run `git pull origin main` locally to sync
+  1.  Create a branch from `main` following branch name guidelines from above.
+  2.  Write failings tests for new feature if appropriate
+  3.  Write appropriate code for desired change.
+  4.  If tests exist, confirm that they are now passing and green.
+  5.  Run linter and make appropriate changes if needed.
+  6.  Push the branch to GitHub
+  7.  All CI checks must pass
+  8.  Merge the PR into `main`
+  9.  Delete the remote branch
+  10. `git pull origin main` locally
+  11. Delete local branch
+  12. Deploy changes to production
+  13. Continue work
 
-## Explicit Non-Goals
-
-- Fully automated document ingestion or data extraction
-- Unverified or uncited data points
-- Silent data transformations without traceable provenance
-- Optimizing for speed or scale at the expense of correctness
-
-## Tech Stack:
-
-* **Framework:** Rails 8.1.1 (API \+ HTML hybrid)  
-* **Ruby:** 3.4.7  
-* **Database:** PostgreSQL 17 (Running via Docker in dev/prod)  
-* **Testing:** Minitest (Standard Rails 8 suite) with Fixtures Locked to v5.x to ensure stability with Rails 8.1.  
-* **Frontend:** Hotwire / standard Rails views (Minimal CSS currently)  
-* **Background Jobs:** Solid Queue (Rails 8 default)
-* **CSS:** pico.css and minimum to start
-
-## Infrastructure & Deployment:
-
-* **Host:** DigitalOcean Droplet (Ubuntu/Docker) \+ DigitalOcean Spaces (S3-compatible object storage)  
-* **Deployment:** Kamal 2 (Deploying from local Mac to DO Droplet)  
-* **DNS/CDN:** Cloudflare (Proxied/Orange Cloud enabled)  
-* **Domains:**  
-  * `nybenchmark.org` (Jekyll Static Site \- Hosted on GitHub Pages)  
-  * `app.nybenchmark.org` (Rails Application \- Hosted on DO)
+### Testing Strategy (Strict TDD)
+1. **TDD First:** Write the failing test *before* implementation code.
+2. **Fixtures:** Use Rails fixtures (`test/fixtures`) with semantic keys (e.g., `yonkers_acfr_2024`).
+3. **Coverage:** Aim for high coverage of both happy paths, unhappy paths and edge cases.
+4. **Command:** `bin/rails test` is the source of truth.
 
 ## Models & Domain Logic (Strict Rails Definition)
 
@@ -54,6 +84,8 @@ This document serves as a shared source of truth for both human contributors and
 * **Auditing:** All models below include \`has\_paper\_trail\` to track create/update/destroy events.
 
 * **Database:** PostgreSQL.
+
+* Note that the db/schema.rb and the models are the ultimate sources of truth for the database.  Point out any inconsistancies in those files and the information below before proceeding.  
 
 ### 1\. Entity (\`app/models/entity.rb\`)
 
@@ -174,67 +206,13 @@ This document serves as a shared source of truth for both human contributors and
 
     * `notes` (Text): Context about this specific data point (e.g., "Includes one-time grant").
 
-## Testing & Quality Assurance (Strict TDD)
+## 6. Explicit Non-Goals
+- Fully automated document ingestion or data extraction (Human verification is required).
+- Unverified or uncited data points (Must have page references).
+- Silent data transformations without traceable provenance.
+- Optimizing for speed or scale at the expense of correctness.
 
-### Framework: Minitest (Standard Rails)
-
-### Philosophy: Test-Driven Development (Red-Green-Refactor)
-
-1.  **TDD First:** Before writing any implementation code, you must propose or write the failing test case.
-
-    * Do not generate implementation code until the test strategy is agreed upon.
-
-2.  **Test Types:**
-
-    * **Unit/Model Tests:** Required for all data integrity rules (validations), scopes, and methods. Use standard `assert` and `assert_not`.
-
-    * **System Tests:** Required for all user-facing features (CRUD actions). Use `ApplicationSystemTestCase`.
-
-3.  **Fixtures:** Use Rails standard Fixtures (\`test/fixtures\`) for sample data. Avoid FactoryBot to keep dependencies low for open source contributors unless requested otherwise.
-
-    * Fixtures must use semantic keys (e.g., yonkers_acfr_2024) matching sources.csv. Tests enforce strict data integrity.
-
-4.  **Coverage:** Aim for high test coverage. We value "happy paths" (everything works) and "sad paths" (handling errors/edge cases).
-
-5.  **Output:** When providing code, always include the verification command (e.g., \`bin/rails test test/models/user\_test.rb\`).
-
-**Goal:** The test suite is the source of truth. If the tests pass, the PR is mergeable.
-
-## Infrastructure & Authentication Details
-
-### Container Registry Authentication (GitHub)
-
-* **Component: GitHub Personal Access Token (Classic).**  
-* **Purpose: Authenticates the Kamal deployment tool with the GitHub Container Registry (`ghcr.io`).**  
-* **Scopes: `write:packages`, `delete:packages` (Required to push/pull Docker images).**  
-* **Management: The token is stored locally in `.env` as `KAMAL_REGISTRY_PASSWORD`. It is never committed to Git. Kamal injects it into the build process securely.**  
-### Cloud Storage (DigitalOcean Spaces)
-* **Service: DigitalOcean Spaces (S3-Compatible Object Storage).**  
-* **Bucket Name: `nybenchmark-production` (Region: `nyc3`).**  
-* **Purpose: Persistent storage for user-uploaded files (PDFs). Since Docker containers are ephemeral (files inside them vanish on restart), all `ActiveStorage` attachments are offloaded here.**  
-* **Configuration:**  
-  * **CDN: Enabled (for fast global delivery via edge caching).**  
-  * **Access: A dedicated "Limited Access" key pair (`DO_SPACES_KEY` / `DO_SPACES_SECRET`) handles Read/Write/Delete permissions solely for this bucket.**  
-  * **Integration: Rails uses the `aws-sdk-s3` gem to communicate with the Space via `config/storage.yml`.**
-
-## Workflow Constraints
-
-### Git & GitHub
-* **Branching:** Never push directly to `main`. Use feature branches (e.g., `feature/add-ui`).
-* **Merging:** PRs must pass CI (Tests + Rubocop) before merging.
-* **Cleanup:** Delete local/remote branches after merge.
-
-### Deployment (Alpha Stage)
-* **Strategy:** "Nuke and Pave" is currently permitted for schema/seed overhauls.
-* **Reset Command (Production):**
-    `kamal app exec -i -- bin/rails r "Entity.destroy_all; Metric.destroy_all"` (Respects dependency order).
-* **Seeding:** Must run `kamal app exec -i -- bin/rails db:seed` manually after deploy.
-
-## Current Status:
-
-* Production is LIVE (`kamal deploy` working).  
-* Core models and validations are tested.  
-* Cloudflare RUM analytics enabled.  
-* rudimentary css styling with pico.css CDN link  
-* Seeded preliminary data for Yonkers and New Rochelle  
-* **Next Priority:** TDD and implimentation of UI of index and show pages for the models and current observations
+## 7. Current Status
+* **Production:** LIVE at `app.nybenchmark.org`.
+* **Data:** Seeded preliminary data for Yonkers and New Rochelle.
+* **Immediate Priority:** TDD and implementation of UI index/show pages for core models.
