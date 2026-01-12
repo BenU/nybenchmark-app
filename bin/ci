@@ -1,6 +1,20 @@
-#!/usr/bin/env ruby
-require_relative "../config/boot"
-require "active_support/continuous_integration"
+#!/usr/bin/env bash
+set -euo pipefail
 
-CI = ActiveSupport::ContinuousIntegration
-require_relative "../config/ci.rb"
+echo "==> Running tests (unit/integration)..."
+bin/rails test
+
+echo
+echo "==> Running system tests..."
+bin/rails test test/system
+
+echo
+echo "==> Running RuboCop..."
+bin/rubocop
+
+echo
+echo "==> Running bundle-audit..."
+bundle exec bundle-audit check --update
+
+echo
+echo "✅ All checks passed."
