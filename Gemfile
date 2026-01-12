@@ -9,6 +9,9 @@ gem "rails", "~> 8.1.1"
 # To see data
 gem "csv"
 
+# Add pagination with:
+gem "pagy", "~> 43.2"
+
 # Data Integrity & Auditing
 gem "paper_trail"
 
