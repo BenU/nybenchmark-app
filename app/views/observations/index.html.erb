@@ -1,0 +1,140 @@
+<% content_for :title, "Observations" %>
+
+<main class="container">
+  <hgroup>
+    <h1>Observations</h1>
+    <p>Audit-first browsing: every value is traceable to a document and page reference.</p>
+  </hgroup>
+
+  <form method="get" action="<%= observations_path %>">
+    <fieldset>
+      <legend>Filters</legend>
+
+      <div class="grid">
+        <label>
+          Entity
+          <select name="entity_id">
+            <option value="">All</option>
+            <% @entities_for_filter.each do |entity| %>
+              <option value="<%= entity.id %>" <%= "selected" if params[:entity_id].to_s == entity.id.to_s %>>
+                <%= entity.name %>
+              </option>
+            <% end %>
+          </select>
+        </label>
+
+        <label>
+          Metric
+          <select name="metric_id">
+            <option value="">All</option>
+            <% @metrics_for_filter.each do |metric| %>
+              <option value="<%= metric.id %>" <%= "selected" if params[:metric_id].to_s == metric.id.to_s %>>
+                <%= metric.label %> (<%= metric.key %>)
+              </option>
+            <% end %>
+          </select>
+        </label>
+
+        <label>
+          Document
+          <select name="document_id">
+            <option value="">All</option>
+            <% @documents_for_filter.each do |document| %>
+              <option value="<%= document.id %>" <%= "selected" if params[:document_id].to_s == document.id.to_s %>>
+                <%= document.title %> (FY <%= document.fiscal_year %>)
+              </option>
+            <% end %>
+          </select>
+        </label>
+      </div>
+
+      <div class="grid">
+        <label>
+          Fiscal year
+          <input type="number" name="fiscal_year" value="<%= params[:fiscal_year] %>" placeholder="e.g. 2024">
+        </label>
+
+        <label>
+          Search
+          <input type="search" name="q" value="<%= params[:q] %>" placeholder="Entity, metric, document...">
+        </label>
+
+        <label>
+          Sort
+          <select name="sort">
+            <option value="" <%= "selected" if params[:sort].blank? %>>Most recent</option>
+            <option value="fiscal_year_desc" <%= "selected" if params[:sort] == "fiscal_year_desc" %>>Fiscal year ↓</option>
+            <option value="entity_name_asc" <%= "selected" if params[:sort] == "entity_name_asc" %>>Entity A→Z</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="grid">
+        <input type="submit" value="Apply">
+        <%= link_to "Clear", observations_path, class: "secondary" %>
+      </div>
+    </fieldset>
+  </form>
+
+  <figure>
+    <table role="grid">
+      <thead>
+        <tr>
+          <th>Entity</th>
+          <th>Metric</th>
+          <th>Fiscal year</th>
+          <th>Value</th>
+          <th>Document</th>
+          <th>Page reference</th>
+          <th>Updated at</th>
+          <th></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% @observations.each do |observation| %>
+          <tr>
+            <td data-column="entity">
+              <%= link_to observation.entity.name, entity_path(observation.entity.slug) %>
+            </td>
+
+            <td data-column="metric">
+              <%= link_to metric_path(observation.metric) do %>
+                <%= observation.metric.label %> (<%= observation.metric.key %>)
+              <% end %>
+            </td>
+
+            <td data-column="fiscal-year"><%= observation.fiscal_year %></td>
+
+            <td data-column="value">
+              <% if observation.value_numeric.present? %>
+                <%= observation.value_numeric.to_s("F") %>
+              <% else %>
+                <%= observation.value_text %>
+              <% end %>
+            </td>
+
+            <td data-column="document">
+              <%= link_to observation.document.title, document_path(observation.document) %>
+            </td>
+
+            <td data-column="page-reference"><%= observation.page_reference %></td>
+
+            <td data-column="updated-at"><%= observation.updated_at.to_fs(:db) %></td>
+
+            <td data-column="actions">
+              <%= link_to "View", observation_path(observation) %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </figure>
+
+  <% if @pagy.pages > 1 %>
+    <section>
+      <%== @pagy.info_tag %>
+      <%== @pagy.series_nav(aria_label: "Observation pages") %>
+    </section>
+  <% end %>
+</main>

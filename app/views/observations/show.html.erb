@@ -1,0 +1,88 @@
+<% content_for :title, "Observation ##{@observation.id}" %>
+
+<main class="container">
+  <p>
+    <%= link_to "← Observations", observations_path, class: "secondary" %>
+  </p>
+
+  <hgroup>
+    <h1>Observation</h1>
+    <p>Audit-first: entity + metric + value + fiscal year, backed by a source document and page reference.</p>
+  </hgroup>
+
+  <dl>
+    <dt>Entity</dt>
+    <dd>
+      <%= link_to @observation.entity.name, entity_path(@observation.entity.slug) %><br>
+      <small>Slug: <%= @observation.entity.slug %></small>
+    </dd>
+
+    <dt>Metric</dt>
+    <dd>
+      <%= link_to @observation.metric.label, metric_path(@observation.metric) %>
+      (<%= @observation.metric.key %>)
+      <% if @observation.metric.unit.present? %>
+        — <%= @observation.metric.unit %>
+      <% end %>
+    </dd>
+
+    <dt>Fiscal year</dt>
+    <dd><%= @observation.fiscal_year %></dd>
+
+    <dt>Value</dt>
+    <dd>
+      <% if @observation.value_numeric.present? %>
+        <%= @observation.value_numeric.to_s("F") %>
+      <% else %>
+        <%= @observation.value_text %>
+      <% end %>
+    </dd>
+
+    <dt>Page reference</dt>
+    <dd><%= @observation.page_reference %></dd>
+
+    <% if @observation.notes.present? %>
+      <dt>Notes</dt>
+      <dd><%= @observation.notes %></dd>
+    <% end %>
+
+    <dt>Created at</dt>
+    <dd><%= @observation.created_at.to_fs(:db) %></dd>
+
+    <dt>Updated at</dt>
+    <dd><%= @observation.updated_at.to_fs(:db) %></dd>
+  </dl>
+
+  <hr>
+
+  <h2>Source document</h2>
+
+  <dl>
+    <dt>Title</dt>
+    <dd><%= link_to @observation.document.title, document_path(@observation.document) %></dd>
+
+    <dt>Fiscal year</dt>
+    <dd><%= @observation.document.fiscal_year %></dd>
+
+    <dt>Doc type</dt>
+    <dd><%= @observation.document.doc_type %></dd>
+
+    <% if @observation.document.source_url.present? %>
+      <dt>Source URL</dt>
+      <dd>
+        <%= link_to @observation.document.source_url,
+                    @observation.document.source_url,
+                    target: "_blank",
+                    rel: "noopener" %>
+      </dd>
+    <% end %>
+
+    <% if @observation.document.file.attached? %>
+      <dt>Attachment</dt>
+      <dd>
+        <%= link_to @observation.document.file.filename.to_s,
+                    rails_blob_path(@observation.document.file, disposition: "attachment") %>
+      </dd>
+    <% end %>
+  </dl>
+</main>

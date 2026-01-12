@@ -123,7 +123,7 @@ Use a prefix for both branch names and commit messages.
 - All work must happen on a feature branch
 
 Required sequence:
-1. Create branch
+1. Create/switch to a feature branch
 2. Write failing tests
 3. Implement changes
 4. Update fixtures/seeds
@@ -137,12 +137,28 @@ Required sequence:
 
 AI instructions must respect this workflow.
 
+### Pre-flight (branch maintenance, low-friction)
+
+At the start of any new feature/fix request (before tests or implementation), the AI must:
+
+1. Assume the user is currently on `main` unless told otherwise.
+2. Provide a suggested branch name and the exact command to create/switch:
+   - Example: `git switch -c feat/<short-topic>`
+3. If there are already uncommitted changes on `main`, instruct the user to create the feature branch
+   *before* any `git add` or `git commit` so the changes move onto the feature branch automatically.
+4. Do not require the user to paste `git status` or confirm they switched branches unless they report a Git error or confusion.
+5. If the user supplies an order-of-operations that starts with tests, the AI must insert “Step 0: Create branch” ahead of tests and proceed with the requested workflow.
+
 ---
 
 ## 6. AI Output Expectations
 
+## 6. AI Output Expectations
+
 AI responses should:
-- Provide exact diffs or full-file replacements
+- Prefer full-file replacements (complete file contents) for any file that changes,
+  unless the user explicitly asks for a diff.
+- When only a small part of a file changes, also include a “drop-in snippet” option.
 - Call out order-of-operations risks
 - Avoid duplicating schema/model code into markdown
 - Prefer correctness and auditability over brevity
