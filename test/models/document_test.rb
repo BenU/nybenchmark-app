@@ -4,7 +4,7 @@ require "test_helper"
 
 class DocumentTest < ActiveSupport::TestCase
   test "should be valid with valid attributes" do
-    document = documents(:yonkers_acfr_2024)
+    document = documents(:yonkers_acfr_fy2024)
     assert document.valid?
   end
 
@@ -17,14 +17,14 @@ class DocumentTest < ActiveSupport::TestCase
   end
 
   test "should belong to an entity" do
-    document = documents(:yonkers_acfr_2024)
+    document = documents(:yonkers_acfr_fy2024)
     document.entity = nil
     assert_not document.valid?
     assert_includes document.errors[:entity], "must exist"
   end
 
   test "can attach a valid pdf" do
-    document = documents(:yonkers_acfr_2024)
+    document = documents(:yonkers_acfr_fy2024)
     document.file.attach(
       io: Rails.root.join("test/fixtures/files/sample.pdf").open,
       filename: "sample.pdf",
@@ -35,7 +35,7 @@ class DocumentTest < ActiveSupport::TestCase
   end
 
   test "rejects non-pdf files" do
-    document = documents(:yonkers_acfr_2024)
+    document = documents(:yonkers_acfr_fy2024)
     document.file.attach(
       io: Rails.root.join("test/fixtures/files/sample.txt").open,
       filename: "sample.txt",
@@ -47,7 +47,7 @@ class DocumentTest < ActiveSupport::TestCase
   end
 
   test "rejects large files" do
-    document = documents(:yonkers_acfr_2024)
+    document = documents(:yonkers_acfr_fy2024)
     document.file.attach(
       io: Rails.root.join("test/fixtures/files/sample.pdf").open,
       filename: "sample.pdf",
@@ -62,8 +62,8 @@ class DocumentTest < ActiveSupport::TestCase
   end
 
   test "should enforce uniqueness of doc_type per entity and fiscal_year" do
-    # 'yonkers_schools_budget_2024' is already defined in fixtures as a 2024 budget
-    existing_doc = documents(:yonkers_schools_budget_2024)
+    # 'yonkers_schools_budget_fy2024' is already defined in fixtures as a 2024 budget
+    existing_doc = documents(:yonkers_schools_budget_fy2024)
 
     # Try to build a duplicate (Same Entity + Same Year + Same Type)
     duplicate_doc = Document.new(
@@ -80,7 +80,7 @@ class DocumentTest < ActiveSupport::TestCase
   end
 
   test "should allow same doc_type for different years" do
-    existing_doc = documents(:yonkers_schools_budget_2024)
+    existing_doc = documents(:yonkers_schools_budget_fy2024)
 
     # Same Entity + Same Type + DIFFERENT Year
     new_year_doc = Document.new(

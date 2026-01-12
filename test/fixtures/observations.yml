@@ -1,6 +1,6 @@
 yonkers_expenditures_numeric:
   entity: yonkers
-  document: yonkers_acfr_2024
+  document: yonkers_acfr_fy2024
   metric: expenditures
   fiscal_year: 2024
   value_numeric: 105000000.00
@@ -10,7 +10,7 @@ yonkers_expenditures_numeric:
 
 new_rochelle_revenue_text:
   entity: new_rochelle
-  document: new_rochelle_acfr_2024
+  document: new_rochelle_acfr_fy2024
   metric: revenue
   fiscal_year: 2024
   value_numeric: ~
@@ -20,7 +20,7 @@ new_rochelle_revenue_text:
 
 yonkers_schools_metric_one:
   entity: yonkers_schools
-  document: yonkers_schools_budget_2024
+  document: yonkers_schools_budget_fy2024
   metric: one
   fiscal_year: 2024
   value_numeric: 100.00
@@ -30,7 +30,7 @@ yonkers_schools_metric_one:
 
 new_rochelle_schools_text_two:
   entity: new_rochelle_schools
-  document: new_rochelle_schools_audit_2024
+  document: new_rochelle_schools_audit_fy2024
   metric: two
   fiscal_year: 2024
   value_numeric: ~

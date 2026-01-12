@@ -1,4 +1,4 @@
-yonkers_acfr_2024:
+yonkers_acfr_fy2024:
   entity: yonkers
   title: "City of Yonkers ACFR 2024"
   doc_type: acfr
@@ -6,7 +6,7 @@ yonkers_acfr_2024:
   source_url: https://example.com/yonkers-acfr-2024.pdf
   notes: "Fixture"
 
-new_rochelle_acfr_2024:
+new_rochelle_acfr_fy2024:
   entity: new_rochelle
   title: "City of New Rochelle ACFR 2024"
   doc_type: acfr
@@ -14,7 +14,7 @@ new_rochelle_acfr_2024:
   source_url: https://example.com/new-rochelle-acfr-2024.pdf
   notes: "Fixture"
 
-yonkers_schools_budget_2024:
+yonkers_schools_budget_fy2024:
   entity: yonkers_schools
   title: "Yonkers Public Schools Budget 2024"
   doc_type: school_budget
@@ -22,7 +22,7 @@ yonkers_schools_budget_2024:
   source_url: https://example.com/yonkers-schools-budget-2024.pdf
   notes: "Fixture"
 
-new_rochelle_schools_audit_2024:
+new_rochelle_schools_audit_fy2024:
   entity: new_rochelle_schools
   title: "New Rochelle Schools Audit 2024"
   doc_type: school_financials
