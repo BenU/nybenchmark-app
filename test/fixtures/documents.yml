@@ -1,39 +1,31 @@
-one:
-  entity: one  # Links to New York City in entities.yml
-  title: ACFR 2024
+yonkers_acfr_2024:
+  entity: yonkers
+  title: "City of Yonkers ACFR 2024"
   doc_type: acfr
   fiscal_year: 2024
-  source_url: https://comptroller.nyc.gov/wp-content/uploads/documents/ACFR-2024.pdf
-  notes: final report
+  source_url: https://example.com/yonkers-acfr-2024.pdf
+  notes: "Fixture"
 
-two:
-  entity: two  # Links to Albany in entities.yml
-  title: Annual Comprehensive Financial Report 2023
+new_rochelle_acfr_2024:
+  entity: new_rochelle
+  title: "City of New Rochelle ACFR 2024"
   doc_type: acfr
-  fiscal_year: 2023
-  source_url: https://www.albanycountyny.gov/home/showpublisheddocument/47703/638538615080430000
-  notes: Final audit
-
-nyc_budget:
-  entity: one  # Links to New York City in entities.yml
-  title: Adopted Budget 2024
-  doc_type: budget
   fiscal_year: 2024
-  source_url: https://nyc.gov/budget2024.pdf
-  notes: Preliminary capture
+  source_url: https://example.com/new-rochelle-acfr-2024.pdf
+  notes: "Fixture"
 
-albany_acfr:
-  entity: two  # Links to Albany in entities.yml
-  title: Annual Comprehensive Financial Report 2022
-  doc_type: acfr
-  fiscal_year: 2022
-  source_url: https://albany.gov/acfr2022.pdf
-  notes: Final audit
+yonkers_schools_budget_2024:
+  entity: yonkers_schools
+  title: "Yonkers Public Schools Budget 2024"
+  doc_type: school_budget
+  fiscal_year: 2024
+  source_url: https://example.com/yonkers-schools-budget-2024.pdf
+  notes: "Fixture"
 
-yonkers_budget:
-  entity: three
-  title: Annual Comprehensive Financial Report 2022
-  doc_type: acfr
-  fiscal_year: 2023
-  source_url: https://yonkers.gov/acfr2023.pdf
-  notes: Final audit
+new_rochelle_schools_audit_2024:
+  entity: new_rochelle_schools
+  title: "New Rochelle Schools Audit 2024"
+  doc_type: school_financials
+  fiscal_year: 2024
+  source_url: https://example.com/new-rochelle-schools-audit-2024.pdf
+  notes: "Fixture"

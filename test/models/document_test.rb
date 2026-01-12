@@ -4,7 +4,7 @@ require "test_helper"
 
 class DocumentTest < ActiveSupport::TestCase
   test "should be valid with valid attributes" do
-    document = documents(:nyc_budget)
+    document = documents(:yonkers_acfr_2024)
     assert document.valid?
   end
 
@@ -17,14 +17,14 @@ class DocumentTest < ActiveSupport::TestCase
   end
 
   test "should belong to an entity" do
-    document = documents(:nyc_budget)
+    document = documents(:yonkers_acfr_2024)
     document.entity = nil
     assert_not document.valid?
     assert_includes document.errors[:entity], "must exist"
   end
 
   test "can attach a valid pdf" do
-    document = documents(:nyc_budget)
+    document = documents(:yonkers_acfr_2024)
     document.file.attach(
       io: Rails.root.join("test/fixtures/files/sample.pdf").open,
       filename: "sample.pdf",
@@ -35,7 +35,7 @@ class DocumentTest < ActiveSupport::TestCase
   end
 
   test "rejects non-pdf files" do
-    document = documents(:nyc_budget)
+    document = documents(:yonkers_acfr_2024)
     document.file.attach(
       io: Rails.root.join("test/fixtures/files/sample.txt").open,
       filename: "sample.txt",
@@ -47,7 +47,7 @@ class DocumentTest < ActiveSupport::TestCase
   end
 
   test "rejects large files" do
-    document = documents(:nyc_budget)
+    document = documents(:yonkers_acfr_2024)
     document.file.attach(
       io: Rails.root.join("test/fixtures/files/sample.pdf").open,
       filename: "sample.pdf",
@@ -62,8 +62,8 @@ class DocumentTest < ActiveSupport::TestCase
   end
 
   test "should enforce uniqueness of doc_type per entity and fiscal_year" do
-    # 'one' is already defined in fixtures as a 2024 budget
-    existing_doc = documents(:one)
+    # 'yonkers_schools_budget_2024' is already defined in fixtures as a 2024 budget
+    existing_doc = documents(:yonkers_schools_budget_2024)
 
     # Try to build a duplicate (Same Entity + Same Year + Same Type)
     duplicate_doc = Document.new(
@@ -80,7 +80,7 @@ class DocumentTest < ActiveSupport::TestCase
   end
 
   test "should allow same doc_type for different years" do
-    existing_doc = documents(:one)
+    existing_doc = documents(:yonkers_schools_budget_2024)
 
     # Same Entity + Same Type + DIFFERENT Year
     new_year_doc = Document.new(
@@ -115,14 +115,15 @@ class DocumentTest < ActiveSupport::TestCase
 
     # 1. Assert Valid URLs pass
     valid_urls.each do |url|
-      doc = Document.new(title: "Valid", doc_type: "budget", fiscal_year: 2024, entity: entities(:one), source_url: url)
+      doc = Document.new(title: "Valid", doc_type: "budget", fiscal_year: 2024, entity: entities(:yonkers),
+                         source_url: url)
       doc.validate
       assert_empty doc.errors[:source_url], "Expected #{url} to be valid"
     end
 
     # 2. Assert Invalid URLs fail
     invalid_urls.each do |url|
-      doc = Document.new(title: "Invalid", doc_type: "budget", fiscal_year: 2024, entity: entities(:one),
+      doc = Document.new(title: "Invalid", doc_type: "budget", fiscal_year: 2024, entity: entities(:yonkers),
                          source_url: url)
       doc.validate
       assert_includes doc.errors[:source_url], "must be a valid HTTP/HTTPS URL", "Expected #{url} to fail validation"
@@ -135,7 +136,7 @@ class DocumentTest < ActiveSupport::TestCase
       title: "Website Only",
       doc_type: "budget",
       fiscal_year: 2021,
-      entity: entities(:three),
+      entity: entities(:new_rochelle),
       source_url: "https://example.com"
     )
 
@@ -148,7 +149,7 @@ class DocumentTest < ActiveSupport::TestCase
       title: "With PDF",
       doc_type: "acfr",
       fiscal_year: 2024,
-      entity: entities(:two),
+      entity: entities(:yonkers_schools),
       source_url: "https://example.com/download"
     )
 

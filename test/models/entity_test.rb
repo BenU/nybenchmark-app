@@ -3,9 +3,11 @@
 require "test_helper"
 
 class EntityTest < ActiveSupport::TestCase
-  test "should be valid with valid attributes" do
-    entity = entities(:one) # Uses fixture
-    assert entity.valid?
+  test "fixture entities are valid" do
+    assert entities(:yonkers).valid?
+    assert entities(:yonkers_schools).valid?
+    assert entities(:new_rochelle).valid?
+    assert entities(:new_rochelle_schools).valid?
   end
 
   test "should require a name" do
@@ -22,7 +24,7 @@ class EntityTest < ActiveSupport::TestCase
 
   test "slug should be unique" do
     # Try to create a duplicate of entity :one
-    duplicate = Entity.new(name: "Clone", slug: entities(:one).slug)
+    duplicate = Entity.new(name: "Clone", slug: entities(:yonkers).slug)
     assert_not duplicate.valid?
     assert_includes duplicate.errors[:slug], "has already been taken"
   end
@@ -57,5 +59,60 @@ class EntityTest < ActiveSupport::TestCase
     )
 
     assert rye_town.valid?, "Entity should be valid if name is same but kind is different"
+  end
+
+  test "self-referential hierarchy rolls up fiscally" do
+    yonkers = entities(:yonkers)
+    yonkers_schools = entities(:yonkers_schools)
+
+    assert_equal yonkers, yonkers_schools.parent
+    assert_includes yonkers.children, yonkers_schools
+  end
+
+  test "enum predicate methods exist for governance fields" do
+    yonkers = entities(:yonkers)
+    nr = entities(:new_rochelle)
+    yonkers_schools = entities(:yonkers_schools)
+    nr_schools = entities(:new_rochelle_schools)
+
+    assert yonkers.strong_mayor_government_structure?
+    assert nr.council_manager_government_structure?
+
+    assert yonkers_schools.big_five_school_legal_type?
+    assert nr_schools.small_city_school_legal_type?
+
+    assert yonkers_schools.dependent_fiscal_autonomy?
+    assert nr_schools.independent_fiscal_autonomy?
+  end
+
+  test "school_districts scope returns only school district entities" do
+    school_slugs = Entity.school_districts.order(:slug).pluck(:slug)
+    assert_equal %w[new_rochelle_schools yonkers_schools], school_slugs
+  end
+
+  test "conditional validation: school_legal_type must be present for school districts" do
+    entity = Entity.new(
+      name: "Test Schools",
+      slug: "test_schools",
+      kind: "school_district",
+      state: "NY",
+      fiscal_autonomy: "independent"
+    )
+
+    assert_not entity.valid?
+    assert_includes entity.errors[:school_legal_type], "can't be blank"
+  end
+
+  test "conditional validation: school_legal_type must be blank for non-school entities" do
+    entity = Entity.new(
+      name: "Test City",
+      slug: "test_city",
+      kind: "city",
+      state: "NY",
+      school_legal_type: "big_five"
+    )
+
+    assert_not entity.valid?
+    assert_includes entity.errors[:school_legal_type], "must be blank unless kind is school_district"
   end
 end

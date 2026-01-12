@@ -56,13 +56,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_02_173204) do
   end
 
   create_table "entities", force: :cascade do |t|
+    t.string "board_selection"
     t.datetime "created_at", null: false
+    t.string "executive_selection"
+    t.string "fiscal_autonomy"
+    t.string "government_structure"
     t.string "kind", default: "city", null: false
     t.string "name"
+    t.text "organization_note"
+    t.bigint "parent_id"
+    t.string "school_legal_type"
     t.string "slug", null: false
     t.string "state", default: "NY", null: false
     t.datetime "updated_at", null: false
+    t.index ["board_selection"], name: "index_entities_on_board_selection"
+    t.index ["executive_selection"], name: "index_entities_on_executive_selection"
+    t.index ["fiscal_autonomy"], name: "index_entities_on_fiscal_autonomy"
+    t.index ["government_structure"], name: "index_entities_on_government_structure"
     t.index ["name", "state", "kind"], name: "index_entities_on_name_and_state_and_kind", unique: true
+    t.index ["parent_id"], name: "index_entities_on_parent_id"
+    t.index ["school_legal_type"], name: "index_entities_on_school_legal_type"
     t.index ["slug"], name: "index_entities_on_slug", unique: true
   end
 
@@ -105,6 +118,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_02_173204) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "documents", "entities"
+  add_foreign_key "entities", "entities", column: "parent_id"
   add_foreign_key "observations", "documents"
   add_foreign_key "observations", "entities"
   add_foreign_key "observations", "metrics"
