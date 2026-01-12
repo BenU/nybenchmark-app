@@ -5,8 +5,8 @@ require "test_helper"
 class DocumentsControllerTest < ActionDispatch::IntegrationTest
   setup do
     # Fixtures
-    @entity = entities(:one)
-    @document = documents(:one)
+    @entity = entities(:yonkers)
+    @document = documents(:yonkers_acfr_fy2024)
 
     # 1. SETUP FOR READ TESTS: Attach a fake PDF to the fixture
     # This ensures the "View PDF" button appears in the 'show' test.

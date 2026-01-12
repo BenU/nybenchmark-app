@@ -1,46 +1,39 @@
-one:
-  entity: one
-  document: one         # Assumes you have a document named 'one' in documents.yml
-  metric: one           # <--- CRITICAL: Links to the metric 'one' above
+yonkers_expenditures_numeric:
+  entity: yonkers
+  document: yonkers_acfr_fy2024
+  metric: expenditures
+  fiscal_year: 2024
+  value_numeric: 105000000.00
+  value_text: ~
+  page_reference: "p. 45"
+  notes: "Fixture numeric example"
+
+new_rochelle_revenue_text:
+  entity: new_rochelle
+  document: new_rochelle_acfr_fy2024
+  metric: revenue
+  fiscal_year: 2024
+  value_numeric: ~
+  value_text: "Pending Audit"
+  page_reference: "p. 12"
+  notes: "Fixture text example"
+
+yonkers_schools_metric_one:
+  entity: yonkers_schools
+  document: yonkers_schools_budget_fy2024
+  metric: one
   fiscal_year: 2024
   value_numeric: 100.00
   value_text: ~
   page_reference: "p. 1"
-  notes: "Fixture for testing dependency restrictions"
+  notes: "Fixture"
 
-two:
-  entity: two
-  document: two
+new_rochelle_schools_text_two:
+  entity: new_rochelle_schools
+  document: new_rochelle_schools_audit_fy2024
   metric: two
-  fiscal_year: 2023
-  value_numeric: ~
-  value_text:  "mystring1"
-  page_reference: "p. 2"
-  
-nyc_expenditures:
-  entity: one
-  metric: expenditures
-  document: nyc_budget
   fiscal_year: 2024
-  value_numeric: 105000000.00
-  page_reference: "p. 45"
-  notes: Verified against table 4.
-
-albany_revenue_text:
-  entity: two
-  metric: revenue
-  document: albany_acfr
-  fiscal_year: 2022
   value_numeric: ~
-  value_text: "Pending Audit"
-  page_reference: "p. 12"
-  notes: Text value example
-
-yonkers_revenue:
-  entity: three
-  metric: one
-  document: yonkers_budget
-  fiscal_year: 2023
-  page_reference: "p. 10"
-  value_numeric: 500000.00
-  value_text: ~
+  value_text: "mystring1"
+  page_reference: "p. 2"
+  notes: "Fixture"

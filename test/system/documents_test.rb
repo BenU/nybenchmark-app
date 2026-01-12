@@ -5,7 +5,7 @@ require "application_system_test_case"
 
 class DocumentsTest < ApplicationSystemTestCase
   setup do
-    @document = documents(:one) # Using fixture from sources.csv logic
+    @document = documents(:yonkers_acfr_fy2024) # Using fixture from sources.csv logic
   end
 
   test "show page sanitizes unsafe javascript links" do

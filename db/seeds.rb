@@ -8,21 +8,69 @@ puts "🌱 Starting Database Seed..."
 # 1. ENTITIES (The Governments)
 # ====================================================
 puts "\n--- Seeding Entities ---"
-entities_list = [
-  { name: "Yonkers", slug: "yonkers", kind: "city" },
-  { name: "New Rochelle", slug: "new_rochelle", kind: "city" },
-  { name: "Albany", slug: "albany", kind: "city" },
-  { name: "New York City", slug: "nyc", kind: "city" },
-  { name: "Syracuse", slug: "syracuse", kind: "city" },
-  { name: "Buffalo", slug: "buffalo", kind: "city" }
+
+# Canonical seed set (for now): 2 cities + 2 school districts
+city_rows = [
+  {
+    name: "Yonkers",
+    slug: "yonkers",
+    kind: "city",
+    government_structure: "strong_mayor",
+    fiscal_autonomy: "independent",
+    organization_note: "Council President + 6 District Representatives"
+  },
+  {
+    name: "New Rochelle",
+    slug: "new_rochelle",
+    kind: "city",
+    government_structure: "council_manager",
+    fiscal_autonomy: "independent",
+    organization_note: "Council + City Manager"
+  }
 ]
 
-entities_list.each do |data|
-  e = Entity.find_or_initialize_by(slug: data[:slug])
-  e.assign_attributes(name: data[:name], kind: data[:kind], state: 'NY')
+cities = {}
+
+city_rows.each do |attrs|
+  e = Entity.find_or_initialize_by(slug: attrs[:slug])
+  e.assign_attributes(attrs.merge(state: "NY"))
+  e.save!
+  cities[attrs[:slug]] = e
+  print "."
+end
+
+school_rows = [
+  {
+    name: "Yonkers Public Schools",
+    slug: "yonkers_schools",
+    kind: "school_district",
+    fiscal_autonomy: "dependent",
+    school_legal_type: "big_five",
+    board_selection: "appointed",
+    executive_selection: "appointed_professional",
+    organization_note: "Mayor-appointed board (Big Five structure)",
+    parent: cities.fetch("yonkers")
+  },
+  {
+    name: "New Rochelle City School District",
+    slug: "new_rochelle_schools",
+    kind: "school_district",
+    fiscal_autonomy: "independent",
+    school_legal_type: "small_city",
+    board_selection: "elected",
+    executive_selection: "appointed_professional",
+    organization_note: "Elected board; superintendent appointed"
+  }
+]
+
+school_rows.each do |attrs|
+  e = Entity.find_or_initialize_by(slug: attrs[:slug])
+  e.assign_attributes(attrs.merge(state: "NY"))
+  e.parent = attrs[:parent] if attrs.key?(:parent)
   e.save!
   print "."
 end
+
 puts "\n✅ Entities synced."
 
 # ====================================================

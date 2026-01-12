@@ -4,8 +4,8 @@ require "test_helper"
 
 class EntitiesControllerTest < ActionDispatch::IntegrationTest
   setup do
-    # Using 'one' (NYC) from your uploaded entities.yml
-    @entity = entities(:one)
+    # Using 'yonkers' (NYC) from your uploaded entities.yml
+    @entity = entities(:yonkers)
   end
 
   test "should get index" do

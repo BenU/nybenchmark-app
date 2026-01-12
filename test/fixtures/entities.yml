@@ -1,20 +1,42 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  name: "New York City"
-  kind: city
-  state: NY
-  slug: nyc
-
-two:
-  name: Albany
-  kind: city
-  state: NY
-  slug: albany
-
-three:
+yonkers:
   name: Yonkers
   kind: city
   state: NY
   slug: yonkers
+  government_structure: strong_mayor
+  fiscal_autonomy: independent
+  organization_note: "Council President + 6 District Representatives"
 
+yonkers_schools:
+  name: Yonkers Public Schools
+  kind: school_district
+  state: NY
+  slug: yonkers_schools
+  parent: yonkers
+  fiscal_autonomy: dependent
+  school_legal_type: big_five
+  board_selection: appointed
+  executive_selection: appointed_professional
+  organization_note: "Mayor-appointed board (Big Five structure)"
+
+new_rochelle:
+  name: New Rochelle
+  kind: city
+  state: NY
+  slug: new_rochelle
+  government_structure: council_manager
+  fiscal_autonomy: independent
+  organization_note: "Council + City Manager"
+
+new_rochelle_schools:
+  name: New Rochelle City School District
+  kind: school_district
+  state: NY
+  slug: new_rochelle_schools
+  fiscal_autonomy: independent
+  school_legal_type: small_city
+  board_selection: elected
+  executive_selection: appointed_professional
+  organization_note: "Elected board; superintendent appointed"

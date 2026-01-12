@@ -1,59 +1,120 @@
- NY Benchmarking App
+ # NY Benchmarking App
 
-A civic-tech Rails application for collecting, verifying, and analyzing financial data from New York State local governments.
+A civic-tech Rails application for collecting, verifying, and benchmarking
+financial and operational data from New York State local governments.
+
+- Application: https://app.nybenchmark.org
+- Project site / blog: https://nybenchmark.org
+
+---
 
 ## Mission
 
-**Mission:** A civic-tech data engine to extract and curate data from financial documents (ACFRs, Budgets) across New York State’s 62 cities, in order to verify, standardize, visualize, and analyze government efficiency and effectiveness with full auditability for the data acquisition process and improved accountability for governments.
+A civic-tech data engine to extract and curate data from government financial
+documents (ACFRs, budgets, audits, census, crime statistics) across New York
+State, starting with cities and school districts.
 
-This project prioritizes correctness, transparency, and reproducibility over automation. Every data point is explicitly traceable back to its original source document and page reference.
+The project prioritizes **correctness, transparency, and reproducibility**
+over automation.
+
+Every datapoint in the system must be explicitly traceable to:
+- a specific government entity
+- a source document
+- a page or reference within that document
+
+This traceability requirement is non-negotiable.
+
+---
 
 ## Project Context
 
 This repository contains the Rails application that powers the NY Benchmarking project.
 
-- Static site / blog: https://nybenchmark.org
-- Application: https://app.nybenchmark.org
+High-level architecture, domain invariants, operating assumptions, and a
+structured context for AI-assisted development are documented in:
 
-High-level architecture, domain modeling decisions, operating assumptions, and a structured AI context used to support accurate and efficient AI-assisted development are documented in:
+👉 **[AI-CONTEXT.md](AI-CONTEXT.md)**
 
-👉 **[AI Context](AI-CONTEXT.md)**
+That file is authoritative for:
+- domain invariants
+- AI usage rules
+- development workflow constraints
 
-## Core Concepts
+---
 
-- **Entities** represent government bodies (e.g., cities).
-- **Documents** are source financial files (PDFs) or government websites tied to a fiscal year.
-- **Metrics** define standardized data points.
-- **Observations** are individual, citable specific metric facts extracted from documents for a particular entity.
+## Core Concepts (Conceptual Overview)
 
-Observations form the intersection of Entity + Document + Metric and always include a citation to the original source.
+> **Note:** This section is descriptive.  
+> The database schema, validations, and exact relationships are defined in the code
+> (`db/schema.rb`, models, and tests) and may evolve over time.
 
-## Status
+- **Entity**  
+  A government body (e.g., city, town, school district).
 
-- Core domain models implemented with validations
-- Production deployment live
-- Preliminary data seeded for select cities
-- Styling intentionally minimal with pico.css
+- **Document**  
+  A source financial or statistical document (PDF or web source), tied to an
+  entity and fiscal year.
 
-A Rails 8.1 application designed to provide transparency and benchmarking for New York local government data (Budgets, ACFRs, Census, Crime stats). The goal is "Efficiency and Effectiveness" through auditable, comparable data.
+- **Metric**  
+  A standardized definition of a datapoint (e.g., total revenue, education expenses).
+
+- **Observation**  
+  A single extracted, citable fact linking an Entity, a Document, and a Metric.
+
+Observations always include a citation back to the original source document.
+
+Governance structure (e.g., strong mayor vs. council–manager) is modeled
+**only on Entity**, never in observations.
+
+---
+
+## Entity Relationships (High-Level Semantics)
+
+- Entities may have a **fiscal / reporting parent**
+- This relationship represents **financial roll-up only**
+- It does **not** represent geography or political containment
+
+Examples:
+- Yonkers Public Schools → fiscally dependent on Yonkers
+- New Rochelle City School District → fiscally independent
+
+Geographic or political containment is **not currently modeled** and is
+expected to be handled via a separate, orthogonal relationship in the future.
+
+---
+
+## 🤖 AI Assistance Protocol (Important)
+
+This project is actively developed using AI assistance.
+
+Contributors who use AI tools are expected to:
+1. Read `AI-CONTEXT.md`
+2. Provide it to their AI assistant
+3. Upload relevant schema, model, and test files when requesting changes
+
+`AI-CONTEXT.md` defines:
+- non-negotiable domain invariants
+- git and workflow constraints
+- conflict-handling expectations for AI reasoning
+
+Changes that ignore these rules may be rejected or require rework.
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-* **Ruby:** 3.4.7
-* **Rails:** 8.1.1
-* **Docker:** Required locally (for database services/Kamal builds) and in production.
-* **PostgreSQL:** 14+ (Run via Docker or locally).
+- **Ruby:** 3.4.7
+- **Rails:** 8.1.1
+- **Docker:** Required locally (database services, Kamal builds) and in production
+- **PostgreSQL:** 14+ (via Docker or local install)
 
 ### Local Development Setup
-1.  **Clone the repo:**
-    ```bash
-    git clone [https://github.com/yourusername/nybenchmark-app.git](https://github.com/yourusername/nybenchmark-app.git)
-    cd nybenchmark-app
-    ```
 
-2.  **Start Docker:**
-    Ensure your Docker Desktop (or engine) is running. The application relies on it for database services and building production images.
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/nybenchmark-app.git
+   cd nybenchmark-app
 
 3.  **Install Dependencies:**
     ```bash
@@ -116,22 +177,6 @@ To deploy this application via Kamal, you must configure the following in your l
     ```bash
     kamal app exec -i -- bin/rails c
     ```
-
-### Data Integrity Note
-The database enforces uniqueness on `[:entity_id, :fiscal_year, :doc_type]`.
-* **Document Types** are strict business domains (e.g., `acfr`, `budget`, `public_safety`, `demographics`), NOT file formats.
-* If you encounter a `PG::UniqueViolation` during seed/deploy, it means you have duplicate source data (e.g., two "Budget" documents for Yonkers in 2024).
-
-## 🛠 Tech Stack
-* **Framework:** Ruby on Rails 8.1
-* **Database:** PostgreSQL
-* **Testing:** Minitest (Standard Rails)
-* **Styling:** pico.css
-* **Hosting:** DigitalOcean (via Kamal)
-
-**Near-term priorities**
-- Index and show pages for core models
-- TDD of document archiving workflows
 
 ## License
 

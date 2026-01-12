@@ -3,64 +3,73 @@ yonkers,population_2024_estimate,"211,569",yonkers_acfr_2024,iv
 new_rochelle,population_2024_estimate,85512,nr_census_2024,
 yonkers,population_2020,"210,995",yonkers_pop_2020,
 new_rochelle,population_2020,79751,nr_census_2024,
-yonkers,gov_organization,"SM, Council President + 6 District Reps",yonkers_acfr_2024,iv
-new_rochelle,gov_organization,"CM, at large Mayor and 6 District Council Members",nr_acfr_2024,"iv, pg iv"
-yonkers,median_household_income,"$81,816",yonkers_census_2023,
-new_rochelle,median_household_income,"$103,813",nr_census_2023,
-yonkers,poverty_rate,16.00%,yonkers_census_2023,
-new_rochelle,poverty_rate,10.60%,nr_census_2023,
-yonkers,violent_crime_rate,3.64,yonkers_crime_2023,
-new_rochelle,violent_crime_rate,1.83,nr_crime_2024,
-yonkers,taxable_assessed_value,"$466,497,050",yonkers_acfr_2024,148
-new_rochelle,taxable_assessed_value,"$265,521,133",nr_acfr_2024,125
-yonkers,estimated_actual_taxable_value,"$27,626,165,680",yonkers_acfr_2024,149
-new_rochelle,estimated_actual_taxable_value,"$13,686,656,340",nr_acfr_2024,125
-yonkers,total_direct_tax_rate,$888.06,yonkers_acfr_2024,149
-yonkers,equalization_rate,1.69%,yonkers_acfr_2024,149
-new_rochelle,equalization_rate,1.94%,nr_acfr_2024,125
-yonkers,total_govt_expenses_combined,"$1,524,700,516",yonkers_acfr_2024,8
-yonkers,education_expenses,"$811,497,321",yonkers_acfr_2024,8
-new_rochelle,education_expenses,"$365,170,230",nr_school_audit_2024,18
-new_rochelle,city_only_operating_expenses,"$245,791,879",nr_acfr_2024,"22, 124"
-yonkers,city_ftes_excluding_doe,2106,yonkers_acfr_2024,163
-new_rochelle,city_ftes_excluding_doe,714,nr_acfr_2024,135
-yonkers,dept_of_ed_fte,3534.79,yonkers_school_budget_2024,III-21
-new_rochelle,dept_of_ed_fte,1513,nr_school_audit_2024,48
-yonkers,total_opeb_liability,"$3,062,693,359",yonkers_acfr_2024,78
-yonkers,education_active_employees_opeb,3350.78,yonkers_school_budget_2024,III-21
-yonkers,opeb_retired_employees_combined,4666,yonkers_acfr_2024,67
-yonkers,opeb_active_employees_combined,4940,yonkers_acfr_2024,67
-yonkers,police_fire_pension_liability,"$213,664,961",yonkers_acfr_2024,60
-new_rochelle,police_fire_pension_liability,"$49,215,117",nr_acfr_2024,"18, 75, 88"
-yonkers,safety_employees_count,1179,yonkers_acfr_2024,163
-new_rochelle,safety_employees_count,410,nr_acfr_2024,135
-yonkers,net_position_total_deficit,"-$2,939,402,504",yonkers_acfr_2024,78
-yonkers,unassigned_fund_balance,"$57,568,326",yonkers_acfr_2024,19
-new_rochelle,unassigned_fund_balance,"$10,515,197",nr_acfr_2024,20
-yonkers,bond_credit_rating_moodys,A2,yonkers_acfr_2024,14
-new_rochelle,bond_credit_rating_moodys,Aa2,nr_acfr_2024,16
-yonkers,bond_credit_rating_sp,A+,yonkers_acfr_2024,14
-yonkers,debt_service_annual_payment,"$4,254,960",yonkers_acfr_2024,22
-new_rochelle,debt_service_annual_payment,"$15,480,719",nr_acfr_2024,22
-yonkers,total_general_revenues_city,"$971,710,056",yonkers_acfr_2024,"22, 23"
-new_rochelle,total_general_revenues_city,"$197,158,521",nr_acfr_2024,22
-yonkers,property_taxes_city_only,"$403,306,455",yonkers_acfr_2024,22
-new_rochelle,property_taxes_city_only,"$66,582,739",nr_acfr_2024,22
-yonkers,sales_tax_rate_combined,4.50%,shared_sales_tax_2024,
-new_rochelle,sales_tax_rate_combined,4%,shared_sales_tax_2024,
-yonkers,local_income_tax_rate,16.75% of NYS tax liability,shared_it201_2024,17
-new_rochelle,local_income_tax_rate,0,shared_it201_2024,17
-yonkers,fines_forfeitures_collected,"$55,052,688",yonkers_acfr_2024,22
-new_rochelle,fines_forfeitures_collected,"$2,844,977",nr_acfr_2024,22
-yonkers,state_aid_capital_city,0,yonkers_acfr_2024,"22, 23"
-new_rochelle,state_aid_capital_city,"$14,097,384",nr_acfr_2024,22
-yonkers,state_aid_operational_city,"$127,395,667",yonkers_acfr_2024,"22, 23"
-yonkers,federal_aid_capital_city,$0,yonkers_acfr_2024,"22, 23"
-new_rochelle,federal_aid_capital_city,"$23,184,165",nr_acfr_2024,22
-yonkers,federal_aid_operational_city,"$29,262,910",yonkers_acfr_2024,"22, 23"
-yonkers,state_aid_capital_education,"$1,163,996",yonkers_acfr_2024,23
-yonkers,state_aid_operational_education,"$434,244,358",yonkers_acfr_2024,22
-yonkers,federal_aid_capital_education,$0,yonkers_acfr_2024,23
-yonkers,federal_aid_operational_education,"$61,007,682",yonkers_acfr_2024,22
-yonkers,total_educational_revenues,"$ 501,555,099.00",yonkers_acfr_2024,"22, 23"
-yonkers,combined_total_revenues,"$ 1,473,265,155.00",yonkers_acfr_2024,"22, 23"
+yonkers,median_household_income,"$81,455",yonkers_census_2023,
+new_rochelle,median_household_income,"$104,236",nr_census_2023,
+yonkers,violent_crime_rate_per_100k,454,yonkers_crime_2023,
+new_rochelle,violent_crime_rate_per_100k,171,nr_crime_2024,
+yonkers,property_crime_rate_per_100k,1758,yonkers_crime_2023,
+new_rochelle,property_crime_rate_per_100k,1394,nr_crime_2024,
+yonkers,total_revenue,1676570000,yonkers_acfr_2024,18
+new_rochelle,total_revenue,279636000,nr_acfr_2024,13
+yonkers,total_expenditures,1645643000,yonkers_acfr_2024,18
+new_rochelle,total_expenditures,275621000,nr_acfr_2024,13
+yonkers,unassigned_fund_balance,106842000,yonkers_acfr_2024,20
+new_rochelle,unassigned_fund_balance,28331000,nr_acfr_2024,15
+yonkers,total_government_fte,1738,yonkers_acfr_2024,179
+new_rochelle,total_government_fte,1121,nr_acfr_2024,167
+yonkers,police_fte,540,yonkers_acfr_2024,179
+new_rochelle,police_fte,162,nr_acfr_2024,168
+yonkers,fire_fte,268,yonkers_acfr_2024,179
+new_rochelle,fire_fte,119,nr_acfr_2024,168
+yonkers,public_works_fte,276,yonkers_acfr_2024,179
+new_rochelle,public_works_fte,108,nr_acfr_2024,168
+yonkers,general_government_fte,250,yonkers_acfr_2024,179
+new_rochelle,general_government_fte,269,nr_acfr_2024,168
+yonkers,parks_fte,60,yonkers_acfr_2024,179
+new_rochelle,parks_fte,41,nr_acfr_2024,168
+yonkers,housing_fte,0,yonkers_acfr_2024,179
+new_rochelle,housing_fte,0,nr_acfr_2024,168
+yonkers,health_fte,0,yonkers_acfr_2024,179
+new_rochelle,health_fte,0,nr_acfr_2024,168
+yonkers,community_development_fte,49,yonkers_acfr_2024,179
+new_rochelle,community_development_fte,57,nr_acfr_2024,168
+yonkers,transit_fte,0,yonkers_acfr_2024,179
+new_rochelle,transit_fte,0,nr_acfr_2024,168
+yonkers,solid_waste_fte,0,yonkers_acfr_2024,179
+new_rochelle,solid_waste_fte,0,nr_acfr_2024,168
+yonkers,water_fte,246,yonkers_acfr_2024,179
+new_rochelle,water_fte,105,nr_acfr_2024,168
+yonkers,sewer_fte,0,yonkers_acfr_2024,179
+new_rochelle,sewer_fte,0,nr_acfr_2024,168
+yonkers,street_maintenance_fte,0,yonkers_acfr_2024,179
+new_rochelle,street_maintenance_fte,0,nr_acfr_2024,168
+yonkers,other_fte,49,yonkers_acfr_2024,179
+new_rochelle,other_fte,0,nr_acfr_2024,168
+yonkers,total_debt,873682000,yonkers_acfr_2024,25
+new_rochelle,total_debt,178705000,nr_acfr_2024,20
+yonkers,total_pension_liability,540216000,yonkers_acfr_2024,79
+new_rochelle,total_pension_liability,124866000,nr_acfr_2024,74
+yonkers,total_opeb_liability,966476000,yonkers_acfr_2024,89
+new_rochelle,total_opeb_liability,25039000,nr_acfr_2024,80
+yonkers,net_position,1457058000,yonkers_acfr_2024,11
+new_rochelle,net_position,470209000,nr_acfr_2024,10
+yonkers,property_tax_levy,381800000,yonkers_acfr_2024,169
+new_rochelle,property_tax_levy,133885000,nr_acfr_2024,150
+yonkers,sales_tax_revenue,178229000,shared_sales_tax_2024,
+new_rochelle,sales_tax_revenue,35820000,shared_sales_tax_2024,
+yonkers,median_property_value,508200,yonkers_census_2023,
+new_rochelle,median_property_value,726600,nr_census_2023,
+yonkers,median_rent,1640,yonkers_census_2023,
+new_rochelle,median_rent,2413,nr_census_2023,
+yonkers,unemployment_rate,4.5,shared_it201_2024,
+new_rochelle,unemployment_rate,3.7,shared_it201_2024,
+yonkers_schools,education_expenses,494163000,yonkers_acfr_2024,162
+new_rochelle_schools,education_expenses,139911000,nr_school_audit_2024,18
+yonkers_schools,dept_of_ed_fte,4810,yonkers_acfr_2024,179
+new_rochelle_schools,dept_of_ed_fte,1291,nr_school_audit_2024,24
+yonkers_schools,education_active_employees_opeb,2413,yonkers_acfr_2024,92
+yonkers_schools,state_aid_capital_education,13900000,yonkers_acfr_2024,166
+yonkers_schools,state_aid_operational_education,160799000,yonkers_acfr_2024,166
+yonkers_schools,federal_aid_capital_education,0,yonkers_acfr_2024,166
+yonkers_schools,federal_aid_operational_education,42490000,yonkers_acfr_2024,166
+yonkers_schools,total_educational_revenues,480220000,yonkers_acfr_2024,166
