@@ -98,6 +98,7 @@ GEM
     aws-sigv4 (1.12.1)
       aws-eventstream (~> 1, >= 1.0.2)
     base64 (0.3.0)
+    bcrypt (3.1.21)
     bcrypt_pbkdf (1.1.2)
     bcrypt_pbkdf (1.1.2-arm64-darwin)
     bcrypt_pbkdf (1.1.2-x86_64-darwin)
@@ -128,6 +129,12 @@ GEM
     debug (1.11.1)
       irb (~> 1.10)
       reline (>= 0.3.8)
+    devise (5.0.0.rc)
+      bcrypt (~> 3.0)
+      orm_adapter (~> 0.1)
+      railties (>= 7.0)
+      responders
+      warden (~> 1.2.3)
     dotenv (3.2.0)
     dotenv-rails (3.2.0)
       dotenv (= 3.2.0)
@@ -231,6 +238,7 @@ GEM
       racc (~> 1.4)
     nokogiri (1.19.0-x86_64-linux-musl)
       racc (~> 1.4)
+    orm_adapter (0.5.0)
     ostruct (0.6.3)
     pagy (43.2.3)
       json
@@ -314,6 +322,9 @@ GEM
       io-console (~> 0.5)
     request_store (1.7.0)
       rack (>= 1.4)
+    responders (3.2.0)
+      actionpack (>= 7.0)
+      railties (>= 7.0)
     rexml (3.4.4)
     rubocop (1.82.1)
       json (~> 2.3)
@@ -402,6 +413,8 @@ GEM
     unicode-emoji (4.2.0)
     uri (1.1.1)
     useragent (0.16.11)
+    warden (1.2.9)
+      rack (>= 2.0.9)
     web-console (4.2.1)
       actionview (>= 6.0.0)
       activemodel (>= 6.0.0)
@@ -437,6 +450,7 @@ DEPENDENCIES
   capybara
   csv
   debug
+  devise (>= 5.0.0.rc)
   dotenv-rails
   image_processing (~> 1.2)
   importmap-rails

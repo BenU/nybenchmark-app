@@ -1,0 +1,9 @@
+# Fix this content:
+one:
+  email: user_one@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>
+  # Add other required fields if you have them (e.g., name)
+
+two:
+  email: user_two@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>

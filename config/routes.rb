@@ -1,5 +1,8 @@
 Rails.application.routes.draw do
   root "welcome#index"
+
+  devise_for :users
+
   resources :entities, only: [:index, :show], param: :slug
   resources :documents, only: [:index, :new, :create, :show]
   resources :metrics, only: [:index, :show]

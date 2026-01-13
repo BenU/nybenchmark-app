@@ -9,6 +9,19 @@
       <li><%= link_to "Entities", entities_path, class: "secondary" %></li>
       <li><%= link_to "Metrics", metrics_path, class: "secondary" %></li>
       <li><%= link_to "Observations", observations_path, class: "secondary" %></li>
-      </ul>
+
+    <% if user_signed_in? %>
+      <li><span class="secondary"><%= current_user.email %></span></li>
+      <li>
+        <%= button_to "Sign out",
+                      destroy_user_session_path,
+                      method: :delete,
+                      class: "secondary",
+                      form: { data: { turbo: false } } %>
+      </li>
+    <% else %>
+      <li><%= link_to "Sign in", new_user_session_path, class: "secondary", data: { turbo: false } %></li>
+    <% end %>
+    </ul>
   </nav>
 </header>
