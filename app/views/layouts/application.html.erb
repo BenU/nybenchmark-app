@@ -4,18 +4,18 @@
     <%= render "shared/head" %>
   </head>
 
-  <main class="container">
-    <% flash.each do |key, value| %>
-      <div class="flash-<%= key %>">
-        <%= value %>
-      </div>
-    <% end %>
-  </main>
-
   <body>
     <%= render "shared/navbar" %>
 
-    <%= yield %>
+    <main class="container">
+      <% flash.each do |key, value| %>
+        <div class="flash-<%= key %>">
+          <%= value %>
+        </div>
+      <% end %>
+
+      <%= yield %>
+    </main>
 
     <%= render "shared/footer" %>
   </body>
