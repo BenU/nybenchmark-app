@@ -1,7 +1,13 @@
 Rails.application.routes.draw do
   root "welcome#index"
 
-  devise_for :users
+  # Unscoped Devise routes:
+  # /sign_in, /sign_out, /sign_up, /password/*, /confirmation/*, etc.
+  devise_for :users, path: "", path_names: {
+    sign_in: "sign_in",
+    sign_out: "sign_out",
+    sign_up: "sign_up"
+  }
 
   resources :entities, only: [:index, :show], param: :slug
   resources :documents, only: [:index, :new, :create, :show]

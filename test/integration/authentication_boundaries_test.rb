@@ -13,12 +13,12 @@ class AuthenticationBoundariesTest < ActionDispatch::IntegrationTest
   test "unauthenticated users are redirected to sign-in for mutation endpoints" do
     # Documents has mutation routes right now (new/create). We want redirects, not HTTP basic 401.
     get new_document_path, headers: @headers
-    assert_redirected_to "/users/sign_in"
+    assert_redirected_to "/sign_in"
 
     post documents_path,
          params: { document: { title: "ignored" } },
          headers: @headers
-    assert_redirected_to "/users/sign_in"
+    assert_redirected_to "/sign_in"
   end
 
   test "authenticated users can access mutation endpoints" do
