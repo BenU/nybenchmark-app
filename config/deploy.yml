@@ -47,7 +47,7 @@ env:
     DB_HOST: nybenchmark_app-db
     POSTGRES_USER: nybenchmark_app
     POSTGRES_DB: nybenchmark_app_production
-    SOLID_QUEUE_IN_PUMA: true
+    SOLID_QUEUE_IN_PUMA: false
 
 # 8. Database Accessory
 accessories:
