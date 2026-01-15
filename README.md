@@ -121,23 +121,91 @@ Changes that ignore these rules may be rejected or require rework.
     bundle install
     ```
 
-4.  **Setup Database (The "Clean Slate" Method):**
-    This project uses a strict **Composite Unique Index** on documents. To ensure data integrity during setup, use the reset command, which handles dropping, creating, migrating, and seeding automatically.
-    ```bash
-    bin/rails db:reset
-    ```
+## Local Development (Docker-first)
 
-5.  **Run the Test Suite:**
-    Always ensure tests are green before developing.
-    ```bash
-    bin/rails test
-    ```
+This project uses a **Docker-first development workflow** that mirrors the production
+deployment topology (Rails app + Postgres), while still running Rails in
+`development` mode for fast iteration.
 
-6.  **Start the Server:**
-    ```bash
-    bin/dev
-    ```
-    Visit `http://localhost:3000`.
+### Prerequisites
+- Docker Desktop (running)
+- Docker Compose v2+
+
+---
+
+### Start the application
+
+This starts **Rails, Postgres, and Mailpit (dev email inbox)**:
+
+```bash
+docker compose up --build
+```
+
+Once running:
+- App: http://localhost:3000
+- Mailpit inbox: http://localhost:8025
+
+Leave this command running in a terminal while developing.
+
+---
+
+### Database setup / migrations
+
+The first time you run the stack (or after pulling new migrations):
+
+```bash
+docker compose exec web bin/rails db:prepare
+```
+
+This will create and migrate the local database as needed.
+
+---
+
+### Stop the application
+
+To stop containers **without deleting the database**:
+
+```bash
+docker compose down
+```
+
+⚠️ Do **not** use `docker compose down -v` unless you intentionally want to wipe
+the local database.
+
+---
+
+### Running Rails commands
+
+All Rails commands should be run **inside the Docker container**:
+
+```bash
+docker compose exec web bin/rails test
+docker compose exec web bin/rails c
+docker compose exec web bin/rails db:migrate
+```
+
+This ensures commands run against the same environment and database as the app.
+
+---
+
+### Email in development
+
+Emails sent in development are captured by **Mailpit** (not delivered externally).
+
+- Open inbox: http://localhost:8025
+- No external SMTP configuration required
+
+---
+
+### Important: avoid running two servers
+
+Do **not** run `bin/rails s` on the host at the same time as `docker compose up`.
+
+Doing so will start a second Rails server pointing at a different environment/database
+and cause confusing behavior.
+
+Use **Docker Compose only** for local development.
+
 
 ---
 
