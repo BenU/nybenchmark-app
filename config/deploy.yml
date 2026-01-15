@@ -51,6 +51,7 @@ env:
     POSTGRES_DB: nybenchmark_app_production
     SOLID_QUEUE_IN_PUMA: false
     SOLID_QUEUE_ENABLED: false
+    SMTP_PORT: 2525
 
 # 8. Database Accessory
 accessories:
