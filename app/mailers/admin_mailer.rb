@@ -15,8 +15,6 @@ class AdminMailer < ApplicationMailer
   private
 
   def admin_email
-    Rails.application.config.x.admin_email.presence ||
-      ENV["ADMIN_EMAIL"].presence ||
-      "admin@example.com"
+    ENV.fetch("ADMIN_EMAIL", "admin@example.com")
   end
 end
