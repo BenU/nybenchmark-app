@@ -4,12 +4,16 @@ require "test_helper"
 
 class AdminMailerTest < ActionMailer::TestCase
   setup do
-    @original_admin_email = Rails.application.config.x.admin_email
-    Rails.application.config.x.admin_email = "admin@example.com"
+    # 1. Save the current environment value so we can restore it later
+    @original_admin_email = ENV.fetch("ADMIN_EMAIL", nil)
+
+    # 2. Force the specific email we want to test against
+    ENV["ADMIN_EMAIL"] = "admin@example.com"
   end
 
   teardown do
-    Rails.application.config.x.admin_email = @original_admin_email
+    # 3. Restore the original value to avoid breaking other tests
+    ENV["ADMIN_EMAIL"] = @original_admin_email
   end
 
   test "new_user_waiting_for_approval" do

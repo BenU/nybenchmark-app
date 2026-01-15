@@ -6,14 +6,16 @@ class AdminSignupNotificationTest < ActionDispatch::IntegrationTest
   include ActionMailer::TestHelper
 
   setup do
-    @original_admin_email = Rails.application.config.x.admin_email
-    Rails.application.config.x.admin_email = "admin@example.com"
+    # 1. Mock ENV["ADMIN_EMAIL"] instead of config.x
+    @original_admin_email = ENV.fetch("ADMIN_EMAIL", nil)
+    ENV["ADMIN_EMAIL"] = "admin@example.com"
 
     ActionMailer::Base.deliveries.clear
   end
 
   teardown do
-    Rails.application.config.x.admin_email = @original_admin_email
+    # 2. Restore original ENV value
+    ENV["ADMIN_EMAIL"] = @original_admin_email
   end
 
   test "signing up sends an admin notification email" do
