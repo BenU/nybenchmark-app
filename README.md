@@ -300,14 +300,6 @@ To deploy this application via Kamal, you must configure the following in your l
 
   *(Or use alias `kd`.)*
 
-- **Seed production data:**
-
-  > Deployment does not auto-seed. You must run this manually if you change `seeds.rb`.
-
-  ```bash
-  kamal app exec -i -- bin/rails db:seed
-  ```
-
 - **Remote console (debugging):**
 
   ```bash
