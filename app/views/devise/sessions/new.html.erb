@@ -1,0 +1,39 @@
+<article>
+  <header>
+    <hgroup>
+      <h1>Log in</h1>
+      <p>Welcome back to NY Benchmark</p>
+    </hgroup>
+  </header>
+
+  <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+    
+    <label for="user_email">
+      Email address
+      <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "e.g. jane@example.com" %>
+    </label>
+
+    <label for="user_password">
+      Password
+      <%= f.password_field :password, autocomplete: "current-password" %>
+    </label>
+
+    <% if devise_mapping.rememberable? %>
+      <fieldset>
+        <label>
+          <%= f.check_box :remember_me %>
+          Remember me
+        </label>
+      </fieldset>
+    <% end %>
+
+    <%= f.submit "Log in", role: "button", class: "contrast" %>
+
+  <% end %>
+
+  <footer>
+    <small>
+      <%= render "devise/shared/links" %>
+    </small>
+  </footer>
+</article>

@@ -9,6 +9,10 @@ gem "rails", "~> 8.1.1"
 # To see data
 gem "csv"
 
+# Use Devise 5.0+ (RC or stable) for native Rails 8 and Turbo compatibility.
+# 4.x versions require workarounds for Turbo drive/streams and trigger Rails 8 deprecation warnings.
+gem "devise", ">= 5.0.0.rc"
+
 # Add pagination with:
 gem "pagy", "~> 43.2"
 

@@ -7,7 +7,10 @@
   <body>
     <%= render "shared/navbar" %>
 
-    <%= yield %>
+    <main class="container">
+      <%= render "shared/flash" %>
+      <%= yield %>
+    </main>
 
     <%= render "shared/footer" %>
   </body>

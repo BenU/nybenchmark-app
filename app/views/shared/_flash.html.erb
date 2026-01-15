@@ -1,0 +1,15 @@
+<% flash.each do |type, message| %>
+  <% 
+    # Map Rails flash types to our CSS modifier classes
+    css_class = case type.to_s
+      when 'notice', 'success' then 'flash--notice'
+      when 'alert', 'error', 'danger' then 'flash--alert'
+      when 'warning' then 'flash--warning'
+      else 'flash--info'
+    end
+  %>
+
+  <article class="flash <%= css_class %>">
+    <strong><%= type.to_s.humanize %>:</strong> <%= message %>
+  </article>
+<% end %>

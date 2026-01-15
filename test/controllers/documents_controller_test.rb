@@ -7,6 +7,7 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
     # Fixtures
     @entity = entities(:yonkers)
     @document = documents(:yonkers_acfr_fy2024)
+    @user = users(:one) # 1. Define the user from fixtures
 
     # 1. SETUP FOR READ TESTS: Attach a fake PDF to the fixture
     # This ensures the "View PDF" button appears in the 'show' test.
@@ -15,14 +16,6 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
       filename: "test.pdf",
       content_type: "application/pdf"
     )
-
-    # 2. Define Test Credentials
-    @username = "test_admin"
-    @password = "test_password"
-
-    # 3. Inject them into the Environment for this test run
-    ENV["HTTP_AUTH_USER"] = @username
-    ENV["HTTP_AUTH_PASSWORD"] = @password
   end
 
   # ==========================================
@@ -60,17 +53,17 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
 
   test "should deny access to new without auth" do
     get new_document_url
-    assert_response :unauthorized
+    assert_redirected_to new_user_session_url
   end
 
   test "should get new with auth" do
-    auth_header = ActionController::HttpAuthentication::Basic.encode_credentials(@username, @password)
-    get new_document_url, headers: { "Authorization" => auth_header }
+    sign_in @user # CHANGE: Use helper
+    get new_document_url
     assert_response :success
   end
 
   test "should create document with file" do
-    auth_header = ActionController::HttpAuthentication::Basic.encode_credentials(@username, @password)
+    sign_in @user
 
     assert_difference("Document.count") do
       post documents_url,
@@ -84,8 +77,7 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
                # fixture_file_upload looks for files in test/fixtures/files/
                file: fixture_file_upload("sample.pdf", "application/pdf")
              }
-           },
-           headers: { "Authorization" => auth_header }
+           }
     end
 
     assert_redirected_to document_url(Document.last)
@@ -94,7 +86,7 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should fail to create document with invalid file" do
-    auth_header = ActionController::HttpAuthentication::Basic.encode_credentials(@username, @password)
+    sign_in @user
 
     assert_no_difference("Document.count") do
       post documents_url,
@@ -106,8 +98,7 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
                entity_id: @entity.id,
                file: fixture_file_upload("sample.txt", "text/plain")
              }
-           },
-           headers: { "Authorization" => auth_header }
+           }
     end
 
     assert_response :unprocessable_entity
