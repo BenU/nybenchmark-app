@@ -4,10 +4,11 @@ FROM ruby:${RUBY_VERSION}-slim
 
 WORKDIR /rails
 
-# System deps for Rails + common gems
+# System deps for Rails + common gems + Chromium (for System Tests on ARM/Apple Silicon)
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
-      build-essential git libpq-dev libyaml-dev pkg-config curl libvips postgresql-client && \
+      build-essential git libpq-dev libyaml-dev pkg-config curl libvips postgresql-client \
+      chromium chromium-driver && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 ENV RAILS_ENV=development \
