@@ -26,7 +26,8 @@ class AuthenticationBoundariesTest < ActionDispatch::IntegrationTest
     user = User.create!(
       email: "tester@example.com",
       password: "password123",
-      password_confirmation: "password123"
+      password_confirmation: "password123",
+      approved: true
     )
 
     sign_in user

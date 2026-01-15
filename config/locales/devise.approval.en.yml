@@ -1,0 +1,6 @@
+en:
+  devise:
+    failure:
+      not_approved: "Your account is pending approval."
+    registrations:
+      signed_up_but_not_approved: "Thanks for signing up. Your account is pending approval."

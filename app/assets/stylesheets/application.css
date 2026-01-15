@@ -21,3 +21,67 @@
     --pico-background-color: #13171f;
   }
 }
+
+/* 
+ * FLASH NOTIFICATIONS & ALERTS 
+ * High-contrast styling for Rails Flash and Devise Errors
+ */
+.flash {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid transparent; /* Border color defined by specific types below */
+  border-radius: var(--pico-border-radius);
+  /* Fallback */
+  background-color: var(--pico-card-background-color);
+  box-shadow: var(--pico-card-box-shadow);
+}
+
+/* Header for Devise Error Summaries */
+.flash header {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  opacity: 1;
+}
+
+/* List for Devise Error Details */
+.flash ul {
+  margin-bottom: 0;
+  padding-left: 1rem;
+}
+
+/* Success / Notice (Green) */
+.flash--notice, .flash--success {
+  background-color: #d1e7dd; /* Bootstrap Success BG */
+  color: #0f5132;            /* Bootstrap Success Text */
+  border-color: #badbcc;
+  border-left: 0.5rem solid #0f5132;
+}
+
+/* Alert / Error (Red) */
+.flash--alert, .flash--error, .flash--danger {
+  background-color: #f8d7da; /* Bootstrap Danger BG */
+  color: #842029;            /* Bootstrap Danger Text */
+  border-color: #f5c2c7;
+  border-left: 0.5rem solid #842029;
+}
+
+/* Warning (Yellow) */
+.flash--warning {
+  background-color: #fff3cd;
+  color: #664d03;
+  border-color: #ffecb5;
+  border-left: 0.5rem solid #664d03;
+}
+
+/* Info (Blue) */
+.flash--info {
+  background-color: #cff4fc;
+  color: #055160;
+  border-color: #b6effb;
+  border-left: 0.5rem solid #055160;
+}
+
+/* Hide empty flash containers */
+.flash:empty {
+  display: none;
+}

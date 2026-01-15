@@ -153,8 +153,6 @@ At the start of any new feature/fix request (before tests or implementation), th
 
 ## 6. AI Output Expectations
 
-## 6. AI Output Expectations
-
 AI responses should:
 - Prefer full-file replacements (complete file contents) for any file that changes,
   unless the user explicitly asks for a diff.

@@ -40,6 +40,24 @@ Rails.application.configure do
   # Set localhost to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
 
+  config.action_mailer.perform_deliveries = true 
+  config.action_mailer.raise_delivery_errors = true 
+  config.action_mailer.delivery_method = :smtp
+  mail_host = ENV.fetch("SMTP_HOST", "127.0.0.1")
+  mail_port = Integer(ENV.fetch("SMTP_PORT", "1025"))
+
+  config.action_mailer.smtp_settings = {
+    address: mail_host,
+    port: mail_port
+  }
+  config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+
+  # Use inline for Active Job -- will change when and if needed
+  config.active_job.queue_adapter = :inline
+  
+  # Connect Solid Queue to the separate "queue" database defined in database.yml
+  config.solid_queue.connects_to = { database: { writing: :queue } }
+  
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 

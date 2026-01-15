@@ -1,9 +1,17 @@
-# Fix this content:
+# test/fixtures/users.yml
+
 one:
   email: user_one@example.com
   encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>
-  # Add other required fields if you have them (e.g., name)
+  approved: true 
 
 two:
   email: user_two@example.com
   encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>
+  approved: true
+
+# New user for testing the approval workflow
+pending:
+  email: pending@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password') %>
+  approved: false  
