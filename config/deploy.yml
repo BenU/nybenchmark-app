@@ -48,6 +48,7 @@ env:
     POSTGRES_USER: nybenchmark_app
     POSTGRES_DB: nybenchmark_app_production
     SOLID_QUEUE_IN_PUMA: false
+    SOLID_QUEUE_ENABLED: false
 
 # 8. Database Accessory
 accessories:
