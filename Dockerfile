@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1
 # check=error=true
 
-# This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
+# This Dockerfile is designed for production, not development.
+# Use with Kamal or build'n'run by hand:
 # docker build -t nybenchmark_app .
 # docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name nybenchmark_app nybenchmark_app
 
@@ -40,21 +41,22 @@ COPY Gemfile Gemfile.lock vendor ./
 
 RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
-    # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
+    # -j 1 disable parallel compilation to avoid a QEMU 
+    # bug: https://github.com/rails/bootsnap/issues/495
     bundle exec bootsnap precompile -j 1 --gemfile
 
 # Copy application code
 COPY . .
-
 # Precompile bootsnap code for faster boot times.
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
 RUN bundle exec bootsnap precompile -j 1 app/ lib/
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
-
-
-
+# CHANGE: Added dummy variables for Brevo SMTP so ENV.fetch doesn't crash the build
+RUN SECRET_KEY_BASE_DUMMY=1 \
+    BREVO_SMTP_USERNAME=dummy \
+    BREVO_SMTP_PASSWORD=dummy \
+    ./bin/rails assets:precompile
 
 # Final stage for app image
 FROM base
