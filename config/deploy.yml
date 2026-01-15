@@ -43,6 +43,8 @@ env:
     - DO_SPACES_SECRET
     - HTTP_AUTH_USER
     - HTTP_AUTH_PASSWORD
+    - BREVO_SMTP_USERNAME 
+    - BREVO_SMTP_PASSWORD 
   clear:
     DB_HOST: nybenchmark_app-db
     POSTGRES_USER: nybenchmark_app
