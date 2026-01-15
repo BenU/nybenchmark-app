@@ -52,7 +52,6 @@ test:
 production:
   primary:
     <<: *default
-    # Safe fallbacks so assets:precompile doesn't crash if env vars aren't present at build time
     database: <%= ENV["POSTGRES_DB"] || ENV["DB_NAME"] || "nybenchmark_app_production" %>
     host: <%= ENV["POSTGRES_HOST"] || ENV["DB_HOST"] || "localhost" %>
     port: <%= ENV.fetch("POSTGRES_PORT", ENV.fetch("DB_PORT", "5432")) %>
@@ -67,3 +66,21 @@ production:
     username: <%= ENV["POSTGRES_USER"] || ENV["DB_USER"] || "postgres" %>
     password: <%= ENV["POSTGRES_PASSWORD"] || ENV["DB_PASSWORD"] || "" %>
     migrations_paths: db/queue_migrate
+
+  cache:
+    <<: *default
+    database: <%= ENV["POSTGRES_DB"] || ENV["DB_NAME"] || "nybenchmark_app_production" %>
+    host: <%= ENV["POSTGRES_HOST"] || ENV["DB_HOST"] || "localhost" %>
+    port: <%= ENV.fetch("POSTGRES_PORT", ENV.fetch("DB_PORT", "5432")) %>
+    username: <%= ENV["POSTGRES_USER"] || ENV["DB_USER"] || "postgres" %>
+    password: <%= ENV["POSTGRES_PASSWORD"] || ENV["DB_PASSWORD"] || "" %>
+    migrations_paths: db/cache_migrate
+
+  cable:
+    <<: *default
+    database: <%= ENV["POSTGRES_DB"] || ENV["DB_NAME"] || "nybenchmark_app_production" %>
+    host: <%= ENV["POSTGRES_HOST"] || ENV["DB_HOST"] || "localhost" %>
+    port: <%= ENV.fetch("POSTGRES_PORT", ENV.fetch("DB_PORT", "5432")) %>
+    username: <%= ENV["POSTGRES_USER"] || ENV["DB_USER"] || "postgres" %>
+    password: <%= ENV["POSTGRES_PASSWORD"] || ENV["DB_PASSWORD"] || "" %>
+    migrations_paths: db/cable_migrate
