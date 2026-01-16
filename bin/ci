@@ -9,6 +9,12 @@ echo "==> Running system tests..."
 bin/rails test test/system
 
 echo
+echo "==> Running Brakeman..."
+# --no-pager ensures it prints to stdout instead of opening a scrolling view
+# --ensure-latest checks for newer Brakeman versions (optional but good)
+bin/brakeman --no-pager
+
+echo
 echo "==> Running RuboCop..."
 bin/rubocop
 

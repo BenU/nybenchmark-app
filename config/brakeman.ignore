@@ -1,0 +1,39 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 4,
+      "fingerprint": "3d6b50334dcc5c04e344c2ac4ba48ee529a2451d4e4691939206d4df895b6f3d",
+      "check_name": "LinkToHref",
+      "message": "Potentially unsafe model attribute in `link_to` href",
+      "file": "app/views/documents/show.html.erb",
+      "line": 28,
+      "link": "https://brakemanscanner.org/docs/warning_types/link_to_href",
+      "code": "link_to(Document.find(params[:id]).source_url, Document.find(params[:id]).source_url, :target => \"_blank\", :rel => \"noopener\")",
+      "render_path": [
+        {
+          "type": "controller",
+          "class": "DocumentsController",
+          "method": "show",
+          "line": 12,
+          "file": "app/controllers/documents_controller.rb",
+          "rendered": {
+            "name": "documents/show",
+            "file": "app/views/documents/show.html.erb"
+          }
+        }
+      ],
+      "location": {
+        "type": "template",
+        "template": "documents/show"
+      },
+      "user_input": "Document.find(params[:id]).source_url",
+      "confidence": "Weak",
+      "cwe_id": [
+        79
+      ],
+      "note": "Guarded by regex check for http/https."
+    }
+  ],
+  "brakeman_version": "7.1.2"
+}

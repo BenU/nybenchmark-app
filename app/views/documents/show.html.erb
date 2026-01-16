@@ -1,47 +1,49 @@
 <main class="container">
-  <hgroup>
-    <h1><%= @document.title %></h1>
-    <p>
-      <%= link_to @document.entity.name, entity_path(@document.entity.slug) %> 
-      • <%= @document.fiscal_year %>
-    </p>
-  </hgroup>
+  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <hgroup>
+      <h1><%= @document.title %></h1>
+      <p>
+        <%= link_to @document.entity.name, entity_path(@document.entity) %> • 
+        FY <%= @document.fiscal_year %> • 
+        <%= @document.doc_type.upcase %>
+      </p>
+    </hgroup>
+    
+    <% if user_signed_in? %>
+      <div>
+        <%= link_to "Update Document", edit_document_path(@document), role: "button", class: "secondary outline" %>
+      </div>
+    <% end %>
+  </div>
+
+  <hr />
 
   <div class="grid">
     <article>
-      <header><strong>Document Details</strong></header>
-      <dl>
-        <dt>Type</dt>
-        <dd><%= @document.doc_type.humanize %></dd>
-
-        <dt>Source URL</dt>
-        <dd>
-          <%= safe_external_link(@document.source_url) %>
-        </dd>
-
-        <% if @document.notes.present? %>
-          <dt>Notes</dt>
-          <dd><%= @document.notes %></dd>
-        <% end %>
-      </dl>
-
-      <footer>
-        <% if @document.file.attached? %>
-          <%= link_to "View Full PDF", rails_blob_path(@document.file, disposition: "inline"), 
-              target: "_blank", 
-              role: "button", 
-              class: "contrast" %>
+      <header><strong>Access File</strong></header>
+      
+      <div style="margin-bottom: 20px;">
+        <strong>Original Source:</strong><br>
+          <% if @document.source_url.to_s.match?(/\Ahttps?:\/\//) %>
+            <%= link_to @document.source_url, @document.source_url, target: "_blank", rel: "noopener" %>
         <% else %>
-          <button disabled>PDF Not Available</button>
-        <% end %>
-      </footer>
+          <%= @document.source_url %> <small>(Link disabled for security)</small>
+        <% end %>        
+      </div>
+
+      <% if @document.file.attached? %>
+        <div>
+          <strong>Archived Copy:</strong><br>
+            <%= link_to "Download PDF", rails_blob_path(@document.file, disposition: "attachment"), role: "button", target: "_blank" %>
+        </div>
+      <% else %>
+        <p><em>No local PDF archived.</em></p>
+      <% end %>
     </article>
 
-    <section>
-      <article>
-        <header><strong>Extraction Status</strong></header>
-        <p><em>Automated data extraction pending.</em></p>
-      </article>
-    </section>
+    <article>
+      <header><strong>Notes</strong></header>
+      <p><%= @document.notes.presence || "No notes added." %></p>
+    </article>
   </div>
 </main>

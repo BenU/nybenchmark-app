@@ -39,11 +39,11 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
 
     # Metadata Check
     assert_select "h1", @document.title
-    assert_select "dd a[href=?]", @document.source_url
+    assert_select "a[href=?]", @document.source_url
 
     # VERIFY PDF ACCESS:
     # Checks that a link to the ActiveStorage blob exists
-    assert_select "a[target='_blank']", text: "View Full PDF"
+    assert_select "a[target='_blank']", text: "Download PDF"
   end
 
   # ==========================================

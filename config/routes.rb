@@ -10,7 +10,7 @@ Rails.application.routes.draw do
   }
 
   resources :entities,  param: :slug
-  resources :documents, only: [:index, :new, :create, :show]
+  resources :documents
   resources :metrics
   resources :observations, only: [:index, :show]
 
