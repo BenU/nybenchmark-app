@@ -27,10 +27,10 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
     get documents_url
     assert_response :success
 
-    assert_select "h1", "Financial Documents"
+    assert_select "h1", "Documents"
     assert_select "table"
     # Ensure the document we setup is listed
-    assert_select "td", text: @document.title
+    assert_select "td a", text: @document.title
   end
 
   test "should show document hub with pdf link" do

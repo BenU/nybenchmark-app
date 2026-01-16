@@ -1,10 +1,15 @@
 <% content_for :title, "Observations" %>
 
 <main class="container">
-  <hgroup>
-    <h1>Observations</h1>
-    <p>Audit-first browsing: every value is traceable to a document and page reference.</p>
-  </hgroup>
+  <div class="grid">
+    <hgroup>
+      <h1>Observations</h1>
+      <p>Audit-first browsing: every value is traceable to a document and page reference.</p>
+    </hgroup>
+    <div style="text-align: right; align-self: center;">
+      <%= link_to "New observation", new_observation_path, role: "button" %>
+    </div>
+  </div>
 
   <form method="get" action="<%= observations_path %>">
     <fieldset>
@@ -71,7 +76,7 @@
 
       <div class="grid">
         <input type="submit" value="Apply">
-        <%= link_to "Clear", observations_path, class: "secondary" %>
+        <%= link_to "Clear", observations_path, role: "button", class: "secondary" %>
       </div>
     </fieldset>
   </form>
@@ -87,7 +92,7 @@
           <th>Document</th>
           <th>Page reference</th>
           <th>Updated at</th>
-          <th></th>
+          <th>Actions</th>
         </tr>
       </thead>
 
@@ -108,7 +113,7 @@
 
             <td data-column="value">
               <% if observation.value_numeric.present? %>
-                <%= observation.value_numeric.to_s("F") %>
+                <%= number_with_delimiter(observation.value_numeric) %>
               <% else %>
                 <%= observation.value_text %>
               <% end %>
@@ -123,7 +128,8 @@
             <td data-column="updated-at"><%= observation.updated_at.to_fs(:db) %></td>
 
             <td data-column="actions">
-              <%= link_to "View", observation_path(observation) %>
+              <%= link_to "View", observation %> | 
+              <%= link_to "Edit", edit_observation_path(observation) %>
             </td>
           </tr>
         <% end %>
