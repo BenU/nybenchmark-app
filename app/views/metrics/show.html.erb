@@ -1,7 +1,15 @@
 <main class="container">
-  <hgroup>
-    <h1><%= @metric.label %></h1>
-  </hgroup>
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <hgroup>
+      <h1><%= @metric.label %></h1>
+    </hgroup>
+    <% if user_signed_in? %>
+      <div>
+        <%= link_to "Edit", edit_metric_path(@metric), role: "button", class: "secondary outline" %>
+      </div>
+    <% end %>
+  </div>
 
   <article>
     <header>

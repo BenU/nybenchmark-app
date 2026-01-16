@@ -11,7 +11,7 @@ Rails.application.routes.draw do
 
   resources :entities,  param: :slug
   resources :documents, only: [:index, :new, :create, :show]
-  resources :metrics, only: [:index, :show]
+  resources :metrics
   resources :observations, only: [:index, :show]
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
