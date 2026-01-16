@@ -1,8 +1,14 @@
 <main class="container">
-  <hgroup>
-    <h1>New York Entities</h1>
-    <p>Select a local government to view financial performance and documents.</p>
-  </hgroup>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <hgroup style="margin-bottom: 0;">
+      <h1>New York Entities</h1>
+      <p>Select a local government to view financial performance and documents.</p>
+    </hgroup>
+    
+    <div>
+      <%= link_to "New Entity", new_entity_path, role: "button" %>
+    </div>
+  </div>
 
   <figure>
     <table role="grid">

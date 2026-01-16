@@ -9,7 +9,7 @@ Rails.application.routes.draw do
     sign_up: "sign_up"
   }
 
-  resources :entities, only: [:index, :show], param: :slug
+  resources :entities,  param: :slug
   resources :documents, only: [:index, :new, :create, :show]
   resources :metrics, only: [:index, :show]
   resources :observations, only: [:index, :show]

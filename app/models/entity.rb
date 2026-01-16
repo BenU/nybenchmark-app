@@ -64,6 +64,10 @@ class Entity < ApplicationRecord
 
   validate :school_legal_type_matches_kind
 
+  def to_param
+    slug
+  end
+
   private
 
   def school_legal_type_matches_kind

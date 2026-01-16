@@ -82,16 +82,11 @@ Examples:
 
 ---
 
-## 4. Seeds & Fixtures Discipline
+## 4. Authentication & Authorization:
 
-- Seeds must be idempotent (`find_or_initialize_by`)
-- Fixtures must reference associations **by label**, never numeric IDs
-- CSVs must align with:
-  - entity slugs
-  - document keys
-  - actual filenames on disk
+Authentication: Devise.
 
-If drift exists, fix the CSVs—not the code.
+Authorization: All approved users have full read/write access to all resources (Entities, Metrics, Documents, Observations). There is currently no distinction between logged in "User" and "Admin."
 
 ---
 
