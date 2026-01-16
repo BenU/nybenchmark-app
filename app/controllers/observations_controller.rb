@@ -3,60 +3,101 @@
 class ObservationsController < ApplicationController
   include Pagy::Method
 
+  before_action :authenticate_user!, except: %i[index show]
+  before_action :set_observation, only: %i[show edit update destroy]
+  before_action :set_collections, only: %i[new create edit update]
+
   def index
-    observations = Observation.includes(:entity, :metric, :document)
-    observations = apply_filters(observations)
-    observations = apply_search(observations)
-    observations = apply_sort(observations)
+    scope = Observation.includes(:entity, :metric, :document)
+                       .where(filter_params)
+                       .search(params[:q])
+                       .sorted_by(params[:sort])
 
-    # Pagination (offset) — ordered relation required for deterministic paging
-    @pagy, @observations = pagy(:offset, observations, limit: 50)
+    @pagy, @observations = pagy(:offset, scope, limit: 20)
+    load_filter_options
+  end
 
-    # Filter UI support (only records that actually appear in observations)
+  def show; end
+
+  def new
+    @observation = Observation.new
+    @observation.entity_id = params[:entity_id] if params[:entity_id].present?
+    filter_documents
+  end
+
+  def edit
+    @observation.entity_id = params[:entity_id] if params[:entity_id].present?
+    filter_documents
+  end
+
+  def create
+    @observation = Observation.new(observation_params)
+    assign_fiscal_year
+
+    if @observation.save
+      redirect_to @observation, notice: "Observation was successfully created."
+    else
+      filter_documents
+      render :new, status: :unprocessable_content
+    end
+  end
+
+  def update
+    @observation.assign_attributes(observation_params)
+    assign_fiscal_year
+
+    if @observation.save
+      redirect_to @observation, notice: "Observation was successfully updated."
+    else
+      filter_documents
+      render :edit, status: :unprocessable_content
+    end
+  end
+
+  def destroy
+    @observation.destroy
+    redirect_to observations_url, notice: "Observation was successfully destroyed."
+  end
+
+  private
+
+  def set_observation
+    @observation = Observation.includes(:entity, :metric, :document).find(params[:id])
+  end
+
+  def set_collections
+    @entities = Entity.order(:name)
+    @metrics = Metric.order(:label)
+  end
+
+  # Extracted to reduce AbcSize complexity in index action
+  def load_filter_options
     @entities_for_filter = Entity.joins(:observations).distinct.order(:name)
     @metrics_for_filter = Metric.joins(:observations).distinct.order(:label)
     @documents_for_filter = Document.joins(:observations).distinct.order(fiscal_year: :desc, title: :asc)
   end
 
-  def show
-    @observation = Observation.includes(:entity, :metric, :document).find(params[:id])
+  def filter_documents
+    @documents = if @observation.entity_id.present?
+                   Document.where(entity_id: @observation.entity_id)
+                           .order(fiscal_year: :desc, title: :asc)
+                 else
+                   []
+                 end
   end
 
-  private
+  def assign_fiscal_year
+    return unless @observation.document
 
-  def apply_filters(relation)
-    filters = {
-      entity_id: params[:entity_id].presence,
-      metric_id: params[:metric_id].presence,
-      fiscal_year: params[:fiscal_year].presence,
-      document_id: params[:document_id].presence
-    }.compact
-
-    relation.where(filters)
+    @observation.fiscal_year = @observation.document.fiscal_year
   end
 
-  def apply_search(relation)
-    q = params[:q].to_s.strip
-    return relation if q.blank?
-
-    pattern = "%#{ActiveRecord::Base.sanitize_sql_like(q)}%"
-
-    relation
-      .left_joins(:entity, :metric, :document)
-      .where(
-        "entities.name ILIKE :q OR metrics.key ILIKE :q OR metrics.label ILIKE :q OR documents.title ILIKE :q",
-        q: pattern
-      )
+  def observation_params
+    params.expect(observation: %i[entity_id document_id metric_id value_numeric value_text page_reference notes])
   end
 
-  def apply_sort(relation)
-    case params[:sort]
-    when "fiscal_year_desc"
-      relation.order(fiscal_year: :desc, updated_at: :desc)
-    when "entity_name_asc"
-      relation.left_joins(:entity).order("entities.name ASC").order(updated_at: :desc)
-    else
-      relation.order(updated_at: :desc)
-    end
+  def filter_params
+    # remove blank values so we don't generate "WHERE field IS NULL"
+    params.permit(:entity_id, :metric_id, :fiscal_year, :document_id).compact_blank
   end
 end

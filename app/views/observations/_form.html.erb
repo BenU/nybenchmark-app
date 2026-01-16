@@ -1,0 +1,81 @@
+<%= form_with(model: observation, class: "contents") do |form| %>
+  <% if observation.errors.any? %>
+    <div class="bg-red-50 text-red-700 p-4 rounded-md mb-6">
+      <h2 class="font-bold"><%= pluralize(observation.errors.count, "error") %> prohibited saving:</h2>
+      <ul class="list-disc pl-5">
+        <% observation.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="my-5">
+    <%= form.label :entity_id, class: "block font-medium" %>
+    <%= form.collection_select :entity_id, @entities, :id, :name, 
+          { prompt: "Select Entity..." }, 
+          { 
+            class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full",
+            data: { 
+              controller: "redirect-on-change",
+              redirect_on_change_param_value: "entity_id",
+              action: "change->redirect-on-change#update"
+            }
+          } 
+    %>
+    <p class="text-xs text-gray-500 mt-1">Changing this filters the document list.</p>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :document_id, class: "block font-medium" %>
+    <% if @documents.any? %>
+      <%= form.collection_select :document_id, @documents, :id, :title, 
+            { prompt: "Select Document..." }, 
+            { class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" } 
+      %>
+      <p class="text-xs text-gray-500 mt-1">Fiscal Year will be automatically assigned.</p>
+    <% else %>
+      <%= form.select :document_id, [], { prompt: "Please select an Entity above" }, 
+            { disabled: true, class: "block shadow rounded-md border border-gray-200 bg-gray-100 px-3 py-2 mt-2 w-full" } 
+      %>
+    <% end %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :metric_id, class: "block font-medium" %>
+    <%= form.collection_select :metric_id, @metrics, :id, :label, 
+          { prompt: "Select Metric..." }, 
+          { class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" } 
+    %>
+  </div>
+
+  <div class="my-5 border p-4 rounded bg-gray-50">
+    <h3 class="font-bold text-gray-700 mb-4">Value (Provide Numeric OR Text)</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <%= form.label :value_numeric, "Numeric Value" %>
+        <%= form.number_field :value_numeric, step: :any, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
+      </div>
+      
+      <div>
+        <%= form.label :value_text, "Text Value (e.g. 'Pending')" %>
+        <%= form.text_field :value_text, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :page_reference, class: "block font-medium" %>
+    <%= form.text_field :page_reference, placeholder: "e.g. p. 42", class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :notes, class: "block font-medium" %>
+    <%= form.text_area :notes, rows: 3, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
+  </div>
+
+  <div class="inline">
+    <%= form.submit class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer" %>
+  </div>
+<% end %>

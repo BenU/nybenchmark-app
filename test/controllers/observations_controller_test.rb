@@ -161,7 +161,7 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
       source_url: "https://example.com/yonkers-acfr-2025.pdf"
     )
 
-    60.times do |i|
+    30.times do |i|
       metric = Metric.create!(key: "auto_metric_#{i}", label: "Auto Metric #{i}")
       Observation.create!(
         entity: yonkers,
@@ -175,7 +175,7 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
 
     get observations_url
     assert_response :success
-    assert_select "tbody tr", count: 50
+    assert_select "tbody tr", count: 20
 
     get observations_url(page: 2)
     assert_response :success
