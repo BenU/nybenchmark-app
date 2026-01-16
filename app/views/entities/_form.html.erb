@@ -1,0 +1,72 @@
+<%= form_with(model: entity) do |form| %>
+  <% if entity.errors.any? %>
+    <div style="color: red; margin-bottom: 20px;">
+      <h2><%= pluralize(entity.errors.count, "error") %> prohibited this entity from being saved:</h2>
+      <ul>
+        <% entity.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :name, style: "display: block" %>
+    <%= form.text_field :name %>
+  </div>
+
+  <div>
+    <%= form.label :slug, style: "display: block" %>
+    <%= form.text_field :slug %>
+  </div>
+
+  <div>
+    <%= form.label :state, style: "display: block" %>
+    <%= form.select :state, ["NY"], {}, class: "form-select" %>
+  </div>
+
+  <div>
+    <%= form.label :kind, style: "display: block" %>
+    <%= form.select :kind, Entity.kinds.keys.map { |k| [k.titleize, k] }, {}, class: "form-select" %>
+  </div>
+
+  <hr>
+
+  <h3>Governance</h3>
+
+  <div>
+    <%= form.label :government_structure, style: "display: block" %>
+    <%= form.select :government_structure, Entity.government_structures.keys.map { |k| [k.titleize, k] }, { include_blank: true } %>
+  </div>
+
+  <div>
+    <%= form.label :fiscal_autonomy, style: "display: block" %>
+    <%= form.select :fiscal_autonomy, Entity.fiscal_autonomies.keys.map { |k| [k.titleize, k] }, { include_blank: true } %>
+  </div>
+
+  <hr>
+
+  <h3>School Specifics</h3>
+  <p><em>Only fill these out if Kind is "School District"</em></p>
+
+  <div>
+    <%= form.label :school_legal_type, style: "display: block" %>
+    <%= form.select :school_legal_type, Entity.school_legal_types.keys.map { |k| [k.titleize, k] }, { include_blank: true } %>
+  </div>
+
+  <div>
+    <%= form.label :board_selection, style: "display: block" %>
+    <%= form.select :board_selection, Entity.board_selections.keys.map { |k| [k.titleize, k] }, { include_blank: true } %>
+  </div>
+
+  <div>
+    <%= form.label :executive_selection, style: "display: block" %>
+    <%= form.select :executive_selection, Entity.executive_selections.keys.map { |k| [k.titleize, k] }, { include_blank: true } %>
+  </div>
+  
+  <br>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>
