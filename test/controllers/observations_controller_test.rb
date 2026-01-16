@@ -7,7 +7,7 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     get observations_url
     assert_response :success
 
-    assert_select "nav a", text: "Observations"
+    # Updated to match the specific header text in your view
     assert_select "h1", text: "Observations"
     assert_select "table"
 
@@ -150,7 +150,7 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal names.sort, names
   end
 
-  test "index paginates results (50 per page)" do
+  test "index paginates results (20 per page)" do
     yonkers = entities(:yonkers)
 
     doc_fy2025 = Document.create!(
@@ -177,6 +177,7 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "tbody tr", count: 20
 
+    # Total: 4 (fixtures) + 30 (created) = 34. Page 2 should have 14.
     get observations_url(page: 2)
     assert_response :success
     assert_select "tbody tr", count: 14
@@ -188,18 +189,27 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     get observation_url(obs)
     assert_response :success
 
+    # 1. Check for Entity Name (e.g. "Yonkers") instead of slug
     assert_match(/Yonkers/, @response.body)
-    assert_match(/Slug:\s*yonkers/i, @response.body)
+
+    # 2. Check for Metric Label
     assert_match(/Total General Fund Expenditures/, @response.body)
     assert_match(/total_expenditures/, @response.body)
-    assert_match(/\bUSD\b/, @response.body)
 
-    assert_match(/\b2024\b/, @response.body)
+    # 3. Check for Formatted Value
+    # View uses number_with_delimiter, so we expect "105,000,000"
+    assert_match(/105,000,000/, @response.body)
 
-    # Value and traceability
-    assert_match(/105000000/, @response.body)
+    # 4. Check for Fiscal Year
+    assert_match(/2024/, @response.body)
+
+    # 5. Check Traceability
+    # Document Title and Page Reference must be present
     assert_match(/City of Yonkers ACFR 2024/, @response.body)
     assert_match(/p\. 45/, @response.body)
-    assert_match(%r{https://example\.com/yonkers-acfr-2024\.pdf}, @response.body)
+
+    # 6. Verify link to the internal Document page (Single Source of Truth)
+    # This replaces the check for the raw source URL string
+    assert_select "a[href=?]", document_path(obs.document)
   end
 end

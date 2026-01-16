@@ -7,12 +7,38 @@ class ObservationsTest < ApplicationSystemTestCase
     @user = users(:one) # Assumes Devise fixtures exist
     sign_in @user
 
+    @observation = observations(:yonkers_expenditures_numeric)
+
     @entity = entities(:yonkers)
     @document = documents(:yonkers_acfr_fy2024)
     @metric = metrics(:expenditures)
 
     # We need a document from a DIFFERENT entity to verify filtering works
     @other_document = documents(:new_rochelle_acfr_fy2024)
+  end
+
+  test "navigation: creating a new observation from index" do
+    visit observations_path
+
+    # 1. Assert Link Exists and Click
+    assert_link "New observation"
+    click_on "New observation"
+
+    # 2. Verify Destination
+    assert_selector "h1", text: "New observation"
+    assert_current_path new_observation_path
+  end
+
+  test "navigation: editing an observation from show page" do
+    visit observation_path(@observation)
+
+    # 1. Assert Link Exists and Click
+    assert_link "Edit"
+    click_on "Edit"
+
+    # 2. Verify Destination
+    assert_selector "h1", text: "Editing observation"
+    assert_current_path edit_observation_path(@observation)
   end
 
   test "creating a new observation with dynamic document filtering" do

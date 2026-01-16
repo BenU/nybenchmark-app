@@ -11,7 +11,19 @@ class DocumentsTest < ApplicationSystemTestCase
 
   test "visiting the index" do
     visit documents_path
-    assert_selector "h1", text: "Financial Documents"
+    assert_selector "h1", text: "Documents"
+  end
+
+  test "navigation: creating a new document from index" do
+    visit documents_path
+
+    assert_selector "h1", text: "Documents"
+
+    assert_link "New document"
+    click_on "New document"
+
+    assert_selector "h1", text: "New Document"
+    assert_current_path new_document_path
   end
 
   test "uploading a new Document" do

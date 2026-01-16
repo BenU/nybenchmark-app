@@ -1,29 +1,43 @@
+<% content_for :title, "Documents" %>
+
 <main class="container">
-  <hgroup>
-    <h1>Financial Documents</h1>
-    <p>Archive of budgets, financial reports, and audits.</p>
-  </hgroup>
+  <div class="grid">
+    <hgroup>
+      <h1>Documents</h1>
+      <p>Source files for all verified data.</p>
+    </hgroup>
+    <div style="text-align: right; align-self: center;">
+      <%= link_to "New document", new_document_path, role: "button" %>
+    </div>
+  </div>
 
   <figure>
     <table role="grid">
       <thead>
         <tr>
-          <th scope="col">Year</th>
-          <th scope="col">Entity</th>
-          <th scope="col">Title</th>
-          <th scope="col">Type</th>
-          <th scope="col">Actions</th>
+          <th>Title</th>
+          <th>Entity</th>
+          <th>Type</th>
+          <th>Year</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <% @documents.each do |doc| %>
+        <% @documents.each do |document| %>
           <tr>
-            <td><%= doc.fiscal_year %></td>
-            <td><%= link_to doc.entity.name, entity_path(doc.entity.slug) %></td>
-            <td><%= doc.title %></td>
-            <td><small><%= doc.doc_type.upcase %></small></td>
             <td>
-              <%= link_to "View", document_path(doc), role: "button", class: "outline" %>
+              <%= link_to document.title, document %>
+              <% if document.source_url.present? %>
+                <br>
+                <small><%= link_to "Source Link", document.source_url, target: "_blank" %></small>
+              <% end %>
+            </td>
+            <td><%= document.entity.name %></td>
+            <td><%= document.doc_type.humanize %></td>
+            <td><%= document.fiscal_year %></td>
+            <td>
+              <%= link_to "View", document %> | 
+              <%= link_to "Edit", edit_document_path(document) %>
             </td>
           </tr>
         <% end %>
