@@ -26,6 +26,10 @@ class SiteNavigationTest < ActionDispatch::IntegrationTest
         end
 
         assert_select "li" do
+          assert_select "a[href=?]", documents_path, text: "Documents"
+        end
+
+        assert_select "li" do
           assert_select "a[href=?]", metrics_path, text: "Metrics"
         end
 

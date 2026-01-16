@@ -1,0 +1,65 @@
+<%= form_with(model: document) do |form| %>
+  <% if document.errors.any? %>
+    <div style="color: red; margin-bottom: 20px;">
+      <h2><%= pluralize(document.errors.count, "error") %> prohibited this document from being saved:</h2>
+      <ul>
+        <% document.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid">
+    <div>
+      <%= form.label :entity_id, style: "display: block" %>
+      <%= form.collection_select :entity_id, Entity.order(:name), :id, :name, { prompt: "Select Entity" } %>
+    </div>
+
+    <div>
+      <%= form.label :fiscal_year, style: "display: block" %>
+      <%= form.number_field :fiscal_year %>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <%= form.label :title, style: "display: block" %>
+      <%= form.text_field :title, placeholder: "e.g. Yonkers ACFR 2024" %>
+    </div>
+
+    <div>
+      <%= form.label :doc_type, "Document Type", style: "display: block" %>
+      <%= form.select :doc_type, 
+          [["ACFR", "acfr"], ["Budget", "budget"], ["School Budget", "school_budget"], ["School Financials", "school_financials"]], 
+          { prompt: "Select Type" } %>
+    </div>
+  </div>
+
+  <div>
+    <%= form.label :source_url, "Original Source URL", style: "display: block" %>
+    <%= form.url_field :source_url %>
+    <small>Link to where this was found on the web.</small>
+  </div>
+
+  <hr>
+
+  <div>
+    <%= form.label :file, "Upload PDF", style: "display: block" %>
+    <%= form.file_field :file, accept: "application/pdf" %>
+    <% if document.file.attached? %>
+      <small>Current file: <%= document.file.filename %></small>
+    <% end %>
+  </div>
+
+  <div>
+    <%= form.label :notes, style: "display: block" %>
+    <%= form.text_area :notes, rows: 3 %>
+  </div>
+
+  <br>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>
