@@ -7,14 +7,31 @@ class Observation < ApplicationRecord
   belongs_to :document
 
   # Basic Type Checks
-  # CHANGE THIS LINE:
   validates :value_numeric, numericality: true, allow_nil: true
-
   validates :fiscal_year, presence: true
 
   # Custom Logical Validations
   validate :fiscal_year_matches_document
   validate :validate_value_exclusivity
+
+  # -- Scopes --
+  scope :search, lambda { |term|
+    return if term.blank?
+
+    pattern = "%#{sanitize_sql_like(term.strip)}%"
+    left_joins(:entity, :metric, :document).where(
+      "entities.name ILIKE :q OR metrics.key ILIKE :q OR metrics.label ILIKE :q OR documents.title ILIKE :q",
+      q: pattern
+    )
+  }
+
+  scope :sorted_by, lambda { |selection|
+    case selection
+    when "fiscal_year_desc" then order(fiscal_year: :desc, updated_at: :desc)
+    when "entity_name_asc"  then left_joins(:entity).order("entities.name ASC", updated_at: :desc)
+    else order(updated_at: :desc)
+    end
+  }
 
   private
 
