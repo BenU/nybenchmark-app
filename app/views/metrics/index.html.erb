@@ -1,6 +1,13 @@
 <main class="container">
   <h1>Metrics</h1>
 
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Metrics</h1>
+    <% if user_signed_in? %>
+      <div><%= link_to "New Metric", new_metric_path, role: "button" %></div>
+    <% end %>
+  </div>
+
   <figure>
     <table role="grid">
       <thead>

@@ -1,0 +1,39 @@
+<%= form_with(model: metric) do |form| %>
+  <% if metric.errors.any? %>
+    <div style="color: red; margin-bottom: 20px;">
+      <h2><%= pluralize(metric.errors.count, "error") %> prohibited this metric from being saved:</h2>
+      <ul>
+        <% metric.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :label, style: "display: block" %>
+    <%= form.text_field :label %>
+  </div>
+
+  <div>
+    <%= form.label :key, style: "display: block" %>
+    <%= form.text_field :key %>
+    <small>Must be unique (e.g. <code>total_revenue</code>)</small>
+  </div>
+
+  <div>
+    <%= form.label :unit, style: "display: block" %>
+    <%= form.text_field :unit %>
+  </div>
+
+  <div>
+    <%= form.label :description, style: "display: block" %>
+    <%= form.text_area :description %>
+  </div>
+
+  <br>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>
