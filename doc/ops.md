@@ -47,7 +47,7 @@ PostgreSQL (Port 5432) is **not** exposed to the public internet.
 ## Data Safety (Backups)
 
 ### Database Backups
-- **Frequency:** Daily at 02:00 AM UTC.
+- **Frequency:** Daily at **02:00 AM Eastern Time**.
 - **Method:** `pg_dump` via cron script.
 - **Destination:** DigitalOcean Spaces (`s3://nybenchmark-production/db-backups/`).
 - **Retention:** Managed via Lifecycle Rules on DigitalOcean Spaces (e.g., expire after 30 days).
@@ -60,5 +60,26 @@ PostgreSQL (Port 5432) is **not** exposed to the public internet.
 `unattended-upgrades` is enabled.
 
 - **Updates:** Security patches applied daily.
-- **Reboots:** Automatic reboot enabled at **03:30 AM UTC** if required by kernel updates.
+- **Reboots:** Automatic reboot enabled at **03:30 AM Eastern Time** if required by kernel updates.
   - *Note:* This allows a 1.5-hour window after backups (02:00 AM) before a potential reboot.
+
+---
+
+## Disaster Recovery Drills
+
+### Monthly Fire Drill (Restore Verification)
+**Objective:** Prove that backups are valid and can be restored locally.
+
+1. **Download:** Get the latest `.sql.gz` from DO Spaces and place it in the project root.
+2. **Reset Local DB:**
+   ```bash
+   # WARNING: Deletes local development data
+   dcr db:drop db:create
+3. **Import:**
+  ```bash
+  gunzip -c backup.sql.gz | docker compose exec -T db psql -U nybenchmark_app -d nybenchmark_app_development
+4. **Verify:**
+  ```bash
+  dcr runner "puts Entity.count"
+
+---

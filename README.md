@@ -266,6 +266,11 @@ Use **Docker Compose only** for local development.
 
 This application uses **Kamal** for zero-downtime deployments to a DigitalOcean Droplet.
 
+👉 **See [doc/ops.md](doc/ops.md) for critical operational procedures**, including:
+- Security policies
+- Database backup & restore workflows
+- Server maintenance
+
 ### Deployment prerequisites
 
 To deploy this application via Kamal, you must configure the following in your local `.env` file (never commit this file):
