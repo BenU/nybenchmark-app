@@ -146,7 +146,19 @@ At the start of any new feature/fix request (before tests or implementation), th
 
 ---
 
-## 6. AI Output Expectations
+## 6. Infrastructure & Security Invariants (Strict)
+
+### Database Isolation
+- The database container must **never** expose port 5432 to the host's public interface (`0.0.0.0`).
+- Database access must occur via the internal Docker network or via SSH tunnel.
+
+### Log Management
+- All containers in `deploy.yml` must utilize the `json-file` logging driver with `max-size` and `max-file` limits to prevent disk exhaustion.
+
+### User Context
+- Deployment and operational scripts should target the `deploy` user, not `root`.
+
+## 7. AI Output Expectations
 
 AI responses should:
 - Prefer full-file replacements (complete file contents) for any file that changes,
@@ -160,7 +172,7 @@ When in doubt, ask.
 
 ---
 
-## 7. Current Context Snapshot (Non-Authoritative)
+## 8. Current Context Snapshot (Non-Authoritative)
 
 - Entity governance modeling implemented via enums
 - School districts are first-class entities
