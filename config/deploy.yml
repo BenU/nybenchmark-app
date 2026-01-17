@@ -4,11 +4,21 @@ service: nybenchmark_app
 image: ghcr.io/benu/nybenchmark_app
 
 # 2. Server IP
+ssh:
+  user: deploy
+  
 servers:
   web:
     - 68.183.56.0
 
-# 3. Proxy & Domain
+# 3. Global Logging Configuration (Prevents Disk Full)
+logging:
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+# 4. Proxy & Domain
 proxy:
   ssl: true
   host: app.nybenchmark.org
@@ -18,23 +28,22 @@ proxy:
     interval: 5
     timeout: 5
 
-
-# 4. Registry Credentials
+# 5. Registry Credentials
 registry:
   server: ghcr.io
   username: benu
   password:
     - KAMAL_REGISTRY_PASSWORD
 
-# 5. Sufficient Deployment Timeout
+# 6. Sufficient Deployment Timeout
 deploy_timeout: 120
 drain_timeout: 120
 
-# 6. Builder (Use AMD64 for DigitalOcean)
+# 7. Builder (Use AMD64 for DigitalOcean)
 builder:
   arch: amd64
 
-# 7. Environment Variables
+# 8. Environment Variables
 env:
   secret:
     - RAILS_MASTER_KEY
@@ -54,12 +63,12 @@ env:
     SOLID_QUEUE_ENABLED: false
     SMTP_PORT: 2525
 
-# 8. Database Accessory
+# 9. Database Accessory
 accessories:
   db:
     image: postgres:17
     host: 68.183.56.0
-    port: 5432
+    # REMOVED: port: 5432 (This keeps the DB private to the docker network)
     env:
       clear:
         POSTGRES_USER: nybenchmark_app
