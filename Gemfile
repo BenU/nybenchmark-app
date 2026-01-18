@@ -24,6 +24,7 @@ gem "aws-sdk-s3", require: false
 # Authorization (Optional but recommended for the future)
 # gem "pundit"
 gem "propshaft"
+gem "tailwindcss-rails"
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.6.3"
 # Use the Puma web server [https://github.com/puma/puma]
