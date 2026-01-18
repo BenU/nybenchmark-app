@@ -4,8 +4,8 @@ class ObservationsController < ApplicationController
   include Pagy::Method
 
   before_action :authenticate_user!, except: %i[index show]
-  before_action :set_observation, only: %i[show edit update destroy]
-  before_action :set_collections, only: %i[new create edit update]
+  before_action :set_observation, only: %i[show edit update destroy verify]
+  before_action :set_collections, only: %i[new create edit update verify]
 
   def index
     scope = Observation.includes(:entity, :metric, :document)
@@ -18,6 +18,11 @@ class ObservationsController < ApplicationController
   end
 
   def show; end
+
+  def verify
+    # Renders 'verify.html.erb'
+    @document = @observation.document
+  end
 
   def new
     @observation = Observation.new
@@ -32,10 +37,9 @@ class ObservationsController < ApplicationController
 
   def create
     @observation = Observation.new(observation_params)
-    assign_fiscal_year
 
     if @observation.save
-      redirect_to @observation, notice: "Observation was successfully created."
+      redirect_to verify_observation_path(@observation), notice: "Observation created. Please verify details."
     else
       filter_documents
       render :new, status: :unprocessable_content
@@ -44,13 +48,16 @@ class ObservationsController < ApplicationController
 
   def update
     @observation.assign_attributes(observation_params)
-    assign_fiscal_year
 
+    # 1. Handle Verification Logic
+    is_verify_action = params[:commit_action] == "verify_next"
+    @observation.verification_status = :verified if is_verify_action
+
+    # 2. Save and Delegate Response
     if @observation.save
-      redirect_to @observation, notice: "Observation was successfully updated."
+      handle_update_success(is_verify_action)
     else
-      filter_documents
-      render :edit, status: :unprocessable_content
+      handle_update_failure(is_verify_action)
     end
   end
 
@@ -61,6 +68,31 @@ class ObservationsController < ApplicationController
 
   private
 
+  def handle_update_success(is_verify_action)
+    if is_verify_action
+      next_obs = @observation.next_provisional_observation
+      if next_obs
+        redirect_to verify_observation_path(next_obs), notice: "Observation verified. Find next item below..."
+      else
+        redirect_to observations_path, notice: "Verified. Queue empty!"
+      end
+    else
+      redirect_to @observation, notice: "Observation was successfully updated."
+    end
+  end
+
+  def handle_update_failure(is_verify_action)
+    filter_documents
+
+    # If error occurred in verify cockpit, re-render cockpit
+    if is_verify_action || action_name == "verify" || request.path.include?("/verify")
+      @document = @observation.document
+      render :verify, status: :unprocessable_content
+    else
+      render :edit, status: :unprocessable_content
+    end
+  end
+
   def set_observation
     @observation = Observation.includes(:entity, :metric, :document).find(params[:id])
   end
@@ -70,7 +102,6 @@ class ObservationsController < ApplicationController
     @metrics = Metric.order(:label)
   end
 
-  # Extracted to reduce AbcSize complexity in index action
   def load_filter_options
     @entities_for_filter = Entity.joins(:observations).distinct.order(:name)
     @metrics_for_filter = Metric.joins(:observations).distinct.order(:label)
@@ -86,18 +117,14 @@ class ObservationsController < ApplicationController
                  end
   end
 
-  def assign_fiscal_year
-    return unless @observation.document
-
-    @observation.fiscal_year = @observation.document.fiscal_year
-  end
-
   def observation_params
-    params.expect(observation: %i[entity_id document_id metric_id value_numeric value_text page_reference notes])
+    params.expect(observation: %i[
+                    entity_id document_id metric_id value_numeric value_text
+                    page_reference notes verification_status pdf_page
+                  ])
   end
 
   def filter_params
-    # remove blank values so we don't generate "WHERE field IS NULL"
     params.permit(:entity_id, :metric_id, :fiscal_year, :document_id).compact_blank
   end
 end

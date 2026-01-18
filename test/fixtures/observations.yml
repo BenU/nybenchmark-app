@@ -7,6 +7,8 @@ yonkers_expenditures_numeric:
   value_text: ~
   page_reference: "p. 45"
   notes: "Fixture numeric example"
+  verification_status: verified
+  pdf_page: 45
 
 new_rochelle_revenue_text:
   entity: new_rochelle
@@ -17,6 +19,8 @@ new_rochelle_revenue_text:
   value_text: "Pending Audit"
   page_reference: "p. 12"
   notes: "Fixture text example"
+  verification_status: provisional
+  pdf_page: 12
 
 yonkers_schools_metric_one:
   entity: yonkers_schools
@@ -27,6 +31,8 @@ yonkers_schools_metric_one:
   value_text: ~
   page_reference: "p. 1"
   notes: "Fixture"
+  verification_status: provisional
+  pdf_page: 1
 
 new_rochelle_schools_text_two:
   entity: new_rochelle_schools
@@ -37,3 +43,5 @@ new_rochelle_schools_text_two:
   value_text: "mystring1"
   page_reference: "p. 2"
   notes: "Fixture"
+  verification_status: flagged
+  pdf_page: 2

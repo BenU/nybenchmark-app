@@ -6,9 +6,16 @@ class Observation < ApplicationRecord
   belongs_to :metric
   belongs_to :document
 
+  # -- Enums --
+  enum :verification_status, { provisional: 0, verified: 1, flagged: 2 }, default: :provisional, validate: true
+
+  # -- Callbacks --
+  before_validation :sync_fiscal_year_from_document
+
   # Basic Type Checks
   validates :value_numeric, numericality: true, allow_nil: true
   validates :fiscal_year, presence: true
+  validates :pdf_page, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
 
   # Custom Logical Validations
   validate :fiscal_year_matches_document
@@ -33,6 +40,14 @@ class Observation < ApplicationRecord
     end
   }
 
+  # -- Queue Logic --
+  def next_provisional_observation
+    # 1. Try to find the next provisional item by ID (stable ordering)
+    # 2. If none found (end of list), wrap around to the first provisional item that isn't this one
+    Observation.provisional.where("id > ?", id).order(:id).first ||
+      Observation.provisional.where.not(id: id).order(:id).first
+  end
+
   private
 
   def fiscal_year_matches_document
@@ -41,6 +56,10 @@ class Observation < ApplicationRecord
     return unless fiscal_year != document.fiscal_year
 
     errors.add(:fiscal_year, "must match the document's fiscal year (#{document.fiscal_year})")
+  end
+
+  def sync_fiscal_year_from_document
+    self.fiscal_year = document.fiscal_year if document.present?
   end
 
   def validate_value_exclusivity

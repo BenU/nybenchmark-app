@@ -63,7 +63,7 @@ class ObservationsTest < ApplicationSystemTestCase
 
     click_on "Create Observation"
 
-    assert_text "Observation was successfully created"
+    assert_text "Observation created. Please verify details."
 
     # 5. Verify Logic (Fiscal Year auto-assignment)
     obs = Observation.last
