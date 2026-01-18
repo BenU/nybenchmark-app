@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_14_004824) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_18_183109) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -97,12 +97,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_14_004824) do
     t.bigint "metric_id", null: false
     t.text "notes"
     t.string "page_reference", null: false
+    t.integer "pdf_page"
     t.datetime "updated_at", null: false
     t.decimal "value_numeric", precision: 20, scale: 2
     t.text "value_text"
+    t.integer "verification_status", default: 0, null: false
     t.index ["document_id"], name: "index_observations_on_document_id"
     t.index ["entity_id"], name: "index_observations_on_entity_id"
     t.index ["metric_id"], name: "index_observations_on_metric_id"
+    t.index ["verification_status"], name: "index_observations_on_verification_status"
   end
 
   create_table "users", force: :cascade do |t|

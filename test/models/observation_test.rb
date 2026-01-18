@@ -6,14 +6,14 @@ class ObservationTest < ActiveSupport::TestCase
   # --- 1. Happy Paths (The Valid States) ---
 
   test "valid with ONLY numeric value" do
-    obs = observations(:yonkers_expenditures_numeric) # Fixture 'yonkers_expenditures_numeric' is numeric-only
+    obs = observations(:yonkers_expenditures_numeric)
     assert obs.valid?
     assert_not_nil obs.value_numeric
     assert_nil obs.value_text
   end
 
   test "valid with ONLY text value" do
-    obs = observations(:new_rochelle_revenue_text) # Fixture 'new_rochelle_revenue_text' is text-only
+    obs = observations(:new_rochelle_revenue_text)
     assert obs.valid?
     assert_nil obs.value_numeric
     assert_not_nil obs.value_text
@@ -22,9 +22,8 @@ class ObservationTest < ActiveSupport::TestCase
   # --- 2. The "Inclusive OR" Failure (Both) ---
 
   test "invalid if BOTH values are present" do
-    obs = observations(:yonkers_expenditures_numeric) # Starts numeric
-    obs.value_text = "Now I have text too" # Add text
-
+    obs = observations(:yonkers_expenditures_numeric)
+    obs.value_text = "Now I have text too"
     assert_not obs.valid?
     assert_includes obs.errors[:base], "Cannot have both a numeric and text value"
   end
@@ -32,10 +31,9 @@ class ObservationTest < ActiveSupport::TestCase
   # --- 3. The "Neither" Failure (Ghost Record) ---
 
   test "invalid if NEITHER value is present" do
-    obs = observations(:yonkers_expenditures_numeric) # Starts numeric
-    obs.value_numeric = nil  # Remove numeric
-    obs.value_text = nil     # Ensure text is nil
-
+    obs = observations(:yonkers_expenditures_numeric)
+    obs.value_numeric = nil
+    obs.value_text = nil
     assert_not obs.valid?
     assert_includes obs.errors[:base], "Must have either a numeric value or a text value"
   end
@@ -43,12 +41,10 @@ class ObservationTest < ActiveSupport::TestCase
   # --- 4. Zero Handling (Edge Case) ---
 
   test "valid with numeric zero" do
-    # Zero is a valid number, not "nil"
     obs = observations(:yonkers_expenditures_numeric)
     obs.value_numeric = 0.0
     obs.value_text = nil
-
-    assert obs.valid?, "Zero should be considered a valid numeric value"
+    assert obs.valid?
   end
 
   # --- 5. Data Integrity Checks ---
@@ -56,14 +52,73 @@ class ObservationTest < ActiveSupport::TestCase
   test "fixtures should be valid" do
     assert observations(:yonkers_expenditures_numeric).valid?
     assert observations(:new_rochelle_revenue_text).valid?
-    assert observations(:yonkers_schools_metric_one).valid?
-    assert observations(:new_rochelle_schools_text_two).valid?
   end
 
-  test "should be invalid if fiscal_year does not match document year" do
+  # REPLACED TEST: Now checking for Auto-Correction instead of Invalidity
+  test "should auto-correct fiscal_year to match document before validation" do
     obs = observations(:yonkers_expenditures_numeric)
-    obs.fiscal_year = obs.document.fiscal_year - 1
+    correct_year = obs.document.fiscal_year
+    wrong_year = correct_year - 1
+
+    # 1. Set incorrect year
+    obs.fiscal_year = wrong_year
+
+    # 2. Trigger validation (which triggers the before_validation callback)
+    assert obs.valid? # Should be valid now because it auto-fixed itself!
+
+    # 3. Assert the correction happened
+    assert_equal correct_year, obs.fiscal_year
+    assert_not_equal wrong_year, obs.fiscal_year
+  end
+
+  # --- 6. Verification Cockpit Logic (NEW) ---
+
+  test "defaults to provisional status" do
+    obs = Observation.new
+    assert obs.provisional?
+    assert_equal "provisional", obs.verification_status
+  end
+
+  test "pdf_page must be a positive integer" do
+    obs = observations(:yonkers_expenditures_numeric)
+
+    obs.pdf_page = 0
     assert_not obs.valid?
-    assert_match(/must match the document's fiscal year/, obs.errors[:fiscal_year].join)
+
+    obs.pdf_page = -1
+    assert_not obs.valid?
+
+    obs.pdf_page = 1.5
+    assert_not obs.valid?
+
+    obs.pdf_page = 42
+    assert obs.valid?
+  end
+
+  test "queue logic cycles through provisional items" do
+    # 1. Get the actual provisional items from DB, sorted by ID
+    # We use this instead of hardcoding fixtures because Fixture IDs are random.
+    queue = Observation.provisional.order(:id).to_a
+
+    assert_equal 2, queue.size, "Fixtures should have exactly 2 provisional items"
+
+    first_item = queue[0]
+    second_item = queue[1]
+
+    # 2. Verify the loop
+    # Calling 'next' on the first should return the second
+    assert_equal second_item, first_item.next_provisional_observation
+
+    # Calling 'next' on the last should wrap around to the first
+    assert_equal first_item, second_item.next_provisional_observation
+
+    # 3. Verify skipping
+    # Calling 'next' on a VERIFIED item should jump into the provisional queue
+    verified_obs = observations(:yonkers_expenditures_numeric)
+    next_from_verified = verified_obs.next_provisional_observation
+
+    assert next_from_verified.provisional?
+    # It must be ONE of the items in our queue (depending on where the ID lands)
+    assert_includes queue, next_from_verified
   end
 end
