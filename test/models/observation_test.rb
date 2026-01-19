@@ -100,17 +100,18 @@ class ObservationTest < ActiveSupport::TestCase
     # We use this instead of hardcoding fixtures because Fixture IDs are random.
     queue = Observation.provisional.order(:id).to_a
 
-    assert_equal 2, queue.size, "Fixtures should have exactly 2 provisional items"
+    assert_equal 3, queue.size, "Fixtures should have exactly 3 provisional items"
 
     first_item = queue[0]
     second_item = queue[1]
+    third_item = queue[2]
 
-    # 2. Verify the loop
-    # Calling 'next' on the first should return the second
+    # 2. Verify the chain: first -> second -> third -> first (wrap)
     assert_equal second_item, first_item.next_provisional_observation
+    assert_equal third_item, second_item.next_provisional_observation
 
     # Calling 'next' on the last should wrap around to the first
-    assert_equal first_item, second_item.next_provisional_observation
+    assert_equal first_item, third_item.next_provisional_observation
 
     # 3. Verify skipping
     # Calling 'next' on a VERIFIED item should jump into the provisional queue

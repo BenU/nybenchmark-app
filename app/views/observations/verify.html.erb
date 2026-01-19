@@ -50,23 +50,25 @@
         </div>
       <% end %>
 
-      <div class="bg-blue-50 p-4 rounded border border-blue-100">
-        <%# FIX: Use form.label so Capybara can find the field %>
-        <%= form.label :pdf_page, "PDF Navigator Page (Absolute Index)", class: "block text-sm font-bold text-blue-900 mb-1" %>
-        <div class="flex gap-3">
-          <%= form.number_field :pdf_page, 
-              class: "w-24 rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-lg",
-              placeholder: "1",
-              data: { 
-                pdf_navigator_target: "pageInput",
-                action: "input->pdf-navigator#updatePage"
-              } 
-          %>
-          <span class="text-xs text-blue-600 self-center">
-            Type a page number to jump the viewer instantly.
-          </span>
+      <% if @observation.document&.file&.attached? %>
+        <div class="bg-blue-50 p-4 rounded border border-blue-100">
+          <%= form.label :pdf_page, "PDF Navigator Page (Absolute Index)", class: "block text-sm font-bold text-blue-900 mb-1" %>
+          <div class="flex gap-3">
+            <%= form.number_field :pdf_page,
+                min: 1,
+                class: "w-24 rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-lg",
+                placeholder: "1",
+                data: {
+                  pdf_navigator_target: "pageInput",
+                  action: "input->pdf-navigator#updatePage"
+                }
+            %>
+            <span class="text-xs text-blue-600 self-center">
+              Type a page number to jump the viewer instantly.
+            </span>
+          </div>
         </div>
-      </div>
+      <% end %>
 
       <div class="grid grid-cols-1 gap-6">
         <div>

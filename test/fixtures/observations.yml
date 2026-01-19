@@ -45,3 +45,16 @@ new_rochelle_schools_text_two:
   notes: "Fixture"
   verification_status: flagged
   pdf_page: 2
+
+# Observation from URL-only source (no PDF, no pdf_page)
+yonkers_population_url_only:
+  entity: yonkers
+  document: yonkers_census_data_fy2024
+  metric: one
+  fiscal_year: 2024
+  value_numeric: 211569
+  value_text: ~
+  page_reference: "Table DP05"
+  notes: "Population from Census website - URL-only source"
+  verification_status: provisional
+  pdf_page: ~

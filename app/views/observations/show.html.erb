@@ -13,6 +13,9 @@
   </hgroup>
   <div style="text-align: right; align-self: center;">
     <% if user_signed_in? %>
+      <% if @observation.provisional? %>
+        <%= link_to "Verify this observation", verify_observation_path(@observation), role: "button" %>
+      <% end %>
       <%= link_to "Edit", edit_observation_path(@observation), role: "button", class: "outline" %>
     <% end %>
     <%= link_to "Back", observations_path, role: "button", class: "secondary outline" %>
@@ -47,6 +50,15 @@
       <p><%= @observation.page_reference %></p>
     </div>
   </div>
+
+  <% if @observation.document&.file&.attached? && @observation.pdf_page.present? %>
+    <div class="grid">
+      <div>
+        <strong>PDF Page</strong>
+        <p><%= @observation.pdf_page %></p>
+      </div>
+    </div>
+  <% end %>
 
   <% if @observation.notes.present? %>
     <hr>

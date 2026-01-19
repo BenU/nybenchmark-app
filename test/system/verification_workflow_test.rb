@@ -67,4 +67,40 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     assert_equal 42, @observation.pdf_page
     assert_equal 999.99, @observation.value_numeric
   end
+
+  test "verification cockpit shows PDF Navigator only when PDF is attached" do
+    visit verify_observation_path(@observation)
+
+    # PDF is attached in setup, so PDF Navigator should be visible
+    assert_selector "iframe#pdf-viewer"
+    assert_field "PDF Navigator Page (Absolute Index)"
+    assert_text "Type a page number to jump the viewer instantly"
+  end
+
+  test "verification cockpit hides PDF Navigator for URL-only documents" do
+    # Use the URL-only fixture (no PDF attached by design)
+    url_only_obs = observations(:yonkers_population_url_only)
+
+    # Sanity check: this fixture should have no PDF
+    assert_not url_only_obs.document.file.attached?, "Fixture should be URL-only"
+    assert_nil url_only_obs.pdf_page, "URL-only observation should have nil pdf_page"
+
+    visit verify_observation_path(url_only_obs)
+
+    # Should show the URL fallback message
+    assert_text "No PDF attached to document"
+    assert_link "Open Source URL"
+
+    # PDF Navigator input should NOT be visible
+    assert_no_field "PDF Navigator Page (Absolute Index)"
+    assert_no_text "Type a page number to jump the viewer instantly"
+  end
+
+  test "verification cockpit PDF Navigator has min validation" do
+    visit verify_observation_path(@observation)
+
+    # The number field should have min="1" attribute
+    page_input = find_field("PDF Navigator Page (Absolute Index)")
+    assert_equal "1", page_input[:min], "PDF page input should have min=1 validation"
+  end
 end
