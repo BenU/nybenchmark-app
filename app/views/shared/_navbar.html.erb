@@ -13,14 +13,20 @@
 
     <% if user_signed_in? %>
       <li>
+        <% first_provisional = Observation.provisional.order(:id).first %>
         <% queue_count = Observation.provisional.count %>
-        <%= link_to observations_path(verification_status: "provisional"), 
-                    class: "contrast font-bold flex items-center gap-2", 
-                    style: "text-decoration: none;" do %>
-          Verify Queue
-          <% if queue_count > 0 %>
+        <% if first_provisional %>
+          <%= link_to verify_observation_path(first_provisional),
+                      class: "contrast font-bold flex items-center gap-2",
+                      style: "text-decoration: none;" do %>
+            Verify Queue
             <span class="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full"><%= queue_count %></span>
           <% end %>
+        <% else %>
+          <span class="secondary text-sm flex items-center gap-2" style="text-decoration: none;">
+            Verify Queue
+            <span class="bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+          </span>
         <% end %>
       </li>
 

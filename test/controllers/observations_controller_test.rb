@@ -146,4 +146,68 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     # 2. Assert Redirect to Next
     assert_redirected_to verify_observation_url(next_obs)
   end
+
+  # ==========================================
+  # PDF PAGE DISPLAY
+  # ==========================================
+
+  test "index displays pdf_page when present" do
+    sign_in @user
+    get observations_url
+
+    assert_response :success
+    # The yonkers_expenditures_numeric fixture has pdf_page: 45
+    assert_select "th", text: "PDF Page"
+    assert_select "td", text: "45"
+  end
+
+  test "show displays pdf_page when document has PDF attached" do
+    sign_in @user
+    get observation_url(@observation)
+
+    assert_response :success
+    # Should show PDF Page section
+    assert_select "strong", text: "PDF Page"
+    # The yonkers_expenditures_numeric fixture has pdf_page: 45
+    assert_select "p", text: "45"
+  end
+
+  test "show does not display pdf_page section for URL-only documents" do
+    # Use the URL-only fixture (no PDF attached by design)
+    url_only_obs = observations(:yonkers_population_url_only)
+
+    sign_in @user
+    get observation_url(url_only_obs)
+
+    assert_response :success
+    # Should NOT show PDF Page section for URL-only documents
+    assert_select "strong", text: "PDF Page", count: 0
+  end
+
+  test "show displays verify link for provisional observations when logged in" do
+    sign_in @user
+    get observation_url(@provisional_obs)
+
+    assert_response :success
+    # Look for verify link with correct href and text
+    assert_select "a[href=?]", verify_observation_path(@provisional_obs), text: /Verify this observation/i
+  end
+
+  test "show does not display verify link for verified observations" do
+    sign_in @user
+    get observation_url(@observation) # @observation is verified
+
+    assert_response :success
+    # Should not have "Verify this observation" link for verified observations
+    assert_select "a", text: /Verify this observation/i, count: 0
+  end
+
+  test "show does not display verify link for guests" do
+    # Guest viewing a verified observation (guests can't see provisional)
+    get observation_url(@observation)
+
+    assert_response :success
+    # Guests should not see "Verify this observation" link
+    assert_select "a", text: /Verify this observation/i, count: 0
+  end
 end
