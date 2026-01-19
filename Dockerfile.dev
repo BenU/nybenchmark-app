@@ -15,12 +15,8 @@ ENV RAILS_ENV=development \
     BUNDLE_PATH=/usr/local/bundle \
     BUNDLE_WITHOUT=""
 
-# Install gems
-COPY Gemfile Gemfile.lock ./
-RUN bundle install
-
 # App code
 COPY . .
 
 EXPOSE 3000
-CMD ["bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]
+CMD ["sh", "-c", "bundle check || bundle install && bin/rails server -b 0.0.0.0 -p 3000"]
