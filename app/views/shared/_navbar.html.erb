@@ -12,12 +12,24 @@
       <li><%= link_to "Observations", observations_path, class: "secondary" %></li>
 
     <% if user_signed_in? %>
-      <li><span class="secondary"><%= current_user.email %></span></li>
+      <li>
+        <% queue_count = Observation.provisional.count %>
+        <%= link_to observations_path(verification_status: "provisional"), 
+                    class: "contrast font-bold flex items-center gap-2", 
+                    style: "text-decoration: none;" do %>
+          Verify Queue
+          <% if queue_count > 0 %>
+            <span class="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full"><%= queue_count %></span>
+          <% end %>
+        <% end %>
+      </li>
+
+      <li><span class="secondary text-sm"><%= current_user.email %></span></li>
       <li>
         <%= button_to "Sign out",
                       destroy_user_session_path,
                       method: :delete,
-                      class: "secondary",
+                      class: "secondary outline",
                       form: { data: { turbo: false } } %>
       </li>
     <% else %>

@@ -7,7 +7,8 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     @user = users(:one)
-    @observation = observations(:yonkers_expenditures_numeric)
+    @observation = observations(:yonkers_expenditures_numeric) # verified
+    @provisional_obs = observations(:new_rochelle_revenue_text) # provisional
     @entity = entities(:yonkers)
     @metric = metrics(:expenditures)
     @document = documents(:yonkers_acfr_fy2024)
@@ -22,7 +23,6 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # --- Existing Tests (Preserved) ---
   test "index renders observations" do
     get observations_url
     assert_response :success
@@ -35,7 +35,51 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "tbody tr", count: 1
   end
 
-  # --- NEW: Verification Cockpit Tests ---
+  # ==========================================
+  # GUEST RESTRICTIONS & VIEW LOGIC
+  # ==========================================
+
+  test "guest index sees ONLY verified observations" do
+    get observations_url
+    assert_response :success
+
+    # Should see the verified one
+    assert_select "td", text: "105,000,000.0"
+
+    # Should NOT see the provisional one
+    assert_select "td", text: "Pending Audit", count: 0
+  end
+
+  test "guest denies access to edit" do
+    get edit_observation_url(@observation)
+    assert_redirected_to new_user_session_url
+  end
+
+  test "guest denies access to verify cockpit" do
+    get verify_observation_url(@observation)
+    assert_redirected_to new_user_session_url
+  end
+
+  # ==========================================
+  # USER ACCESS
+  # ==========================================
+
+  test "user index sees ALL observations (verified and provisional)" do
+    sign_in @user
+    get observations_url
+    assert_response :success
+
+    # Should see verified
+    assert_select "td", text: "105,000,000.0"
+    # Should ALSO see provisional
+    assert_select "td", text: "Pending Audit"
+  end
+
+  test "user can access edit" do
+    sign_in @user
+    get edit_observation_url(@observation)
+    assert_response :success
+  end
 
   test "verify requires authentication" do
     get verify_observation_url(@observation)

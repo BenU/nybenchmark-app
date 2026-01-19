@@ -3,15 +3,20 @@
 class ObservationsController < ApplicationController
   include Pagy::Method
 
+  # 1. Strict Security: Guests can ONLY see Index and Show
   before_action :authenticate_user!, except: %i[index show]
+
   before_action :set_observation, only: %i[show edit update destroy verify]
   before_action :set_collections, only: %i[new create edit update verify]
 
   def index
-    scope = Observation.includes(:entity, :metric, :document)
-                       .where(filter_params)
-                       .search(params[:q])
-                       .sorted_by(params[:sort])
+    # 2. Scope Logic: Guests see verified only. Users see all.
+    base_scope = user_signed_in? ? Observation.all : Observation.verified
+
+    scope = base_scope.includes(:entity, :metric, :document)
+                      .where(filter_params)
+                      .search(params[:q])
+                      .sorted_by(params[:sort])
 
     @pagy, @observations = pagy(:offset, scope, limit: 20)
     load_filter_options
@@ -49,11 +54,9 @@ class ObservationsController < ApplicationController
   def update
     @observation.assign_attributes(observation_params)
 
-    # 1. Handle Verification Logic
     is_verify_action = params[:commit_action] == "verify_next"
     @observation.verification_status = :verified if is_verify_action
 
-    # 2. Save and Delegate Response
     if @observation.save
       handle_update_success(is_verify_action)
     else
@@ -83,8 +86,6 @@ class ObservationsController < ApplicationController
 
   def handle_update_failure(is_verify_action)
     filter_documents
-
-    # If error occurred in verify cockpit, re-render cockpit
     if is_verify_action || action_name == "verify" || request.path.include?("/verify")
       @document = @observation.document
       render :verify, status: :unprocessable_content
@@ -103,6 +104,8 @@ class ObservationsController < ApplicationController
   end
 
   def load_filter_options
+    # Only show filter options relevant to the user's view would be ideal,
+    # but for now we load all to keep queries simple.
     @entities_for_filter = Entity.joins(:observations).distinct.order(:name)
     @metrics_for_filter = Metric.joins(:observations).distinct.order(:label)
     @documents_for_filter = Document.joins(:observations).distinct.order(fiscal_year: :desc, title: :asc)
@@ -125,6 +128,7 @@ class ObservationsController < ApplicationController
   end
 
   def filter_params
-    params.permit(:entity_id, :metric_id, :fiscal_year, :document_id).compact_blank
+    # Allow filtering by status
+    params.permit(:entity_id, :metric_id, :fiscal_year, :document_id, :verification_status).compact_blank
   end
 end
