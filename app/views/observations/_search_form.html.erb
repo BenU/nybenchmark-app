@@ -1,0 +1,62 @@
+<form method="get" action="<%= observations_path %>" class="mb-8">
+  <fieldset>
+    <legend>Filters</legend>
+    <div class="grid">
+      <label>
+        Entity
+        <%= select_tag :entity_id, 
+              options_from_collection_for_select(@entities_for_filter, :id, :name, params[:entity_id]), 
+              prompt: "All" %>
+      </label>
+
+      <label>
+        Metric
+        <%# Custom label helper for metric key %>
+        <%= select_tag :metric_id, 
+              options_from_collection_for_select(@metrics_for_filter, :id, ->(m){ "#{m.label} (#{m.key})" }, params[:metric_id]), 
+              prompt: "All" %>
+      </label>
+
+      <label>
+        Document
+        <%= select_tag :document_id, 
+              options_from_collection_for_select(@documents_for_filter, :id, ->(d){ "#{d.title} (FY #{d.fiscal_year})" }, params[:document_id]), 
+              prompt: "All" %>
+      </label>
+    </div>
+
+    <div class="grid">
+      <% if user_signed_in? %>
+        <label>
+          Status
+          <%= select_tag :verification_status, 
+                options_for_select([['Verified', 'verified'], ['Provisional', 'provisional'], ['Flagged', 'flagged']], params[:verification_status]), 
+                prompt: "All Statuses" %>
+        </label>
+      <% end %>
+
+      <label>
+        Fiscal year
+        <%= number_field_tag :fiscal_year, params[:fiscal_year], placeholder: "e.g. 2024" %>
+      </label>
+
+      <label>
+        Search
+        <%= search_field_tag :q, params[:q], placeholder: "Entity, metric, document..." %>
+      </label>
+    </div>
+    
+    <div class="grid">
+       <label>
+        Sort
+        <%= select_tag :sort, 
+              options_for_select([['Most recent', ''], ['Fiscal year ↓', 'fiscal_year_desc'], ['Entity A→Z', 'entity_name_asc']], params[:sort]) %>
+      </label>
+    </div>
+
+    <div class="grid">
+      <%= submit_tag "Apply" %>
+      <%= link_to "Clear", observations_path, role: "button", class: "secondary" %>
+    </div>
+  </fieldset>
+</form>

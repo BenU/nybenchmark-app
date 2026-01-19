@@ -5,8 +5,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: nybenchmark_app_development
-    ports:
-      - "5433:5432" # host:container (lets you connect from Mac via localhost:5433 if you want)
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

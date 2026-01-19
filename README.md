@@ -21,6 +21,7 @@ A civic-tech Rails application for collecting, verifying, and benchmarking finan
     - [Database setup / migrations](#database-setup--migrations)
     - [Stop the application](#stop-the-application)
     - [Running Rails commands](#running-rails-commands)
+    - [Updating gems](#updating-gems)
     - [Workflow tips (aliases)](#workflow-tips-aliases)
     - [Email in development](#email-in-development)
     - [Important: avoid running two servers](#important-avoid-running-two-servers)
@@ -137,8 +138,7 @@ git clone https://github.com/yourusername/nybenchmark-app.git
 cd nybenchmark-app
 ```
 
-> **Tip:** This repo uses a Docker-first workflow. In most cases you should not need to run `bundle install` on the host machine—gems will be installed as part of the container build.
-
+> **Tip:** This repo uses a Docker-first workflow. In most cases you should not need to run bundle install on the host machine—gems are installed inside the web container and cached in a Docker volume (bundle_cache).
 ---
 
 ## Local Development (Docker-first)
@@ -204,6 +204,33 @@ docker compose exec web bin/rails db:migrate
 ```
 
 This ensures commands run against the same environment and database as the app.
+
+---
+
+### Updating gems
+
+Gem version changes are tracked in `Gemfile.lock` (usually via Dependabot PRs).
+
+After pulling a change that updates `Gemfile.lock`:
+
+```bash
+docker compose exec web bundle install
+docker compose exec web bin/rails test
+
+If you already have web running and want to re-check gems automatically on startup:
+```bash
+docker compose restart web
+
+If you change Ruby versions or suspect native-extension issues, wipe the cached bundle volumne and reinstall:
+
+```bash
+docker compose down
+docker volume ls | grep bundle_cache
+docker volume rm <project>_bundle_cache
+docker compose up --build
+
+Avoid running bundle update without gem names. Prefer mergin Dependabot PR's (or targeted bundle updte <gem> when needed).
+
 
 ---
 
