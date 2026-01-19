@@ -38,9 +38,11 @@ services:
       - "3000:3000"
     volumes:
       - .:/rails
-    command: bin/rails server -b 0.0.0.0 -p 3000
+      - bundle_cache:/usr/local/bundle
+    command: sh -c "bundle check || bundle install && bin/rails server -b 0.0.0.0 -p 3000"
     env_file:
       - .env
 
 volumes:
   postgres_data:
+  bundle_cache:
