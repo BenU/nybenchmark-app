@@ -3,18 +3,14 @@
 require "application_system_test_case"
 
 class AuthenticationNavTest < ApplicationSystemTestCase
+  include PdfTestHelper
+
   setup do
     @user = users(:one)
     @provisional_obs = observations(:new_rochelle_revenue_text)
 
-    # Attach PDF so cockpit renders properly
-    unless @provisional_obs.document.file.attached?
-      @provisional_obs.document.file.attach(
-        io: StringIO.new("%PDF-1.4 simulated"),
-        filename: "test.pdf",
-        content_type: "application/pdf"
-      )
-    end
+    # Attach real PDF so PDF.js viewer renders properly
+    attach_sample_pdf(@provisional_obs.document)
   end
 
   test "navbar shows Sign in when logged out" do
@@ -40,9 +36,9 @@ class AuthenticationNavTest < ApplicationSystemTestCase
     # Click should go to verification cockpit, not the filtered observations list
     click_link "Verify Queue"
 
-    # Should be on the verify cockpit page
+    # Should be on the verify cockpit page with PDF.js canvas-based viewer
     assert_text "Verification Cockpit"
-    assert_selector "iframe#pdf-viewer"
+    assert_selector "[data-pdf-navigator-target='canvas']"
     assert_selector "form.verification-form"
   end
 

@@ -4,6 +4,7 @@ require "test_helper"
 
 class ObservationsControllerTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
+  include PdfTestHelper
 
   setup do
     @user = users(:one)
@@ -13,14 +14,8 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     @metric = metrics(:expenditures)
     @document = documents(:yonkers_acfr_fy2024)
 
-    # FIX for Failure C: Attach a fake PDF so the View renders the Iframe
-    unless @document.file.attached?
-      @document.file.attach(
-        io: StringIO.new("%PDF-1.4 simulated content"),
-        filename: "test.pdf",
-        content_type: "application/pdf"
-      )
-    end
+    # Attach a real PDF so the PDF.js viewer can render
+    attach_sample_pdf(@document)
   end
 
   test "index renders observations" do
@@ -91,9 +86,33 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     get verify_observation_url(@observation)
 
     assert_response :success
-    # This assertion now passes because we attached the file in setup
-    assert_select "iframe#pdf-viewer"
+    # PDF.js canvas-based viewer instead of iframe
+    assert_select "[data-pdf-navigator-target='canvas']"
     assert_select "form.verification-form"
+  end
+
+  test "verify renders PDF.js toolbar controls" do
+    sign_in @user
+    get verify_observation_url(@observation)
+
+    assert_response :success
+    # Toolbar navigation buttons
+    assert_select "button[data-action='pdf-navigator#previousPage']"
+    assert_select "button[data-action='pdf-navigator#nextPage']"
+    # Zoom dropdown
+    assert_select "[data-pdf-navigator-target='zoomSelect']"
+    # Capture button
+    assert_select "button[data-action='pdf-navigator#captureCurrentPage']"
+  end
+
+  test "verify sets correct PDF.js data attributes" do
+    sign_in @user
+    get verify_observation_url(@observation)
+
+    assert_response :success
+    # Check data attributes are set on the controller element
+    assert_select "[data-controller='pdf-navigator'][data-pdf-navigator-initial-page-value='#{@observation.pdf_page}']"
+    assert_select "[data-controller='pdf-navigator'][data-pdf-navigator-url-value]"
   end
 
   test "create redirects DIRECTLY to verification cockpit" do
@@ -124,9 +143,7 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     next_obs = current_obs.next_provisional_observation
 
     # Ensure current_obs document also has a file attached (for robustness)
-    unless current_obs.document.file.attached?
-      current_obs.document.file.attach(io: StringIO.new("pdf"), filename: "test.pdf", content_type: "application/pdf")
-    end
+    attach_sample_pdf(current_obs.document)
 
     patch observation_url(current_obs), params: {
       commit_action: "verify_next",
