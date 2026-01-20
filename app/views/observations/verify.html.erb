@@ -1,16 +1,80 @@
-<div class="w-full h-screen flex flex-col md:flex-row overflow-hidden" 
-     data-controller="pdf-navigator">
+<div class="w-full h-screen flex flex-col md:flex-row overflow-hidden"
+     data-controller="pdf-navigator"
+     data-pdf-navigator-url-value="<%= @observation.document&.file&.attached? ? rails_blob_url(@observation.document.file, disposition: :inline) : '' %>"
+     data-pdf-navigator-initial-page-value="<%= @observation.pdf_page || 1 %>">
 
   <%# LEFT PANE: PDF Viewer %>
-  <div class="w-full md:w-1/2 h-1/2 md:h-full border-r border-gray-300 bg-gray-100 relative">
+  <div class="w-full md:w-1/2 h-1/2 md:h-full border-r border-gray-300 bg-gray-100 flex flex-col">
     <% if @observation.document&.file&.attached? %>
-      <iframe 
-        src="<%= rails_blob_path(@observation.document.file, disposition: :inline) %>#page=<%= @observation.pdf_page || 1 %>" 
-        class="w-full h-full" 
-        frameborder="0"
-        data-pdf-navigator-target="iframe"
-        id="pdf-viewer">
-      </iframe>
+      <%# Toolbar %>
+      <div class="flex items-center gap-2 px-3 py-2 bg-gray-200 border-b border-gray-300 flex-shrink-0">
+        <%# Navigation %>
+        <button type="button"
+                data-action="pdf-navigator#previousPage"
+                class="px-2 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm font-medium"
+                title="Previous page (Left Arrow)">
+          &#9664;
+        </button>
+        <span class="text-sm font-mono">
+          <span data-pdf-navigator-target="pageDisplay">1</span>
+          /
+          <span data-pdf-navigator-target="totalPages">?</span>
+        </span>
+        <button type="button"
+                data-action="pdf-navigator#nextPage"
+                class="px-2 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm font-medium"
+                title="Next page (Right Arrow)">
+          &#9654;
+        </button>
+
+        <span class="mx-2 text-gray-300">|</span>
+
+        <%# Zoom dropdown %>
+        <select data-pdf-navigator-target="zoomSelect"
+                data-action="change->pdf-navigator#zoomChanged"
+                class="text-sm border border-gray-300 rounded px-2 py-1 bg-white">
+          <option value="fit-width" selected>Fit Width</option>
+          <option value="fit-page">Fit Page</option>
+          <option value="0.5">50%</option>
+          <option value="0.75">75%</option>
+          <option value="1">100%</option>
+          <option value="1.25">125%</option>
+          <option value="1.5">150%</option>
+          <option value="2">200%</option>
+        </select>
+
+        <span class="mx-2 text-gray-300">|</span>
+
+        <%# Capture button %>
+        <button type="button"
+                data-action="pdf-navigator#captureCurrentPage"
+                class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium"
+                title="Capture current page to form">
+          Capture Page
+        </button>
+      </div>
+
+      <%# Canvas container %>
+      <div class="flex-1 overflow-auto relative" data-pdf-navigator-target="container">
+        <canvas data-pdf-navigator-target="canvas"
+                data-action="click->pdf-navigator#canvasClicked"
+                class="mx-auto cursor-pointer">
+        </canvas>
+
+        <%# Loading overlay %>
+        <div data-pdf-navigator-target="loading"
+             class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-90">
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-gray-600 text-sm">Loading PDF...</span>
+          </div>
+        </div>
+
+        <%# Error overlay %>
+        <div data-pdf-navigator-target="error"
+             class="hidden absolute inset-0 flex items-center justify-center bg-red-50 text-red-700 p-6 text-center">
+        </div>
+      </div>
     <% else %>
       <div class="flex flex-col items-center justify-center h-full text-gray-500 p-6 text-center">
         <p>No PDF attached to document.</p>
@@ -33,7 +97,7 @@
         </p>
       </div>
       <span class="px-3 py-1 rounded-full text-sm font-semibold uppercase tracking-wide
-        <%= @observation.verified? ? 'bg-green-100 text-green-800' : 
+        <%= @observation.verified? ? 'bg-green-100 text-green-800' :
             @observation.flagged? ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' %>">
         <%= @observation.verification_status %>
       </span>
@@ -52,19 +116,19 @@
 
       <% if @observation.document&.file&.attached? %>
         <div class="bg-blue-50 p-4 rounded border border-blue-100">
-          <%= form.label :pdf_page, "PDF Navigator Page (Absolute Index)", class: "block text-sm font-bold text-blue-900 mb-1" %>
-          <div class="flex gap-3">
+          <%= form.label :pdf_page, "PDF Page (Absolute Index)", class: "block text-sm font-bold text-blue-900 mb-1" %>
+          <div class="flex gap-3 items-center">
             <%= form.number_field :pdf_page,
                 min: 1,
                 class: "w-24 rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-lg",
                 placeholder: "1",
                 data: {
                   pdf_navigator_target: "pageInput",
-                  action: "input->pdf-navigator#updatePage"
+                  action: "input->pdf-navigator#goToPage"
                 }
             %>
-            <span class="text-xs text-blue-600 self-center">
-              Type a page number to jump the viewer instantly.
+            <span class="text-xs text-blue-600">
+              Type to navigate PDF, or click PDF/button to capture.
             </span>
           </div>
         </div>
@@ -93,23 +157,23 @@
 
         <div>
           <%= form.label :verification_status, "Status", class: "block text-sm font-medium text-gray-700" %>
-          <%= form.select :verification_status, 
+          <%= form.select :verification_status,
               Observation.verification_statuses.keys.map { |k| [k.humanize, k] },
               {},
-              class: "mt-1 block w-full rounded border-gray-300 shadow-sm" 
+              class: "mt-1 block w-full rounded border-gray-300 shadow-sm"
           %>
         </div>
       </div>
 
       <div class="pt-6 border-t border-gray-200 flex gap-4">
-        <%= form.button "Verify & Next", 
-            name: "commit_action", 
+        <%= form.button "Verify & Next",
+            name: "commit_action",
             value: "verify_next",
-            class: "px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-bold cursor-pointer shadow" 
+            class: "px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-bold cursor-pointer shadow"
         %>
-        
-        <%= form.submit "Save & Stay", 
-            class: "px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 cursor-pointer" 
+
+        <%= form.submit "Save & Stay",
+            class: "px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 cursor-pointer"
         %>
 
         <%= link_to "Cancel", observations_path, class: "px-4 py-3 text-gray-500 hover:text-gray-900 ml-auto" %>
