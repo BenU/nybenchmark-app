@@ -5,13 +5,24 @@
 # Manual refresh: bin/rails sitemap:refresh
 #
 # Discovery: Search engines find the sitemap via robots.txt
-# Google deprecated ping endpoints in June 2023
+# Sitemaps are uploaded to DigitalOcean Spaces (S3-compatible)
 
 SitemapGenerator::Sitemap.default_host = "https://app.nybenchmark.org"
 
-# Store sitemaps in public/ for direct serving by Rails
-SitemapGenerator::Sitemap.public_path = "public/"
-SitemapGenerator::Sitemap.sitemaps_path = ""
+# Upload to DigitalOcean Spaces (S3-compatible storage)
+SitemapGenerator::Sitemap.adapter = SitemapGenerator::AwsSdkAdapter.new(
+  ENV.fetch("DO_SPACES_BUCKET", "nybenchmark-production"),
+  aws_access_key_id: ENV.fetch("DO_SPACES_KEY", nil),
+  aws_secret_access_key: ENV.fetch("DO_SPACES_SECRET", nil),
+  aws_region: "us-east-1",
+  endpoint: "https://nyc3.digitaloceanspaces.com"
+)
+
+# Store sitemaps in a 'sitemaps' folder within the bucket
+SitemapGenerator::Sitemap.sitemaps_path = "sitemaps/"
+
+# Public URL where sitemaps will be accessible
+SitemapGenerator::Sitemap.sitemaps_host = "https://nybenchmark-production.nyc3.digitaloceanspaces.com/"
 
 SitemapGenerator::Sitemap.create do
   # Root page is added automatically

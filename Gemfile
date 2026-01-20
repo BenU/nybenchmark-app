@@ -19,10 +19,11 @@ gem "pagy", "~> 43.2"
 # Data Integrity & Auditing
 gem "paper_trail"
 
-# Sitemap generation
+# Sitemap generation (with S3/DO Spaces upload support)
+gem "fog-aws"
 gem "sitemap_generator"
 
-gem "aws-sdk-s3", require: false
+gem "aws-sdk-s3"
 
 # Authorization (Optional but recommended for the future)
 # gem "pundit"
