@@ -63,11 +63,7 @@ env:
     SOLID_QUEUE_ENABLED: false
     SMTP_PORT: 2525
 
-# 9. Post-Deploy Hook (Sitemap Regeneration)
-hooks:
-  post-deploy: bin/rails sitemap:refresh
-
-# 10. Database Accessory
+# 9. Database Accessory
 accessories:
   db:
     image: postgres:17
