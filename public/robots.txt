@@ -18,5 +18,5 @@ Disallow: /users/unlock
 # Exclude Rails internal routes
 Disallow: /rails/
 
-# Sitemap (uncomment when available)
-# Sitemap: https://app.nybenchmark.org/sitemap.xml
+# Sitemap for search engine discovery
+Sitemap: https://app.nybenchmark.org/sitemap.xml.gz
