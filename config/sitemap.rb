@@ -9,9 +9,6 @@
 
 SitemapGenerator::Sitemap.default_host = "https://app.nybenchmark.org"
 
-# Disable deprecated search engine pings
-SitemapGenerator::Sitemap.ping_search_engines = false
-
 # Store sitemaps in public/ for direct serving by Rails
 SitemapGenerator::Sitemap.public_path = "public/"
 SitemapGenerator::Sitemap.sitemaps_path = ""
