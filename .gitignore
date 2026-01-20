@@ -30,8 +30,9 @@
 
 /public/assets
 
-# Ignore generated sitemaps (created on deploy)
+# Ignore generated sitemaps (uploaded to DO Spaces, not needed locally)
 /public/sitemap*.xml.gz
+/public/sitemaps/
 
 # Ignore key files for decrypting credentials and more.
 /config/*.key
