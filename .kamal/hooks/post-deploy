@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Post-deploy hook: Regenerate sitemap after successful deployment
+# The sitemap is stored in public/ and served directly by Rails
+
+echo "Regenerating sitemap..."
+kamal app exec -- bin/rails sitemap:refresh
+echo "Sitemap regeneration complete."
