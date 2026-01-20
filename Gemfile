@@ -19,6 +19,9 @@ gem "pagy", "~> 43.2"
 # Data Integrity & Auditing
 gem "paper_trail"
 
+# Sitemap generation
+gem "sitemap_generator"
+
 gem "aws-sdk-s3", require: false
 
 # Authorization (Optional but recommended for the future)
