@@ -1,1 +1,22 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+# robots.txt for app.nybenchmark.org
+# Policy: Maximum discoverability for search engines and AI crawlers
+#
+# This app benchmarks financial/operational data from NY State local governments.
+# We welcome indexing to improve public access to government transparency data.
+
+User-agent: *
+Allow: /
+
+# Exclude authentication pages (no useful content)
+Disallow: /users/sign_in
+Disallow: /users/sign_up
+Disallow: /users/sign_out
+Disallow: /users/password
+Disallow: /users/confirmation
+Disallow: /users/unlock
+
+# Exclude Rails internal routes
+Disallow: /rails/
+
+# Sitemap (uncomment when available)
+# Sitemap: https://app.nybenchmark.org/sitemap.xml
