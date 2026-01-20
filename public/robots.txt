@@ -18,5 +18,5 @@ Disallow: /users/unlock
 # Exclude Rails internal routes
 Disallow: /rails/
 
-# Sitemap for search engine discovery
-Sitemap: https://app.nybenchmark.org/sitemap.xml.gz
+# Sitemap for search engine discovery (hosted on DigitalOcean Spaces)
+Sitemap: https://nybenchmark-production.nyc3.digitaloceanspaces.com/sitemaps/sitemap.xml.gz
