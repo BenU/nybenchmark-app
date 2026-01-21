@@ -6,6 +6,9 @@ class Observation < ApplicationRecord
   belongs_to :metric
   belongs_to :document
 
+  # Allow editing document source_url from observation form
+  accepts_nested_attributes_for :document, update_only: true
+
   # -- Enums --
   enum :verification_status, { provisional: 0, verified: 1, flagged: 2 }, default: :provisional, validate: true
 

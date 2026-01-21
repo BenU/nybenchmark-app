@@ -79,7 +79,10 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
 
     # Should show the URL fallback message
     assert_text "No PDF attached"
-    assert_link "Open Source URL"
+
+    # Should display actual URL, not generic "Open Source URL" text
+    source_url = url_only_obs.document.source_url
+    assert_link source_url, href: source_url
 
     # PDF Navigator input should NOT be visible
     assert_no_field "PDF Page:"
@@ -209,6 +212,74 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
   end
 
   # ==========================================
+  # VERIFY COCKPIT UI REFINEMENTS
+  # ==========================================
+
+  test "verification cockpit header shows metric and entity" do
+    visit verify_observation_path(@observation)
+
+    # Header should include both metric label AND entity name
+    assert_text "Verify: Total General Fund Revenue for New Rochelle"
+  end
+
+  test "verification cockpit header has readable font size" do
+    visit verify_observation_path(@observation)
+
+    # Find the header element - should have larger font than 11px
+    header = find(".verify-header-title")
+    # Just verify the element exists with proper class
+    assert header.present?, "Should have header with verify-header-title class"
+  end
+
+  test "verification cockpit shows document info below header" do
+    visit verify_observation_path(@observation)
+
+    # Document title should be visible
+    assert_text @observation.document.title
+    # Fiscal year should be visible
+    assert_text "FY#{@observation.fiscal_year}"
+  end
+
+  test "verification cockpit has source URL input field" do
+    visit verify_observation_path(@observation)
+
+    # Should have a source URL input field
+    assert_field "Source URL"
+    url_input = find_field("Source URL")
+
+    # Should be pre-populated with current document source_url
+    assert_equal @observation.document.source_url, url_input.value
+  end
+
+  test "verification cockpit source URL can be edited and saved" do
+    visit verify_observation_path(@observation)
+
+    new_url = "https://updated-source.example.com/document.pdf"
+    fill_in "Source URL", with: new_url
+
+    click_button "Save"
+
+    # Should save and redirect to show page
+    assert_text "Observation was successfully updated"
+
+    # Revisit verify page to confirm the URL was saved
+    visit verify_observation_path(@observation)
+    url_input = find_field("Source URL")
+    assert_equal new_url, url_input.value, "Source URL should persist after save"
+  end
+
+  test "URL-only documents show source URL as link in left pane" do
+    url_only_obs = observations(:yonkers_population_url_only)
+    visit verify_observation_path(url_only_obs)
+
+    # The actual URL should be displayed as clickable link text
+    source_url = url_only_obs.document.source_url
+    link = find("a", text: source_url)
+    assert_equal source_url, link[:href]
+    assert_equal "_blank", link[:target], "Link should open in new tab"
+  end
+
+  # ==========================================
   # CONTINUOUS SCROLL TESTS
   # ==========================================
 
@@ -281,7 +352,7 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
 
     # First navigate to page 1 (fixture may have different initial page)
     fill_in "PDF Page:", with: "1"
-    sleep 0.5
+    sleep 0.7
 
     # Verify we're on page 1
     page_display = find("[data-pdf-navigator-target='pageDisplay']")
@@ -290,10 +361,11 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     # Click next
     click_button "▶" # Next button
 
-    # Wait for scroll
-    sleep 0.5
+    # Wait for scroll animation to complete
+    sleep 0.7
 
-    # Should now show page 2
+    # Re-find and verify page 2
+    page_display = find("[data-pdf-navigator-target='pageDisplay']")
     assert_equal "2", page_display.text, "Next button should scroll to page 2"
   end
 

@@ -119,10 +119,10 @@ class ObservationsController < ApplicationController
   end
 
   def observation_params
-    params.expect(observation: %i[
-                    entity_id document_id metric_id value_numeric value_text
-                    page_reference notes verification_status pdf_page
-                  ])
+    permitted = %i[entity_id document_id metric_id value_numeric value_text
+                   page_reference notes verification_status pdf_page]
+    permitted << { document_attributes: %i[id source_url] }
+    params.expect(observation: permitted)
   end
 
   def filter_params
