@@ -339,4 +339,49 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_match(/No more provisional observations/, flash[:notice])
   end
+
+  # ==========================================
+  # VERIFY COCKPIT UI REFINEMENTS
+  # ==========================================
+
+  test "verify cockpit renders source URL input field" do
+    sign_in @user
+    get verify_observation_url(@observation)
+
+    assert_response :success
+    assert_select "input[name='observation[document_attributes][source_url]']"
+    assert_select "label", text: /Source URL/
+  end
+
+  test "verify cockpit header shows metric and entity" do
+    sign_in @user
+    get verify_observation_url(@observation)
+
+    assert_response :success
+    # Header should show "Verify: {metric} for {entity}"
+    assert_select ".verify-header-title", text: /Verify:.*for/
+  end
+
+  test "update saves document source_url via nested attributes" do
+    sign_in @user
+
+    new_url = "https://updated-source.example.com/new-document.pdf"
+    original_url = @observation.document.source_url
+
+    patch observation_url(@observation), params: {
+      observation: {
+        value_numeric: @observation.value_numeric,
+        document_attributes: {
+          id: @observation.document.id,
+          source_url: new_url
+        }
+      }
+    }
+
+    assert_redirected_to observation_url(@observation)
+
+    @observation.reload
+    assert_equal new_url, @observation.document.source_url, "Document source_url should be updated"
+    assert_not_equal original_url, @observation.document.source_url
+  end
 end

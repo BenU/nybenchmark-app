@@ -3,13 +3,13 @@
   <head>
     <%= render "shared/head" %>
     <style>
-      /* Verify cockpit specific overrides */
-      body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-      header.container { margin: 0; padding: 0.5rem 1rem; max-width: 100%; }
+      /* Verify cockpit specific overrides - scoped to avoid Turbo issues */
+      .verify-layout { margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+      .verify-layout header.container { margin: 0; padding: 0.5rem 1rem; max-width: 100%; }
     </style>
   </head>
 
-  <body class="h-full flex flex-col">
+  <body class="verify-layout">
     <%= render "shared/navbar" %>
 
     <%# Flash as floating toast %>

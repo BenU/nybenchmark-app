@@ -60,7 +60,7 @@
       <div class="flex flex-col items-center justify-center h-full text-gray-500 p-4 text-center">
         <p class="text-sm">No PDF attached.</p>
         <% if @observation.document.source_url.present? %>
-          <a href="<%= @observation.document.source_url %>" target="_blank" class="text-blue-600 underline text-sm mt-1">Open Source URL</a>
+          <a href="<%= @observation.document.source_url %>" target="_blank" class="text-blue-600 underline text-sm mt-1 break-all"><%= @observation.document.source_url %></a>
         <% end %>
       </div>
     <% end %>
@@ -68,13 +68,13 @@
 
   <%# RIGHT PANE: Verification Form (40% width) - COMPACT %>
   <div class="w-full md:w-2/5 h-1/2 md:h-full overflow-y-auto px-2 py-1 bg-white">
-    <%# Header row - compact, high contrast %>
-    <div class="flex justify-between items-center mb-1">
+    <%# Header row %>
+    <div class="flex justify-between items-start mb-2">
       <div>
-        <span class="text-[11px] font-semibold" style="color: #111;">Verify: <%= @observation.metric.label %></span>
-        <p class="text-[10px] text-gray-600"><%= @observation.entity.name %> (FY<%= @observation.fiscal_year %>)</p>
+        <h2 class="verify-header-title text-base font-semibold text-gray-900">Verify: <%= @observation.metric.label %> for <%= @observation.entity.name %></h2>
+        <p class="text-sm text-gray-600"><%= @observation.document.title %> (FY<%= @observation.fiscal_year %>)</p>
       </div>
-      <span class="px-2 py-0.5 rounded text-xs font-semibold uppercase
+      <span class="px-2 py-0.5 rounded text-xs font-semibold uppercase flex-shrink-0
         <%= @observation.verified? ? 'bg-green-100 text-green-800' :
             @observation.flagged? ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' %>">
         <%= @observation.verification_status %>
@@ -111,6 +111,15 @@
         <%= form.label :page_reference, "Citation (printed page)", class: "block text-xs font-medium text-gray-700" %>
         <%= form.text_field :page_reference, placeholder: "p. 42", class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
       </div>
+
+      <%# Source URL - editable to confirm/correct document source %>
+      <%= form.fields_for :document, @observation.document do |doc_form| %>
+        <%= doc_form.hidden_field :id %>
+        <div class="mb-1">
+          <%= doc_form.label :source_url, "Source URL", class: "block text-xs font-medium text-gray-700" %>
+          <%= doc_form.url_field :source_url, class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1", placeholder: "https://..." %>
+        </div>
+      <% end %>
 
       <%# Values row with note %>
       <div class="mb-1">
