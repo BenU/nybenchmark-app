@@ -27,19 +27,19 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     # 1. Assert Split Screen Layout - PDF.js canvas-based viewer
     assert_selector "[data-pdf-navigator-target='canvas']"
     assert_selector "form.verification-form"
-    assert_text "Verification Cockpit"
+    assert_text "Verify:"
     assert_text "Provisional"
 
     # 2. Assert PDF.js toolbar elements
     assert_selector "[data-pdf-navigator-target='pageDisplay']"
     assert_selector "[data-pdf-navigator-target='totalPages']"
     assert_selector "[data-pdf-navigator-target='zoomSelect']"
-    assert_button "Capture Page"
+    assert_button "Capture"
 
     # 3. Verify & Next Workflow
-    fill_in "Value (Text - Optional)", with: ""
-    fill_in "Value (Numeric)", with: "999.99"
-    fill_in "PDF Page (Absolute Index)", with: "42"
+    fill_in "Text", with: ""
+    fill_in "Numeric", with: "999.99"
+    fill_in "PDF Page:", with: "42"
     select "Verified", from: "Status"
 
     click_button "Verify & Next"
@@ -48,7 +48,7 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     # Should redirect to the NEXT provisional observation found earlier
     assert_current_path verify_observation_path(@expected_next)
 
-    assert_text "Notice: Observation verified. Find next item below..."
+    assert_text "Observation verified. Find next item below..."
 
     # Check that the original observation was updated
     @observation.reload
@@ -62,8 +62,8 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
 
     # PDF is attached in setup, so PDF.js viewer should be visible
     assert_selector "[data-pdf-navigator-target='canvas']"
-    assert_field "PDF Page (Absolute Index)"
-    assert_text "Type to navigate PDF, or click PDF/button to capture"
+    assert_field "PDF Page:"
+    assert_text "Click PDF or Capture"
   end
 
   test "verification cockpit hides PDF viewer for URL-only documents" do
@@ -77,11 +77,11 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     visit verify_observation_path(url_only_obs)
 
     # Should show the URL fallback message
-    assert_text "No PDF attached to document"
+    assert_text "No PDF attached"
     assert_link "Open Source URL"
 
     # PDF Navigator input should NOT be visible
-    assert_no_field "PDF Page (Absolute Index)"
+    assert_no_field "PDF Page:"
     assert_no_text "Type to navigate PDF"
   end
 
@@ -89,7 +89,7 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     visit verify_observation_path(@observation)
 
     # The number field should have min="1" attribute
-    page_input = find_field("PDF Page (Absolute Index)")
+    page_input = find_field("PDF Page:")
     assert_equal "1", page_input[:min], "PDF page input should have min=1 validation"
   end
 
@@ -125,13 +125,13 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     wait_for_pdf_load
 
     # Clear the existing page value
-    fill_in "PDF Page (Absolute Index)", with: ""
+    fill_in "PDF Page:", with: ""
 
     # Click the Capture Page button
-    click_button "Capture Page"
+    click_button "Capture"
 
     # The page input should now have the current page value
-    page_input = find_field("PDF Page (Absolute Index)")
+    page_input = find_field("PDF Page:")
     assert_not_empty page_input.value, "Capture Page should populate the form field"
   end
 
@@ -169,6 +169,38 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
 
     # Error element should exist (hidden by default, so use visible: :all)
     assert_selector "[data-pdf-navigator-target='error']", visible: :all
+  end
+
+  # ==========================================
+  # SKIP & NEXT WORKFLOW
+  # ==========================================
+
+  test "verification cockpit has Skip & Next button" do
+    visit verify_observation_path(@observation)
+
+    assert_button "Skip"
+  end
+
+  test "Skip & Next saves changes and moves to next without verifying" do
+    visit verify_observation_path(@observation)
+
+    # Make some changes
+    fill_in "Text", with: ""
+    fill_in "Numeric", with: "555.55"
+    fill_in "PDF Page:", with: "77"
+
+    # Click Skip & Next (don't change status)
+    click_button "Skip"
+
+    # Should redirect to next provisional observation
+    assert_current_path verify_observation_path(@expected_next)
+    assert_text "Saved. Skipped to next item"
+
+    # Verify the original observation was saved but NOT verified
+    @observation.reload
+    assert_equal "provisional", @observation.verification_status, "Status should remain provisional"
+    assert_equal 77, @observation.pdf_page
+    assert_equal 555.55, @observation.value_numeric
   end
 
   private

@@ -47,16 +47,17 @@
     </div>
     <div>
       <strong>Page Reference</strong>
-      <p><%= @observation.page_reference %></p>
+      <p><%= @observation.page_reference.presence || "—" %></p>
     </div>
   </div>
 
-  <% if @observation.document&.file&.attached? && @observation.pdf_page.present? %>
+  <% if @observation.document&.file&.attached? %>
     <div class="grid">
       <div>
-        <strong>PDF Page</strong>
-        <p><%= @observation.pdf_page %></p>
+        <strong>PDF Page (Absolute Index)</strong>
+        <p><%= @observation.pdf_page.presence || "—" %></p>
       </div>
+      <div></div>
     </div>
   <% end %>
 

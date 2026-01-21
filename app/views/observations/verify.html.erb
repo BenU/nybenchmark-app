@@ -1,38 +1,28 @@
-<div class="w-full h-screen flex flex-col md:flex-row overflow-hidden"
+<div class="w-full h-full flex flex-col md:flex-row overflow-hidden"
      data-controller="pdf-navigator"
      data-pdf-navigator-url-value="<%= @observation.document&.file&.attached? ? rails_blob_url(@observation.document.file, disposition: :inline) : '' %>"
      data-pdf-navigator-initial-page-value="<%= @observation.pdf_page || 1 %>">
 
-  <%# LEFT PANE: PDF Viewer %>
-  <div class="w-full md:w-1/2 h-1/2 md:h-full border-r border-gray-300 bg-gray-100 flex flex-col">
+  <%# LEFT PANE: PDF Viewer (60% width on desktop) %>
+  <div class="w-full md:w-3/5 h-1/2 md:h-full border-r border-gray-300 bg-gray-100 flex flex-col">
     <% if @observation.document&.file&.attached? %>
-      <%# Toolbar %>
-      <div class="flex items-center gap-2 px-3 py-2 bg-gray-200 border-b border-gray-300 flex-shrink-0">
-        <%# Navigation %>
+      <%# Toolbar - compact %>
+      <div class="flex items-center gap-1 px-1 py-0.5 bg-gray-200 border-b border-gray-300 flex-shrink-0">
         <button type="button"
                 data-action="pdf-navigator#previousPage"
-                class="px-2 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm font-medium"
-                title="Previous page (Left Arrow)">
-          &#9664;
-        </button>
-        <span class="text-sm font-mono">
-          <span data-pdf-navigator-target="pageDisplay">1</span>
-          /
-          <span data-pdf-navigator-target="totalPages">?</span>
+                class="px-2 py-0.5 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
+                title="Previous page">&#9664;</button>
+        <span class="text-xs font-mono">
+          <span data-pdf-navigator-target="pageDisplay">1</span>/<span data-pdf-navigator-target="totalPages">?</span>
         </span>
         <button type="button"
                 data-action="pdf-navigator#nextPage"
-                class="px-2 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm font-medium"
-                title="Next page (Right Arrow)">
-          &#9654;
-        </button>
-
-        <span class="mx-2 text-gray-300">|</span>
-
-        <%# Zoom dropdown %>
+                class="px-2 py-0.5 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
+                title="Next page">&#9654;</button>
+        <span class="mx-1 text-gray-300">|</span>
         <select data-pdf-navigator-target="zoomSelect"
                 data-action="change->pdf-navigator#zoomChanged"
-                class="text-sm border border-gray-300 rounded px-2 py-1 bg-white">
+                class="text-xs border border-gray-300 rounded px-1 py-0.5 bg-white">
           <option value="fit-width" selected>Fit Width</option>
           <option value="fit-page">Fit Page</option>
           <option value="0.5">50%</option>
@@ -42,141 +32,132 @@
           <option value="1.5">150%</option>
           <option value="2">200%</option>
         </select>
-
-        <span class="mx-2 text-gray-300">|</span>
-
-        <%# Capture button %>
+        <span class="mx-1 text-gray-300">|</span>
         <button type="button"
                 data-action="pdf-navigator#captureCurrentPage"
-                class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium"
-                title="Capture current page to form">
-          Capture Page
-        </button>
+                class="px-2 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs"
+                title="Capture current page to form">Capture</button>
       </div>
 
       <%# Canvas container %>
       <div class="flex-1 overflow-auto relative" data-pdf-navigator-target="container">
         <canvas data-pdf-navigator-target="canvas"
                 data-action="click->pdf-navigator#canvasClicked"
-                class="mx-auto cursor-pointer">
-        </canvas>
-
-        <%# Loading overlay %>
+                class="mx-auto cursor-pointer"></canvas>
         <div data-pdf-navigator-target="loading"
              class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-90">
-          <div class="flex flex-col items-center gap-2">
-            <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <span class="text-gray-600 text-sm">Loading PDF...</span>
+          <div class="flex flex-col items-center gap-1">
+            <div class="w-6 h-6 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-gray-600 text-xs">Loading...</span>
           </div>
         </div>
-
-        <%# Error overlay %>
         <div data-pdf-navigator-target="error"
-             class="hidden absolute inset-0 flex items-center justify-center bg-red-50 text-red-700 p-6 text-center">
-        </div>
+             class="hidden absolute inset-0 flex items-center justify-center bg-red-50 text-red-700 p-4 text-center text-sm"></div>
       </div>
     <% else %>
-      <div class="flex flex-col items-center justify-center h-full text-gray-500 p-6 text-center">
-        <p>No PDF attached to document.</p>
+      <div class="flex flex-col items-center justify-center h-full text-gray-500 p-4 text-center">
+        <p class="text-sm">No PDF attached.</p>
         <% if @observation.document.source_url.present? %>
-          <a href="<%= @observation.document.source_url %>" target="_blank" class="text-blue-600 underline mt-2">
-            Open Source URL
-          </a>
+          <a href="<%= @observation.document.source_url %>" target="_blank" class="text-blue-600 underline text-sm mt-1">Open Source URL</a>
         <% end %>
       </div>
     <% end %>
   </div>
 
-  <%# RIGHT PANE: Verification Form %>
-  <div class="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto p-6 bg-white">
-    <div class="mb-6 flex justify-between items-start">
+  <%# RIGHT PANE: Verification Form (40% width) - COMPACT %>
+  <div class="w-full md:w-2/5 h-1/2 md:h-full overflow-y-auto px-2 py-1 bg-white">
+    <%# Header row - compact, high contrast %>
+    <div class="flex justify-between items-center mb-1">
       <div>
-        <h1 class="text-2xl font-bold mb-1">Verification Cockpit</h1>
-        <p class="text-sm text-gray-600">
-          <%= @observation.entity.name %> | <%= @observation.metric.label %> (<%= @observation.fiscal_year %>)
-        </p>
+        <span class="text-[11px] font-semibold" style="color: #111;">Verify: <%= @observation.metric.label %></span>
+        <p class="text-[10px] text-gray-600"><%= @observation.entity.name %> (FY<%= @observation.fiscal_year %>)</p>
       </div>
-      <span class="px-3 py-1 rounded-full text-sm font-semibold uppercase tracking-wide
+      <span class="px-2 py-0.5 rounded text-xs font-semibold uppercase
         <%= @observation.verified? ? 'bg-green-100 text-green-800' :
             @observation.flagged? ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' %>">
         <%= @observation.verification_status %>
       </span>
     </div>
 
-    <%= form_with(model: @observation, class: "verification-form space-y-6") do |form| %>
+    <%= form_with(model: @observation, class: "verification-form") do |form| %>
       <% if @observation.errors.any? %>
-        <div class="bg-red-50 text-red-700 p-4 rounded mb-4">
-          <ul class="list-disc pl-5">
-            <% @observation.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-          </ul>
+        <div class="bg-red-50 text-red-700 p-1 rounded mb-1 text-xs">
+          <% @observation.errors.full_messages.each do |message| %>
+            <span><%= message %></span>
+          <% end %>
         </div>
       <% end %>
 
+      <%# PDF Page - compact blue box %>
       <% if @observation.document&.file&.attached? %>
-        <div class="bg-blue-50 p-4 rounded border border-blue-100">
-          <%= form.label :pdf_page, "PDF Page (Absolute Index)", class: "block text-sm font-bold text-blue-900 mb-1" %>
-          <div class="flex gap-3 items-center">
+        <div class="bg-blue-50 px-2 py-1 rounded border border-blue-200 mb-1">
+          <div class="flex items-center gap-2">
+            <%= form.label :pdf_page, "PDF Page:", class: "text-xs font-semibold text-blue-900" %>
             <%= form.number_field :pdf_page,
                 min: 1,
-                class: "w-24 rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-lg",
+                class: "w-16 text-sm rounded border-gray-300 shadow-sm px-1 py-0.5 font-mono",
                 placeholder: "1",
-                data: {
-                  pdf_navigator_target: "pageInput",
-                  action: "input->pdf-navigator#goToPage"
-                }
+                data: { pdf_navigator_target: "pageInput", action: "input->pdf-navigator#goToPage" }
             %>
-            <span class="text-xs text-blue-600">
-              Type to navigate PDF, or click PDF/button to capture.
-            </span>
+            <span class="text-xs text-blue-600">Click PDF or Capture</span>
           </div>
         </div>
       <% end %>
 
-      <div class="grid grid-cols-1 gap-6">
-        <div>
-          <%= form.label :value_numeric, "Value (Numeric)", class: "block text-sm font-medium text-gray-700" %>
-          <%= form.number_field :value_numeric, step: :any, class: "mt-1 block w-full rounded border-gray-300 shadow-sm" %>
-        </div>
+      <%# Citation - right below PDF Page since they're related %>
+      <div class="mb-1">
+        <%= form.label :page_reference, "Citation (printed page)", class: "block text-xs font-medium text-gray-700" %>
+        <%= form.text_field :page_reference, placeholder: "p. 42", class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
+      </div>
 
-        <div>
-          <%= form.label :value_text, "Value (Text - Optional)", class: "block text-sm font-medium text-gray-700" %>
-          <%= form.text_area :value_text, rows: 2, class: "mt-1 block w-full rounded border-gray-300 shadow-sm" %>
-        </div>
-
-        <div>
-          <%= form.label :page_reference, "Original Citation (Printed Page)", class: "block text-sm font-medium text-gray-700" %>
-          <%= form.text_field :page_reference, class: "mt-1 block w-full rounded border-gray-300 shadow-sm" %>
-        </div>
-
-        <div>
-          <%= form.label :notes, "Reviewer Notes", class: "block text-sm font-medium text-gray-700" %>
-          <%= form.text_area :notes, rows: 3, class: "mt-1 block w-full rounded border-gray-300 shadow-sm" %>
-        </div>
-
-        <div>
-          <%= form.label :verification_status, "Status", class: "block text-sm font-medium text-gray-700" %>
-          <%= form.select :verification_status,
-              Observation.verification_statuses.keys.map { |k| [k.humanize, k] },
-              {},
-              class: "mt-1 block w-full rounded border-gray-300 shadow-sm"
-          %>
+      <%# Values row with note %>
+      <div class="mb-1">
+        <p class="text-xs text-gray-500 mb-0.5 italic">Value (numeric or text, not both):</p>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <%= form.label :value_numeric, "Numeric", class: "block text-xs font-medium text-gray-700" %>
+            <%= form.number_field :value_numeric, step: :any, class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
+          </div>
+          <div>
+            <%= form.label :value_text, "Text", class: "block text-xs font-medium text-gray-700" %>
+            <%= form.text_field :value_text, class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
+          </div>
         </div>
       </div>
 
-      <div class="pt-6 border-t border-gray-200 flex gap-4">
+      <%# Notes - compact %>
+      <div class="mb-1">
+        <%= form.label :notes, "Notes", class: "block text-xs font-medium text-gray-700" %>
+        <%= form.text_area :notes, rows: 2, placeholder: "Optional...", class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
+      </div>
+
+      <%# Status %>
+      <div class="mb-2">
+        <%= form.label :verification_status, "Status", class: "block text-xs font-medium text-gray-700" %>
+        <%= form.select :verification_status,
+            Observation.verification_statuses.keys.map { |k| [k.humanize, k] },
+            {},
+            class: "mt-0.5 block w-32 text-sm rounded border-gray-300 shadow-sm px-2 py-1"
+        %>
+      </div>
+
+      <%# Action buttons - all on one row, compact %>
+      <div class="pt-1 border-t border-gray-200 flex items-center gap-2">
         <%= form.button "Verify & Next",
             name: "commit_action",
             value: "verify_next",
-            class: "px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-bold cursor-pointer shadow"
+            class: "px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-semibold cursor-pointer"
         %>
-
-        <%= form.submit "Save & Stay",
-            class: "px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 cursor-pointer"
+        <%= form.submit "Save",
+            class: "px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 text-xs cursor-pointer"
         %>
-
-        <%= link_to "Cancel", observations_path, class: "px-4 py-3 text-gray-500 hover:text-gray-900 ml-auto" %>
+        <%= form.button "Skip",
+            name: "commit_action",
+            value: "skip_next",
+            class: "px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs cursor-pointer",
+            title: "Save and skip to next"
+        %>
+        <%= link_to "Cancel", observations_path, class: "px-2 py-1 text-xs text-gray-500 hover:text-gray-900 ml-auto" %>
       </div>
     <% end %>
   </div>
