@@ -24,8 +24,9 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
   test "verification cockpit layout and workflow" do
     visit verify_observation_path(@observation)
 
-    # 1. Assert Split Screen Layout - PDF.js canvas-based viewer
-    assert_selector "[data-pdf-navigator-target='canvas']"
+    # 1. Assert Split Screen Layout - PDF.js continuous scroll viewer
+    assert_selector "[data-pdf-navigator-target='pagesContainer']"
+    assert_selector ".pdf-page-wrapper", minimum: 1 # At least one page rendered
     assert_selector "form.verification-form"
     assert_text "Verify:"
     assert_text "Provisional"
@@ -61,7 +62,7 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     visit verify_observation_path(@observation)
 
     # PDF is attached in setup, so PDF.js viewer should be visible
-    assert_selector "[data-pdf-navigator-target='canvas']"
+    assert_selector "[data-pdf-navigator-target='pagesContainer']"
     assert_field "PDF Page:"
     assert_text "Click PDF or Capture"
   end
@@ -148,13 +149,17 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     assert controller_element["data-pdf-navigator-url-value"].present?
   end
 
-  test "PDF viewer canvas has click-to-capture action" do
+  test "PDF viewer pages have canvases for rendering" do
     visit verify_observation_path(@observation)
+    wait_for_pdf_load
 
-    canvas = find("[data-pdf-navigator-target='canvas']")
+    # Each page wrapper should contain a canvas
+    page_wrappers = all(".pdf-page-wrapper")
+    assert page_wrappers.length >= 1, "Should have at least one page wrapper"
 
-    # Verify canvas has the click action wired up
-    assert_equal "click->pdf-navigator#canvasClicked", canvas["data-action"]
+    page_wrappers.each do |wrapper|
+      assert wrapper.has_css?("canvas"), "Each page wrapper should contain a canvas"
+    end
   end
 
   test "PDF viewer has loading indicator" do
@@ -203,12 +208,182 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     assert_equal 555.55, @observation.value_numeric
   end
 
+  # ==========================================
+  # CONTINUOUS SCROLL TESTS
+  # ==========================================
+
+  test "PDF viewer renders all pages in scrollable container" do
+    visit verify_observation_path(@observation)
+    wait_for_pdf_load
+
+    # Should have pagesContainer target
+    assert_selector "[data-pdf-navigator-target='pagesContainer']"
+
+    # Container should be scrollable (inside overflow-auto parent)
+    container = find("[data-pdf-navigator-target='container']")
+    assert container[:class].include?("overflow-auto"), "Container should be scrollable"
+
+    # Should render page wrappers for each page (sample.pdf has 2 pages)
+    page_wrappers = all(".pdf-page-wrapper")
+    assert_equal 2, page_wrappers.length, "Should render wrapper for each PDF page"
+
+    # Each wrapper should have data-page attribute
+    page_wrappers.each_with_index do |wrapper, index|
+      assert_equal (index + 1).to_s, wrapper["data-page"], "Page wrapper should have correct data-page"
+    end
+  end
+
+  test "PDF viewer page display updates when scrolling to different page" do
+    visit verify_observation_path(@observation)
+    wait_for_pdf_load
+
+    # Initially should show page 1 (or initial page from observation)
+    page_display = find("[data-pdf-navigator-target='pageDisplay']")
+    _initial_page = page_display.text.to_i
+
+    # Scroll to second page
+    second_page = find(".pdf-page-wrapper[data-page='2']")
+    second_page.scroll_to(:center)
+
+    # Wait for scroll sync debounce
+    sleep 0.2
+
+    # Page display should update to 2
+    assert_equal "2", page_display.text, "Page display should update when scrolling to page 2"
+  end
+
+  test "PDF viewer scrolls to page when page input changes" do
+    visit verify_observation_path(@observation)
+    wait_for_pdf_load
+
+    # Change page input to 2
+    fill_in "PDF Page:", with: "2"
+
+    # Wait for scroll animation
+    sleep 0.5
+
+    # Second page should be visible/in view
+    find(".pdf-page-wrapper[data-page='2']")
+
+    # Check if page 2 is near top of scroll container
+    page_selector = '.pdf-page-wrapper[data-page="2"]'
+    container_selector = '[data-pdf-navigator-target="container"]'
+    page_rect_top = evaluate_script("document.querySelector('#{page_selector}').getBoundingClientRect().top")
+    container_rect_top = evaluate_script("document.querySelector('#{container_selector}').getBoundingClientRect().top")
+
+    # Page 2 should be near the top of container (within 100px)
+    assert (page_rect_top - container_rect_top).abs < 100, "Page 2 should scroll into view"
+  end
+
+  test "PDF viewer Next button scrolls to next page" do
+    visit verify_observation_path(@observation)
+    wait_for_pdf_load
+
+    # First navigate to page 1 (fixture may have different initial page)
+    fill_in "PDF Page:", with: "1"
+    sleep 0.5
+
+    # Verify we're on page 1
+    page_display = find("[data-pdf-navigator-target='pageDisplay']")
+    assert_equal "1", page_display.text, "Should be on page 1"
+
+    # Click next
+    click_button "▶" # Next button
+
+    # Wait for scroll
+    sleep 0.5
+
+    # Should now show page 2
+    assert_equal "2", page_display.text, "Next button should scroll to page 2"
+  end
+
+  test "PDF viewer Previous button scrolls to previous page" do
+    visit verify_observation_path(@observation)
+    wait_for_pdf_load
+
+    # First go to page 2
+    fill_in "PDF Page:", with: "2"
+    sleep 0.5
+
+    page_display = find("[data-pdf-navigator-target='pageDisplay']")
+    assert_equal "2", page_display.text, "Should be on page 2"
+
+    # Click previous
+    click_button "◀" # Previous button
+
+    # Wait for scroll
+    sleep 0.5
+
+    # Should now show page 1
+    assert_equal "1", page_display.text, "Previous button should scroll to page 1"
+  end
+
+  test "clicking on page canvas captures that page number" do
+    visit verify_observation_path(@observation)
+    wait_for_pdf_load
+
+    # Clear the page input
+    fill_in "PDF Page:", with: ""
+
+    # Scroll to and click on page 2's canvas
+    second_page = find(".pdf-page-wrapper[data-page='2']")
+    second_page.scroll_to(:center)
+    sleep 0.2
+
+    # Click on the canvas inside page 2
+    canvas = second_page.find("canvas")
+    canvas.click
+
+    # Page input should now have "2"
+    page_input = find_field("PDF Page:")
+    assert_equal "2", page_input.value, "Clicking page 2 canvas should capture page 2"
+  end
+
+  test "PDF viewer zoom changes update all page sizes" do
+    visit verify_observation_path(@observation)
+    wait_for_pdf_load
+
+    # Get initial width of first page canvas
+    initial_width = evaluate_script("document.querySelector('.pdf-page-wrapper[data-page=\"1\"] canvas').width")
+
+    # Change zoom to 200%
+    select "200%", from: "zoom-select"
+
+    # Wait for re-render
+    sleep 0.5
+
+    # Width should have changed (increased for 200%)
+    new_width = evaluate_script("document.querySelector('.pdf-page-wrapper[data-page=\"1\"] canvas').width")
+    assert new_width > initial_width, "Page width should increase at 200% zoom"
+
+    # Second page should also be resized
+    second_page_width = evaluate_script("document.querySelector('.pdf-page-wrapper[data-page=\"2\"] canvas').width")
+    assert second_page_width.positive?, "Second page should also be resized"
+  end
+
+  test "PDF viewer pages have placeholder dimensions before render" do
+    visit verify_observation_path(@observation)
+
+    # Check for page wrappers (wait for at least one)
+    page_wrappers = all(".pdf-page-wrapper", wait: 5)
+    assert page_wrappers.length >= 1, "Should have at least one page wrapper"
+
+    # Each wrapper should have dimensions set
+    page_wrappers.each do |wrapper|
+      width = wrapper.style("width")
+      height = wrapper.style("height")
+      assert width.present? && width != "0px", "Page wrapper should have width"
+      assert height.present? && height != "0px", "Page wrapper should have height"
+    end
+  end
+
   private
 
   def wait_for_pdf_load(timeout: 10)
     start_time = Time.current
-    loading_el = find("[data-pdf-navigator-target='loading']", visible: :all)
 
+    # Wait for loading indicator to be hidden
+    loading_el = find("[data-pdf-navigator-target='loading']", visible: :all)
     loop do
       break if loading_el[:class]&.include?("hidden")
 
@@ -216,5 +391,8 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
 
       sleep 0.1
     end
+
+    # Also wait for at least one page to be rendered (canvas visible)
+    assert_selector ".pdf-page-wrapper canvas", visible: true, wait: timeout
   end
 end

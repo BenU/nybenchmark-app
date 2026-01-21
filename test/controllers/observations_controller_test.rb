@@ -86,8 +86,8 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     get verify_observation_url(@observation)
 
     assert_response :success
-    # PDF.js canvas-based viewer instead of iframe
-    assert_select "[data-pdf-navigator-target='canvas']"
+    # PDF.js continuous scroll viewer with pagesContainer
+    assert_select "[data-pdf-navigator-target='pagesContainer']"
     assert_select "form.verification-form"
   end
 

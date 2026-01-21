@@ -5,7 +5,7 @@ import * as pdfjsLib from "pdfjs-dist"
 pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.8.69/build/pdf.worker.min.mjs"
 
 export default class extends Controller {
-  static targets = ["canvas", "pageInput", "pageDisplay", "totalPages", "zoomSelect", "container", "loading", "error"]
+  static targets = ["pagesContainer", "pageInput", "pageDisplay", "totalPages", "zoomSelect", "container", "loading", "error"]
   static values = {
     url: String,
     initialPage: { type: Number, default: 1 }
@@ -15,8 +15,17 @@ export default class extends Controller {
     this.pdfDoc = null
     this.currentPage = this.initialPageValue || 1
     this.zoom = "fit-width"
-    this.rendering = false
-    this.pendingPage = null
+
+    // Multi-page state
+    this.pageElements = new Map()      // Map<pageNum, { wrapper, canvas, rendered }>
+    this.pageViewports = []            // Cached viewports at scale=1
+    this.visiblePages = new Set()      // Currently visible page numbers
+    this.renderQueue = new Set()       // Pages queued for rendering
+    this.activeRenders = new Map()     // In-flight render promises
+    this.intersectionObserver = null   // For virtualization
+    this.scrollSyncEnabled = true      // Prevent feedback loops
+    this.scrollTimeout = null          // Debounce scroll sync
+    this.mostVisiblePage = 1           // Current page based on visibility
 
     this.loadPdf()
     this.setupResizeObserver()
@@ -27,6 +36,9 @@ export default class extends Controller {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect()
     }
+    if (this.intersectionObserver) {
+      this.intersectionObserver.disconnect()
+    }
     if (this.pdfDoc) {
       this.pdfDoc.destroy()
     }
@@ -34,6 +46,7 @@ export default class extends Controller {
       document.removeEventListener("keydown", this.boundKeyHandler)
     }
     clearTimeout(this.resizeTimeout)
+    clearTimeout(this.scrollTimeout)
   }
 
   async loadPdf() {
@@ -55,69 +68,85 @@ export default class extends Controller {
       // Clamp initial page to valid range
       this.currentPage = this.clampPage(this.currentPage)
 
+      // Setup all pages
+      await this.setupPages()
+
       this.hideLoading()
-      this.renderPage(this.currentPage)
+
+      // Setup scroll observation and sync
+      this.setupIntersectionObserver()
+      this.setupScrollListener()
+
+      // Scroll to initial page
+      this.scrollToPage(this.currentPage, false)
     } catch (error) {
       console.error("Error loading PDF:", error)
       this.showError(`Failed to load PDF: ${error.message}`)
     }
   }
 
-  async renderPage(pageNum) {
-    if (!this.pdfDoc) return
+  async setupPages() {
+    const numPages = this.pdfDoc.numPages
 
-    if (this.rendering) {
-      this.pendingPage = pageNum
-      return
+    // Fetch viewports for all pages (fast metadata)
+    for (let i = 1; i <= numPages; i++) {
+      const page = await this.pdfDoc.getPage(i)
+      this.pageViewports[i] = page.getViewport({ scale: 1 })
     }
 
-    this.rendering = true
-    this.currentPage = pageNum
-    this.updatePageDisplay()
-
-    try {
-      const page = await this.pdfDoc.getPage(pageNum)
-      const canvas = this.canvasTarget
-      const ctx = canvas.getContext("2d")
-
-      // Calculate scale based on zoom setting
-      const scale = this.calculateScale(page)
-      const viewport = page.getViewport({ scale })
-
-      // Set canvas dimensions
-      canvas.height = viewport.height
-      canvas.width = viewport.width
-
-      const renderContext = {
-        canvasContext: ctx,
-        viewport: viewport
-      }
-
-      await page.render(renderContext).promise
-    } catch (error) {
-      console.error("Error rendering page:", error)
-    } finally {
-      this.rendering = false
-
-      if (this.pendingPage !== null) {
-        const nextPage = this.pendingPage
-        this.pendingPage = null
-        this.renderPage(nextPage)
-      }
+    // Create page wrappers
+    for (let i = 1; i <= numPages; i++) {
+      this.createPageWrapper(i)
     }
+
+    // Initial render of visible pages
+    this.renderVisiblePages()
   }
 
-  calculateScale(page) {
-    const defaultViewport = page.getViewport({ scale: 1 })
-    const containerWidth = this.containerTarget.clientWidth - 20 // padding
-    const containerHeight = this.containerTarget.clientHeight - 20
+  createPageWrapper(pageNum) {
+    const viewport = this.pageViewports[pageNum]
+    const scale = this.calculateScale(viewport)
+    const width = Math.floor(viewport.width * scale)
+    const height = Math.floor(viewport.height * scale)
+
+    // Create wrapper div
+    const wrapper = document.createElement("div")
+    wrapper.className = "pdf-page-wrapper relative bg-gray-200 shadow cursor-pointer"
+    wrapper.dataset.page = pageNum
+    wrapper.style.width = `${width}px`
+    wrapper.style.height = `${height}px`
+
+    // Create canvas (hidden until rendered)
+    const canvas = document.createElement("canvas")
+    canvas.className = "absolute inset-0"
+    canvas.style.display = "none"
+    wrapper.appendChild(canvas)
+
+    // Click handler for capturing page
+    wrapper.addEventListener("click", () => {
+      this.capturePageNumber(pageNum)
+    })
+
+    this.pagesContainerTarget.appendChild(wrapper)
+
+    this.pageElements.set(pageNum, {
+      wrapper,
+      canvas,
+      rendered: false,
+      currentScale: scale
+    })
+  }
+
+  calculateScale(viewport) {
+    const containerWidth = this.containerTarget.clientWidth - 40 // padding
+    const containerHeight = this.containerTarget.clientHeight - 40
 
     switch (this.zoom) {
       case "fit-width":
-        return containerWidth / defaultViewport.width
+        return containerWidth / viewport.width
       case "fit-page":
-        const scaleX = containerWidth / defaultViewport.width
-        const scaleY = containerHeight / defaultViewport.height
+        const scaleX = containerWidth / viewport.width
+        const scaleY = containerHeight / viewport.height
         return Math.min(scaleX, scaleY)
       default:
         // Numeric zoom (0.5, 0.75, 1, 1.25, 1.5, 2)
@@ -125,11 +154,156 @@ export default class extends Controller {
     }
   }
 
+  setupIntersectionObserver() {
+    this.intersectionObserver = new IntersectionObserver(
+      this.handleIntersection.bind(this),
+      {
+        root: this.containerTarget,
+        rootMargin: "200px 0px",  // Pre-render buffer
+        threshold: [0, 0.1, 0.5, 0.9, 1.0]
+      }
+    )
+
+    // Observe all page wrappers
+    this.pageElements.forEach(({ wrapper }) => {
+      this.intersectionObserver.observe(wrapper)
+    })
+  }
+
+  handleIntersection(entries) {
+    entries.forEach(entry => {
+      const pageNum = parseInt(entry.target.dataset.page, 10)
+
+      if (entry.isIntersecting) {
+        this.visiblePages.add(pageNum)
+        this.queueRender(pageNum)
+      } else {
+        this.visiblePages.delete(pageNum)
+      }
+    })
+
+    // Process render queue
+    this.processRenderQueue()
+  }
+
+  queueRender(pageNum) {
+    const pageEl = this.pageElements.get(pageNum)
+    if (pageEl && !pageEl.rendered && !this.activeRenders.has(pageNum)) {
+      this.renderQueue.add(pageNum)
+    }
+  }
+
+  async processRenderQueue() {
+    // Limit concurrent renders
+    const maxConcurrent = 3
+
+    if (this.activeRenders.size >= maxConcurrent || this.renderQueue.size === 0) {
+      return
+    }
+
+    // Get next page to render (prioritize visible pages)
+    const visibleQueued = [...this.renderQueue].filter(p => this.visiblePages.has(p))
+    const nextPage = visibleQueued.length > 0 ? visibleQueued[0] : [...this.renderQueue][0]
+
+    if (nextPage) {
+      this.renderQueue.delete(nextPage)
+      await this.renderPage(nextPage)
+      this.processRenderQueue()
+    }
+  }
+
+  async renderPage(pageNum) {
+    const pageEl = this.pageElements.get(pageNum)
+    if (!pageEl || this.activeRenders.has(pageNum)) return
+
+    const { wrapper, canvas } = pageEl
+
+    try {
+      const page = await this.pdfDoc.getPage(pageNum)
+      const baseViewport = page.getViewport({ scale: 1 })
+      const scale = this.calculateScale(baseViewport)
+      const scaledViewport = page.getViewport({ scale })
+
+      // Update wrapper dimensions for current scale
+      wrapper.style.width = `${Math.floor(scaledViewport.width)}px`
+      wrapper.style.height = `${Math.floor(scaledViewport.height)}px`
+
+      // Setup canvas
+      canvas.width = Math.floor(scaledViewport.width)
+      canvas.height = Math.floor(scaledViewport.height)
+      const ctx = canvas.getContext("2d")
+
+      const renderTask = page.render({
+        canvasContext: ctx,
+        viewport: scaledViewport
+      })
+
+      this.activeRenders.set(pageNum, renderTask)
+
+      await renderTask.promise
+
+      // Show canvas now that it's rendered
+      canvas.style.display = "block"
+      pageEl.rendered = true
+      pageEl.currentScale = scale
+    } catch (error) {
+      if (error.name !== "RenderingCancelledException") {
+        console.error(`Error rendering page ${pageNum}:`, error)
+      }
+    } finally {
+      this.activeRenders.delete(pageNum)
+    }
+  }
+
+  renderVisiblePages() {
+    this.pageElements.forEach((_, pageNum) => {
+      // Queue first few pages immediately
+      if (pageNum <= 3) {
+        this.queueRender(pageNum)
+      }
+    })
+    this.processRenderQueue()
+  }
+
+  setupScrollListener() {
+    this.containerTarget.addEventListener("scroll", () => {
+      if (!this.scrollSyncEnabled) return
+
+      clearTimeout(this.scrollTimeout)
+      this.scrollTimeout = setTimeout(() => {
+        this.updateCurrentPageFromScroll()
+      }, 50)
+    })
+  }
+
+  updateCurrentPageFromScroll() {
+    const containerRect = this.containerTarget.getBoundingClientRect()
+    const containerMidY = containerRect.top + containerRect.height / 2
+
+    let closestPage = 1
+    let closestDistance = Infinity
+
+    this.pageElements.forEach(({ wrapper }, pageNum) => {
+      const rect = wrapper.getBoundingClientRect()
+      const pageMidY = rect.top + rect.height / 2
+      const distance = Math.abs(pageMidY - containerMidY)
+
+      if (distance < closestDistance) {
+        closestDistance = distance
+        closestPage = pageNum
+      }
+    })
+
+    if (closestPage !== this.currentPage) {
+      this.currentPage = closestPage
+      this.updatePageDisplay()
+    }
+  }
+
   updatePageDisplay() {
     if (this.hasPageDisplayTarget) {
       this.pageDisplayTarget.textContent = this.currentPage
     }
-    // Don't update pageInput automatically to avoid overwriting user edits
   }
 
   // Helper to clamp page number to valid range
@@ -138,28 +312,45 @@ export default class extends Controller {
     return Math.max(1, Math.min(pageNum, this.pdfDoc.numPages))
   }
 
-  // Navigate to a specific page with bounds checking
-  navigateTo(pageNum) {
-    if (!this.pdfDoc) return
-    this.renderPage(this.clampPage(pageNum))
+  scrollToPage(pageNum, smooth = true) {
+    const clamped = this.clampPage(pageNum)
+    const pageEl = this.pageElements.get(clamped)
+
+    if (!pageEl) return
+
+    // Temporarily disable scroll sync to prevent feedback
+    this.scrollSyncEnabled = false
+
+    pageEl.wrapper.scrollIntoView({
+      behavior: smooth ? "smooth" : "instant",
+      block: "start"
+    })
+
+    this.currentPage = clamped
+    this.updatePageDisplay()
+
+    // Re-enable scroll sync after animation
+    setTimeout(() => {
+      this.scrollSyncEnabled = true
+    }, smooth ? 500 : 100)
   }
 
   // Navigation actions
   previousPage() {
-    this.navigateTo(this.currentPage - 1)
+    this.scrollToPage(this.currentPage - 1)
   }
 
   nextPage() {
-    this.navigateTo(this.currentPage + 1)
+    this.scrollToPage(this.currentPage + 1)
   }
 
   firstPage() {
-    this.navigateTo(1)
+    this.scrollToPage(1)
   }
 
   lastPage() {
     if (this.pdfDoc) {
-      this.navigateTo(this.pdfDoc.numPages)
+      this.scrollToPage(this.pdfDoc.numPages)
     }
   }
 
@@ -170,29 +361,47 @@ export default class extends Controller {
     const pageNum = parseInt(this.pageInputTarget.value, 10)
     if (isNaN(pageNum)) return
 
-    this.navigateTo(pageNum)
+    this.scrollToPage(pageNum)
   }
 
-  // Capture current page to form
-  captureCurrentPage() {
-    if (this.hasPageInputTarget && this.pdfDoc) {
-      this.pageInputTarget.value = this.currentPage
-      // Trigger input event for any listeners
+  // Capture specific page to form
+  capturePageNumber(pageNum) {
+    if (this.hasPageInputTarget) {
+      this.pageInputTarget.value = pageNum
       this.pageInputTarget.dispatchEvent(new Event("input", { bubbles: true }))
     }
   }
 
-  // Canvas click captures page
-  canvasClicked() {
-    this.captureCurrentPage()
+  // Capture current page to form
+  captureCurrentPage() {
+    this.capturePageNumber(this.currentPage)
   }
 
-  // Zoom change
+  // Zoom change - re-render all pages
   zoomChanged() {
     if (!this.hasZoomSelectTarget) return
 
     this.zoom = this.zoomSelectTarget.value
-    this.renderPage(this.currentPage)
+
+    // Mark all pages as unrendered
+    this.pageElements.forEach((pageEl) => {
+      pageEl.rendered = false
+      pageEl.canvas.style.display = "none"
+    })
+
+    // Update all wrapper dimensions
+    this.pageElements.forEach((pageEl, pageNum) => {
+      const viewport = this.pageViewports[pageNum]
+      const scale = this.calculateScale(viewport)
+      pageEl.wrapper.style.width = `${Math.floor(viewport.width * scale)}px`
+      pageEl.wrapper.style.height = `${Math.floor(viewport.height * scale)}px`
+    })
+
+    // Re-render visible pages
+    this.visiblePages.forEach(pageNum => {
+      this.queueRender(pageNum)
+    })
+    this.processRenderQueue()
   }
 
   // Responsive resize
@@ -202,7 +411,9 @@ export default class extends Controller {
         // Debounce resize renders
         clearTimeout(this.resizeTimeout)
         this.resizeTimeout = setTimeout(() => {
-          this.renderPage(this.currentPage)
+          if (this.pdfDoc) {
+            this.zoomChanged()
+          }
         }, 150)
       }
     })
