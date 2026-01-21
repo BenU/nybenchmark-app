@@ -78,4 +78,29 @@ class DocumentsTest < ApplicationSystemTestCase
     # ASSERT: The text might still be visible (optional, based on view logic)
     assert_text "(Link disabled for security)"
   end
+
+  # ==========================================
+  # AUTHORIZATION: EDIT LINK VISIBILITY
+  # ==========================================
+
+  test "signed in user sees edit links on document index" do
+    # User is already signed in from setup
+    visit documents_path
+
+    # Should see Edit links
+    assert_link "Edit"
+    assert_link "New document"
+  end
+
+  test "guest does not see edit links on document index" do
+    sign_out @user
+    visit documents_path
+
+    # Should NOT see Edit links
+    assert_no_link "Edit"
+    assert_no_link "New document"
+
+    # But should still see View links
+    assert_link "View"
+  end
 end

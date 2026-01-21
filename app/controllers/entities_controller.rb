@@ -5,7 +5,15 @@ class EntitiesController < ApplicationController
   before_action :set_entity, only: %i[show edit update]
 
   def index
-    @entities = Entity.order(:name)
+    @entities = Entity
+                .left_joins(:documents, :observations)
+                .select(
+                  "entities.*",
+                  "COUNT(DISTINCT documents.id) AS documents_count",
+                  "COUNT(DISTINCT observations.id) AS observations_count"
+                )
+                .group("entities.id")
+                .order(:name)
   end
 
   def show

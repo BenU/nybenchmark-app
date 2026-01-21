@@ -1,0 +1,63 @@
+name,slug,kind,state,government_structure,fiscal_autonomy,board_selection,executive_selection,school_legal_type,organization_note
+Albany,albany,city,NY,,,,,,"State capital; county seat of Albany County"
+Amsterdam,amsterdam,city,NY,,,,,,"City in Montgomery County"
+Auburn,auburn,city,NY,council_manager,,,,,Council-Manager form; county seat of Cayuga County
+Batavia,batavia,city,NY,council_manager,,,,,Council-Manager form; county seat of Genesee County
+Beacon,beacon,city,NY,,,,,,"City in Dutchess County"
+Binghamton,binghamton,city,NY,,,,,,"County seat of Broome County"
+Buffalo,buffalo,city,NY,strong_mayor,,,,,Strong Mayor form; Big Five city; county seat of Erie County
+Canandaigua,canandaigua,city,NY,,,,,,"County seat of Ontario County"
+Cohoes,cohoes,city,NY,,,,,,"City in Albany County"
+Corning,corning,city,NY,,,,,,"City in Steuben County"
+Cortland,cortland,city,NY,,,,,,"County seat of Cortland County"
+Dunkirk,dunkirk,city,NY,,,,,,"City in Chautauqua County"
+Elmira,elmira,city,NY,,,,,,"County seat of Chemung County"
+Fulton,fulton,city,NY,,,,,,"City in Oswego County"
+Geneva,geneva,city,NY,,,,,,"City in Ontario and Seneca Counties"
+Glen Cove,glen_cove,city,NY,,,,,,"City in Nassau County (Long Island)"
+Glens Falls,glens_falls,city,NY,,,,,,"City in Warren County"
+Gloversville,gloversville,city,NY,,,,,,"City in Fulton County"
+Hornell,hornell,city,NY,,,,,,"City in Steuben County"
+Hudson,hudson,city,NY,,,,,,"County seat of Columbia County"
+Ithaca,ithaca,city,NY,,,,,,"County seat of Tompkins County; home of Cornell University"
+Jamestown,jamestown,city,NY,,,,,,"City in Chautauqua County"
+Johnstown,johnstown,city,NY,,,,,,"County seat of Fulton County"
+Kingston,kingston,city,NY,,,,,,"County seat of Ulster County; first capital of New York"
+Lackawanna,lackawanna,city,NY,,,,,,"City in Erie County"
+Little Falls,little_falls,city,NY,,,,,,"City in Herkimer County"
+Lockport,lockport,city,NY,,,,,,"County seat of Niagara County"
+Long Beach,long_beach,city,NY,council_manager,,,,,Council-Manager form; city in Nassau County (Long Island)
+Mechanicville,mechanicville,city,NY,commission,,,,,Commission form; smallest city by area in NY (0.91 sq mi)
+Middletown,middletown,city,NY,,,,,,"City in Orange County"
+Mount Vernon,mount_vernon,city,NY,,,,,,"City in Westchester County"
+New Rochelle,new_rochelle,city,NY,council_manager,,,,,Council-Manager form since 1932
+New York City,nyc,city,NY,strong_mayor,,,,,Strong Mayor form; Big Five city; largest city in US
+Newburgh,newburgh,city,NY,council_manager,,,,,Council-Manager form since 1917
+Niagara Falls,niagara_falls,city,NY,,,,,,"City in Niagara County"
+North Tonawanda,north_tonawanda,city,NY,,,,,,"City in Niagara County"
+Norwich,norwich,city,NY,,,,,,"County seat of Chenango County"
+Ogdensburg,ogdensburg,city,NY,council_manager,,,,,Council-Manager form since 1970
+Olean,olean,city,NY,,,,,,"City in Cattaraugus County"
+Oneida,oneida,city,NY,,,,,,"City in Madison County"
+Oneonta,oneonta,city,NY,,,,,,"City in Otsego County"
+Oswego,oswego,city,NY,,,,,,"County seat of Oswego County"
+Peekskill,peekskill,city,NY,,,,,,"City in Westchester County"
+Plattsburgh,plattsburgh,city,NY,,,,,,"County seat of Clinton County"
+Port Jervis,port_jervis,city,NY,,,,,,"City in Orange County"
+Poughkeepsie,poughkeepsie,city,NY,,,,,,"County seat of Dutchess County"
+Rensselaer,rensselaer,city,NY,,,,,,"City in Rensselaer County"
+Rochester,rochester,city,NY,strong_mayor,,,,,Strong Mayor form; Big Five city; county seat of Monroe County
+Rome,rome,city,NY,,,,,,"City in Oneida County"
+Rye,rye,city,NY,,,,,,"City in Westchester County"
+Salamanca,salamanca,city,NY,,,,,,"City in Cattaraugus County; only US city on Native American reservation"
+Saratoga Springs,saratoga_springs,city,NY,commission,,,,,Commission form; city in Saratoga County
+Schenectady,schenectady,city,NY,,,,,,"County seat of Schenectady County"
+Sherrill,sherrill,city,NY,,,,,,"Smallest city by population in NY; only city in Oneida County"
+Syracuse,syracuse,city,NY,strong_mayor,,,,,Strong Mayor form; Big Five city; county seat of Onondaga County
+Tonawanda,tonawanda,city,NY,,,,,,"City in Erie County"
+Troy,troy,city,NY,,,,,,"County seat of Rensselaer County"
+Utica,utica,city,NY,,,,,,"County seat of Oneida County"
+Watertown,watertown,city,NY,,,,,,"County seat of Jefferson County"
+Watervliet,watervliet,city,NY,,,,,,"City in Albany County"
+White Plains,white_plains,city,NY,,,,,,"County seat of Westchester County"
+Yonkers,yonkers,city,NY,strong_mayor,,,,,Strong Mayor form; Big Five city; third largest city in NY

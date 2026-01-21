@@ -9,34 +9,49 @@ puts "🌱 Starting Database Seed..."
 # ====================================================
 puts "\n--- Seeding Entities ---"
 
-# Canonical seed set (for now): 2 cities + 2 school districts
-city_rows = [
-  {
-    name: "Yonkers",
-    slug: "yonkers",
-    kind: "city",
-    government_structure: "strong_mayor",
-    fiscal_autonomy: "independent",
-    organization_note: "Council President + 6 District Representatives"
-  },
-  {
-    name: "New Rochelle",
-    slug: "new_rochelle",
-    kind: "city",
-    government_structure: "council_manager",
-    fiscal_autonomy: "independent",
-    organization_note: "Council + City Manager"
-  }
-]
-
+# Load all 62 NY cities from CSV
+cities_path = Rails.root.join('db', 'seeds', 'ny_cities.csv')
 cities = {}
 
-city_rows.each do |attrs|
-  e = Entity.find_or_initialize_by(slug: attrs[:slug])
-  e.assign_attributes(attrs.merge(state: "NY"))
-  e.save!
-  cities[attrs[:slug]] = e
-  print "."
+if File.exist?(cities_path)
+  puts "Loading cities from ny_cities.csv..."
+  created = 0
+  skipped = 0
+
+  CSV.foreach(cities_path, headers: true) do |row|
+    existing = Entity.find_by(slug: row['slug'])
+
+    if existing
+      # Entity already exists - don't overwrite, just track it
+      cities[row['slug']] = existing
+      skipped += 1
+      print "s"
+    else
+      # New entity - create it
+      attrs = {
+        name: row['name'],
+        slug: row['slug'],
+        kind: row['kind'],
+        state: row['state'],
+        organization_note: row['organization_note'].presence
+      }
+
+      # Only set enum fields if they have values (avoid setting to empty string)
+      attrs[:government_structure] = row['government_structure'] if row['government_structure'].present?
+      attrs[:fiscal_autonomy] = row['fiscal_autonomy'] if row['fiscal_autonomy'].present?
+      attrs[:board_selection] = row['board_selection'] if row['board_selection'].present?
+      attrs[:executive_selection] = row['executive_selection'] if row['executive_selection'].present?
+      attrs[:school_legal_type] = row['school_legal_type'] if row['school_legal_type'].present?
+
+      e = Entity.create!(attrs)
+      cities[attrs[:slug]] = e
+      created += 1
+      print "."
+    end
+  end
+  puts "\n✅ Cities: #{created} created, #{skipped} already existed."
+else
+  puts "⚠️  ny_cities.csv not found, skipping city seed."
 end
 
 school_rows = [
