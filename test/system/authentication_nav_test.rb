@@ -37,7 +37,7 @@ class AuthenticationNavTest < ApplicationSystemTestCase
     click_link "Verify Queue"
 
     # Should be on the verify cockpit page with PDF.js canvas-based viewer
-    assert_text "Verification Cockpit"
+    assert_text "Verify:"
     assert_selector "[data-pdf-navigator-target='canvas']"
     assert_selector "form.verification-form"
   end

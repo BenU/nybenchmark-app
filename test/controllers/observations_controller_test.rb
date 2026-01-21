@@ -183,8 +183,8 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     get observation_url(@observation)
 
     assert_response :success
-    # Should show PDF Page section
-    assert_select "strong", text: "PDF Page"
+    # Should show PDF Page section (label includes "Absolute Index")
+    assert_select "strong", text: "PDF Page (Absolute Index)"
     # The yonkers_expenditures_numeric fixture has pdf_page: 45
     assert_select "p", text: "45"
   end
@@ -198,7 +198,7 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     # Should NOT show PDF Page section for URL-only documents
-    assert_select "strong", text: "PDF Page", count: 0
+    assert_select "strong", text: "PDF Page (Absolute Index)", count: 0
   end
 
   test "show displays verify link for provisional observations when logged in" do
@@ -226,5 +226,117 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     # Guests should not see "Verify this observation" link
     assert_select "a", text: /Verify this observation/i, count: 0
+  end
+
+  # ==========================================
+  # PDF PAGE IN SHOW/EDIT
+  # ==========================================
+
+  test "show displays pdf_page with label when document has PDF attached" do
+    sign_in @user
+    get observation_url(@observation)
+
+    assert_response :success
+    assert_select "strong", text: "PDF Page (Absolute Index)"
+  end
+
+  test "show displays dash when pdf_page is nil" do
+    sign_in @user
+    # Create observation without pdf_page
+    @observation.update!(pdf_page: nil)
+    get observation_url(@observation)
+
+    assert_response :success
+    assert_select "strong", text: "PDF Page (Absolute Index)"
+    # Should show em-dash for nil value
+    assert_select "p", text: "—"
+  end
+
+  test "edit form shows pdf_page field when document has PDF attached" do
+    sign_in @user
+    get edit_observation_url(@observation)
+
+    assert_response :success
+    assert_select "label", text: "PDF Page (Absolute Index)"
+    assert_select "input[name='observation[pdf_page]']"
+  end
+
+  test "edit form hides pdf_page field for URL-only documents" do
+    url_only_obs = observations(:yonkers_population_url_only)
+
+    sign_in @user
+    get edit_observation_url(url_only_obs)
+
+    assert_response :success
+    assert_select "label", text: "PDF Page (Absolute Index)", count: 0
+    assert_select "input[name='observation[pdf_page]']", count: 0
+  end
+
+  # ==========================================
+  # SKIP & NEXT FUNCTIONALITY
+  # ==========================================
+
+  test "verify cockpit shows Skip & Next button" do
+    sign_in @user
+    get verify_observation_url(@observation)
+
+    assert_response :success
+    assert_select "button[value='skip_next']", text: "Skip"
+  end
+
+  test "update with 'Skip & Next' saves and redirects to next provisional without verifying" do
+    sign_in @user
+
+    current_obs = observations(:new_rochelle_revenue_text)
+    next_obs = current_obs.next_provisional_observation
+    attach_sample_pdf(current_obs.document)
+
+    # Current status is provisional
+    assert_equal "provisional", current_obs.verification_status
+
+    patch observation_url(current_obs), params: {
+      commit_action: "skip_next",
+      observation: {
+        pdf_page: 99,
+        value_text: nil,
+        value_numeric: 123
+      }
+    }
+
+    # 1. Assert Data Update but status unchanged
+    current_obs.reload
+    assert_equal "provisional", current_obs.verification_status, "Skip should NOT change verification status"
+    assert_equal 99, current_obs.pdf_page
+    assert_equal 123, current_obs.value_numeric
+
+    # 2. Assert Redirect to Next
+    assert_redirected_to verify_observation_url(next_obs)
+    follow_redirect!
+    assert_match(/Saved. Skipped to next item/, flash[:notice])
+  end
+
+  test "update with 'Skip & Next' redirects to index when queue empty" do
+    sign_in @user
+
+    # Use the last provisional observation
+    last_provisional = Observation.provisional.order(:id).last
+    attach_sample_pdf(last_provisional.document)
+
+    # Verify all other provisional observations first
+    Observation.provisional.where.not(id: last_provisional.id).find_each do |obs|
+      obs.update!(verification_status: :verified, value_numeric: 1, value_text: nil)
+    end
+
+    patch observation_url(last_provisional), params: {
+      commit_action: "skip_next",
+      observation: {
+        value_numeric: 1,
+        value_text: nil
+      }
+    }
+
+    assert_redirected_to observations_path
+    follow_redirect!
+    assert_match(/No more provisional observations/, flash[:notice])
   end
 end

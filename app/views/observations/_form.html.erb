@@ -70,6 +70,14 @@
     <%= form.text_field :page_reference, placeholder: "e.g. p. 42", class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
   </div>
 
+  <% if observation.persisted? && observation.document&.file&.attached? %>
+    <div class="my-5">
+      <%= form.label :pdf_page, "PDF Page (Absolute Index)", class: "block font-medium" %>
+      <%= form.number_field :pdf_page, min: 1, placeholder: "e.g. 45", class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
+      <p class="text-xs text-gray-500 mt-1">The page number in the PDF file (use the Verify Cockpit to capture this automatically).</p>
+    </div>
+  <% end %>
+
   <div class="my-5">
     <%= form.label :notes, class: "block font-medium" %>
     <%= form.text_area :notes, rows: 3, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>

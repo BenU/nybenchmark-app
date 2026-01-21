@@ -9,6 +9,10 @@ class Document < ApplicationRecord
   validates :title, :doc_type, :fiscal_year, :source_url, presence: true
 
   normalizes :source_url, with: ->(url) { url.strip }
+
+  scope :for_entity, lambda { |entity_id|
+    entity_id.present? ? where(entity_id: entity_id).order(fiscal_year: :desc, title: :asc) : none
+  }
   validate :source_url_must_be_valid_http
 
   # Enforces that an entity can only have one document of a specific type per year.

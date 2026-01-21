@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html class="h-full">
+  <head>
+    <%= render "shared/head" %>
+    <style>
+      /* Verify cockpit specific overrides */
+      body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+      header.container { margin: 0; padding: 0.5rem 1rem; max-width: 100%; }
+    </style>
+  </head>
+
+  <body class="h-full flex flex-col">
+    <%= render "shared/navbar" %>
+
+    <%# Flash as floating toast %>
+    <% if flash[:notice] || flash[:alert] %>
+      <div class="fixed top-14 left-1/2 transform -translate-x-1/2 z-50">
+        <% if flash[:notice] %>
+          <div class="bg-green-100 text-green-800 px-3 py-1 rounded text-xs shadow border border-green-200"><%= flash[:notice] %></div>
+        <% end %>
+        <% if flash[:alert] %>
+          <div class="bg-red-100 text-red-800 px-3 py-1 rounded text-xs shadow border border-red-200"><%= flash[:alert] %></div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%# Main content takes remaining height %>
+    <main class="flex-1 overflow-hidden">
+      <%= yield %>
+    </main>
+  </body>
+</html>

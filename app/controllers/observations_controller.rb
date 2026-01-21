@@ -3,6 +3,8 @@
 class ObservationsController < ApplicationController
   include Pagy::Method
 
+  layout "verify", only: [:verify]
+
   # 1. Strict Security: Guests can ONLY see Index and Show
   before_action :authenticate_user!, except: %i[index show]
 
@@ -54,13 +56,15 @@ class ObservationsController < ApplicationController
   def update
     @observation.assign_attributes(observation_params)
 
-    is_verify_action = params[:commit_action] == "verify_next"
+    commit_action = params[:commit_action]
+    is_verify_action = commit_action == "verify_next"
+    is_skip_action = commit_action == "skip_next"
     @observation.verification_status = :verified if is_verify_action
 
     if @observation.save
-      handle_update_success(is_verify_action)
+      handle_update_success(commit_action)
     else
-      handle_update_failure(is_verify_action)
+      handle_update_failure(is_verify_action || is_skip_action)
     end
   end
 
@@ -71,27 +75,28 @@ class ObservationsController < ApplicationController
 
   private
 
-  def handle_update_success(is_verify_action)
-    if is_verify_action
-      next_obs = @observation.next_provisional_observation
-      if next_obs
-        redirect_to verify_observation_path(next_obs), notice: "Observation verified. Find next item below..."
-      else
-        redirect_to observations_path, notice: "Verified. Queue empty!"
-      end
+  def handle_update_success(commit_action)
+    case commit_action
+    when "verify_next"
+      redirect_to_next_or_index("Observation verified. Find next item below...", "Verified. Queue empty!")
+    when "skip_next"
+      redirect_to_next_or_index("Saved. Skipped to next item...", "Saved. No more provisional observations in queue.")
     else
       redirect_to @observation, notice: "Observation was successfully updated."
     end
   end
 
-  def handle_update_failure(is_verify_action)
+  def redirect_to_next_or_index(next_notice, empty_notice)
+    next_obs = @observation.next_provisional_observation
+    redirect_to next_obs ? verify_observation_path(next_obs) : observations_path,
+                notice: next_obs ? next_notice : empty_notice
+  end
+
+  def handle_update_failure(from_cockpit)
     filter_documents
-    if is_verify_action || action_name == "verify" || request.path.include?("/verify")
-      @document = @observation.document
-      render :verify, status: :unprocessable_content
-    else
-      render :edit, status: :unprocessable_content
-    end
+    cockpit_mode = from_cockpit || action_name == "verify" || request.path.include?("/verify")
+    @document = @observation.document if cockpit_mode
+    render cockpit_mode ? :verify : :edit, status: :unprocessable_content
   end
 
   def set_observation
@@ -104,20 +109,13 @@ class ObservationsController < ApplicationController
   end
 
   def load_filter_options
-    # Only show filter options relevant to the user's view would be ideal,
-    # but for now we load all to keep queries simple.
     @entities_for_filter = Entity.joins(:observations).distinct.order(:name)
     @metrics_for_filter = Metric.joins(:observations).distinct.order(:label)
     @documents_for_filter = Document.joins(:observations).distinct.order(fiscal_year: :desc, title: :asc)
   end
 
   def filter_documents
-    @documents = if @observation.entity_id.present?
-                   Document.where(entity_id: @observation.entity_id)
-                           .order(fiscal_year: :desc, title: :asc)
-                 else
-                   []
-                 end
+    @documents = Document.for_entity(@observation.entity_id)
   end
 
   def observation_params
