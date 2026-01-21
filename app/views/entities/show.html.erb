@@ -2,32 +2,48 @@
   <div style="display: flex; justify-content: space-between; align-items: flex-start;">
     <hgroup>
       <h1><%= @entity.name %></h1>
-      <p><%= @entity.kind.capitalize %> in <%= @entity.state %> (New York)</p>
+      <p><%= @entity.kind.humanize %> in <%= @entity.state %> (New York)</p>
     </hgroup>
-    
+
     <div>
       <%= link_to "Edit", edit_entity_path(@entity), role: "button", class: "secondary outline" %>
     </div>
   </div>
 
-  <hr />
+  <% if @entity.government_structure.blank? && !@entity.school_district_kind? %>
+    <article class="needs-research-banner">
+      <strong>Help wanted:</strong> Government structure information is missing for <%= @entity.name %>.
+      <% if user_signed_in? %>
+        <%= link_to "Add governance details", edit_entity_path(@entity) %>
+      <% else %>
+        <%= link_to "Sign in", new_user_session_path %> to contribute.
+      <% end %>
+    </article>
+  <% end %>
 
   <hr />
 
     <div class="grid">
       <article>
         <header><strong>Governance Structure</strong></header>
-        <dl>
-          <% if @entity.government_structure.present? %>
-            <dt>Structure</dt>
-            <dd><%= @entity.government_structure %></dd>
-          <% end %>
+        <% if @entity.government_structure.present? || @entity.fiscal_autonomy.present? %>
+          <dl>
+            <% if @entity.government_structure.present? %>
+              <dt>Structure</dt>
+              <dd><%= @entity.government_structure.humanize %></dd>
+            <% end %>
 
-          <% if @entity.fiscal_autonomy.present? %>
-            <dt>Fiscal Autonomy</dt>
-            <dd><%= @entity.fiscal_autonomy %></dd>
+            <% if @entity.fiscal_autonomy.present? %>
+              <dt>Fiscal Autonomy</dt>
+              <dd><%= @entity.fiscal_autonomy.humanize %></dd>
+            <% end %>
+          </dl>
+        <% else %>
+          <p class="needs-research"><em>Governance structure needs research.</em></p>
+          <% if user_signed_in? %>
+            <p><%= link_to "Add details", edit_entity_path(@entity), class: "outline" %></p>
           <% end %>
-        </dl>
+        <% end %>
       </article>
 
       <article>
@@ -35,13 +51,13 @@
         <% if @entity.school_district_kind? %>
           <dl>
             <dt>Legal Type</dt>
-            <dd><%= @entity.school_legal_type %></dd>
+            <dd><%= @entity.school_legal_type&.humanize %></dd>
 
             <dt>Board Selection</dt>
-            <dd><%= @entity.board_selection %></dd>
+            <dd><%= @entity.board_selection&.humanize %></dd>
 
             <dt>Executive</dt>
-            <dd><%= @entity.executive_selection %></dd>
+            <dd><%= @entity.executive_selection&.humanize %></dd>
           </dl>
         <% else %>
           <p><em>Not applicable for this entity type.</em></p>
@@ -79,7 +95,14 @@
           </table>
         </figure>
       <% else %>
-        <article>No documents found for this entity.</article>
+        <article class="text-center">
+          <p>No financial documents yet for <%= @entity.name %>.</p>
+          <% if user_signed_in? %>
+            <p><%= link_to "Add a document", new_document_path(entity_id: @entity.id), role: "button", class: "outline" %></p>
+          <% else %>
+            <p class="muted"><%= link_to "Sign in", new_user_session_path %> to contribute data.</p>
+          <% end %>
+        </article>
       <% end %>
     </section>
 
@@ -116,8 +139,38 @@
           </table>
         </figure>
       <% else %>
-        <article>No data points extracted yet.</article>
+        <article class="text-center">
+          <p>No data points extracted yet for <%= @entity.name %>.</p>
+          <% if user_signed_in? %>
+            <p><%= link_to "Add an observation", new_observation_path(entity_id: @entity.id), role: "button", class: "outline" %></p>
+          <% else %>
+            <p class="muted"><%= link_to "Sign in", new_user_session_path %> to contribute data.</p>
+          <% end %>
+        </article>
       <% end %>
     </section>
   </div>
+
+  <style>
+    .needs-research-banner {
+      background-color: #fff3cd;
+      border: 1px solid #ffc107;
+      color: #856404;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+    }
+    .needs-research-banner a {
+      color: #856404;
+      font-weight: bold;
+    }
+    .needs-research {
+      color: #856404;
+    }
+    .muted {
+      color: #6c757d;
+    }
+    .text-center {
+      text-align: center;
+    }
+  </style>
 </main>

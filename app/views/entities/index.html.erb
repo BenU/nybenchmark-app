@@ -16,22 +16,57 @@
         <tr>
           <th scope="col">Name</th>
           <th scope="col">Type</th>
-          <th scope="col">State</th>
+          <th scope="col">Gov. Structure</th>
+          <th scope="col">Docs</th>
+          <th scope="col">Obs</th>
           <th scope="col">Actions</th>
         </tr>
       </thead>
       <tbody>
         <% @entities.each do |entity| %>
           <tr>
-            <td><%= entity.name %></td>
-            <td><%= entity.kind.capitalize %></td>
-            <td><%= entity.state %></td>
+            <td><%= link_to entity.name, entity_path(entity.slug) %></td>
+            <td><%= entity.kind.humanize %></td>
             <td>
-              <%= link_to "View Hub", entity_path(entity.slug), role: "button", class: "outline" %>
+              <% if entity.government_structure.present? %>
+                <%= entity.government_structure.humanize %>
+              <% else %>
+                <mark class="missing-data">Needs research</mark>
+              <% end %>
+            </td>
+            <td>
+              <% if entity.documents_count.to_i > 0 %>
+                <%= entity.documents_count %>
+              <% else %>
+                <small class="muted">0</small>
+              <% end %>
+            </td>
+            <td>
+              <% if entity.observations_count.to_i > 0 %>
+                <%= entity.observations_count %>
+              <% else %>
+                <small class="muted">0</small>
+              <% end %>
+            </td>
+            <td>
+              <%= link_to "View", entity_path(entity.slug), role: "button", class: "outline" %>
             </td>
           </tr>
         <% end %>
       </tbody>
     </table>
   </figure>
+
+  <style>
+    .missing-data {
+      background-color: #fff3cd;
+      color: #856404;
+      padding: 0.1em 0.4em;
+      border-radius: 3px;
+      font-size: 0.85em;
+    }
+    .muted {
+      color: #6c757d;
+    }
+  </style>
 </main>

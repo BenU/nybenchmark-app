@@ -40,3 +40,11 @@ new_rochelle_schools:
   board_selection: elected
   executive_selection: appointed_professional
   organization_note: "Elected board; superintendent appointed"
+
+# Entity without government_structure for testing "needs research" indicators
+albany:
+  name: Albany
+  kind: city
+  state: NY
+  slug: albany
+  organization_note: "State capital - governance structure needs research"

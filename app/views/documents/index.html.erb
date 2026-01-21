@@ -6,9 +6,11 @@
       <h1>Documents</h1>
       <p>Source files for all verified data.</p>
     </hgroup>
-    <div style="text-align: right; align-self: center;">
-      <%= link_to "New document", new_document_path, role: "button" %>
-    </div>
+    <% if user_signed_in? %>
+      <div style="text-align: right; align-self: center;">
+        <%= link_to "New document", new_document_path, role: "button" %>
+      </div>
+    <% end %>
   </div>
 
   <figure>
@@ -36,8 +38,10 @@
             <td><%= document.doc_type.humanize %></td>
             <td><%= document.fiscal_year %></td>
             <td>
-              <%= link_to "View", document %> | 
-              <%= link_to "Edit", edit_document_path(document) %>
+              <%= link_to "View", document %>
+              <% if user_signed_in? %>
+                | <%= link_to "Edit", edit_document_path(document) %>
+              <% end %>
             </td>
           </tr>
         <% end %>
