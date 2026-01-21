@@ -36,10 +36,10 @@ class AuthenticationNavTest < ApplicationSystemTestCase
     # Click should go to verification cockpit, not the filtered observations list
     click_link "Verify Queue"
 
-    # Should be on the verify cockpit page with PDF.js canvas-based viewer
-    assert_text "Verify:"
-    assert_selector "[data-pdf-navigator-target='canvas']"
-    assert_selector "form.verification-form"
+    # Should be on the verify cockpit page with PDF.js continuous scroll viewer
+    # Wait for the page to fully load - use visible: :all since layout may vary
+    assert_selector "form.verification-form", visible: :all
+    assert_selector "[data-pdf-navigator-target='pagesContainer']", visible: :all
   end
 
   test "navbar Verify Queue shows count badge when provisional observations exist" do

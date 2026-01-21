@@ -20,7 +20,8 @@
                 class="px-2 py-0.5 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
                 title="Next page">&#9654;</button>
         <span class="mx-1 text-gray-300">|</span>
-        <select data-pdf-navigator-target="zoomSelect"
+        <select id="zoom-select"
+                data-pdf-navigator-target="zoomSelect"
                 data-action="change->pdf-navigator#zoomChanged"
                 class="text-xs border border-gray-300 rounded px-1 py-0.5 bg-white">
           <option value="fit-width" selected>Fit Width</option>
@@ -39,11 +40,12 @@
                 title="Capture current page to form">Capture</button>
       </div>
 
-      <%# Canvas container %>
+      <%# Continuous scroll container %>
       <div class="flex-1 overflow-auto relative" data-pdf-navigator-target="container">
-        <canvas data-pdf-navigator-target="canvas"
-                data-action="click->pdf-navigator#canvasClicked"
-                class="mx-auto cursor-pointer"></canvas>
+        <div data-pdf-navigator-target="pagesContainer"
+             class="flex flex-col items-center gap-2 py-2">
+          <%# Page wrappers inserted by JavaScript %>
+        </div>
         <div data-pdf-navigator-target="loading"
              class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-90">
           <div class="flex flex-col items-center gap-1">
