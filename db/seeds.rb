@@ -2,6 +2,54 @@
 require 'csv'
 require 'yaml'
 
+# Helper methods for determining metric value_type and display_format
+def determine_metric_value_type(key, unit)
+  text_patterns = [/bond.*rating/i, /credit.*rating/i, /gov.*organization/i]
+  text_units = ["Text"]
+
+  if text_units.include?(unit) || text_patterns.any? { |p| key.to_s.match?(p) }
+    :text
+  else
+    :numeric
+  end
+end
+
+def determine_metric_display_format(key, unit)
+  unit_str = unit.to_s.downcase.strip
+
+  case unit_str
+  when "usd", "dollars", "$"
+    "currency"
+  when "percent", "percentage", "%"
+    "percentage"
+  when "fte", "ftes"
+    "fte"
+  when "rate"
+    "rate"
+  when "count", "people", "employees"
+    "integer"
+  else
+    key_str = key.to_s.downcase
+    if key_str.include?("_fte") || key_str.end_with?("_fte")
+      "fte"
+    elsif key_str.include?("rate") && !key_str.include?("rating")
+      "rate"
+    elsif key_str.include?("population") || key_str.include?("count") || key_str.include?("employees")
+      "integer"
+    elsif key_str.include?("revenue") || key_str.include?("expense") || key_str.include?("tax") ||
+          key_str.include?("debt") || key_str.include?("liability") || key_str.include?("fund") ||
+          key_str.include?("position") || key_str.include?("value") || key_str.include?("income") ||
+          key_str.include?("payment") || key_str.include?("aid") || key_str.include?("levy") ||
+          key_str.include?("rent")
+      "currency"
+    elsif key_str.include?("percentage")
+      "percentage"
+    else
+      "decimal"
+    end
+  end
+end
+
 puts "🌱 Starting Database Seed..."
 
 # ====================================================
@@ -97,7 +145,15 @@ metrics_path = Rails.root.join('db', 'seeds', 'metrics.yml')
 if File.exist?(metrics_path)
   YAML.load_file(metrics_path).each do |key, data|
     m = Metric.find_or_initialize_by(key: data['key'])
-    m.update!(label: data['label'], unit: data['unit'], description: data['description'])
+    value_type = determine_metric_value_type(data['key'], data['unit'])
+    display_format = value_type == :numeric ? determine_metric_display_format(data['key'], data['unit']) : nil
+    m.update!(
+      label: data['label'],
+      unit: data['unit'],
+      description: data['description'],
+      value_type: value_type,
+      display_format: display_format
+    )
     print "."
   end
 end
@@ -168,6 +224,9 @@ CSV.foreach(obs_path, headers: true) do |row|
   metric = Metric.find_or_create_by(key: row['Metric']) do |m|
     m.label = row['Metric'].titleize
     m.description = "Auto-generated from seed."
+    # Set value_type and display_format based on key pattern
+    m.value_type = determine_metric_value_type(row['Metric'], nil)
+    m.display_format = m.numeric? ? determine_metric_display_format(row['Metric'], nil) : nil
   end
 
   if entity && doc
@@ -180,14 +239,25 @@ CSV.foreach(obs_path, headers: true) do |row|
     
     obs.page_reference = row['Page_Ref'] || "n/a"
 
-    # Handle numeric vs text values
-    raw_val = row['Value'].to_s.gsub(',', '').strip
-    if raw_val.match?(/^-?\d+(\.\d+)?$/)
-      obs.value_numeric = raw_val.to_f
-      obs.value_text = nil
+    # Handle numeric vs text values based on metric type
+    raw_val = row['Value'].to_s.strip
+
+    if metric.numeric?
+      # For numeric metrics, try to parse the value (strip currency symbols, commas, %)
+      cleaned = raw_val.gsub(/[$,\s%]/, '')
+      if cleaned.match?(/^-?\d+(\.\d+)?$/)
+        obs.value_numeric = cleaned.to_f
+        obs.value_text = nil
+      else
+        # If we can't parse it, this is a data quality issue - skip or warn
+        puts "   ⚠️  Warning: Could not parse '#{raw_val}' as numeric for #{metric.key}"
+        obs.value_numeric = nil
+        obs.value_text = raw_val
+      end
     else
+      # For text metrics, store as text
       obs.value_numeric = nil
-      obs.value_text = row['Value']
+      obs.value_text = raw_val
     end
 
     if obs.save

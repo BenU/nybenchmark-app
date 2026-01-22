@@ -45,6 +45,8 @@ class MetricsTest < ApplicationSystemTestCase
     fill_in "Label", with: "Public Safety Expense"
     fill_in "Key", with: "public_safety_expense"
     fill_in "Unit", with: "USD"
+    select "Numeric", from: "Value type"
+    select "Currency", from: "Display format"
     fill_in "Description", with: "Total spending on police and fire."
 
     click_on "Create Metric"
@@ -74,5 +76,86 @@ class MetricsTest < ApplicationSystemTestCase
 
     assert_text "Metric was successfully updated"
     assert_text "Revenue (Updated)"
+  end
+
+  # --- Index View: Type Column Tests ---
+
+  test "metrics index displays value type column" do
+    visit metrics_path
+
+    # Should have Type column header
+    within("thead") do
+      assert_text "Type"
+    end
+
+    # Should show type values in table body
+    within("tbody") do
+      assert_text "Numeric"
+    end
+  end
+
+  # --- Show View: New Attribute Tests ---
+
+  test "metric show displays value type" do
+    visit metric_path(@metric)
+
+    assert_text "Type:"
+    assert_text "Numeric"
+  end
+
+  test "metric show displays display format for numeric metric" do
+    visit metric_path(@metric)
+
+    assert_text "Display Format:"
+    assert_text "Currency"
+  end
+
+  test "metric show displays formula when present" do
+    # Create a metric with a formula for this test
+    derived_metric = Metric.create!(
+      key: "test_derived_metric",
+      label: "Test Derived Metric",
+      value_type: :numeric,
+      display_format: "decimal",
+      formula: "revenue - expenditures"
+    )
+
+    visit metric_path(derived_metric)
+
+    assert_text "Formula:"
+    assert_text "revenue - expenditures"
+
+    # Cleanup
+    derived_metric.destroy
+  end
+
+  test "metric show does not display formula section when formula is blank" do
+    # revenue metric has no formula
+    visit metric_path(@metric)
+
+    assert_no_text "Formula:"
+  end
+
+  # --- Text Metric Tests ---
+
+  test "metrics index shows text type for text metric" do
+    # bond_rating fixture has value_type: text
+    visit metrics_path
+
+    # Should show "Text" in the table for the bond_rating metric
+    within("tbody") do
+      assert_text "Text"
+    end
+  end
+
+  test "metric show displays text type correctly" do
+    text_metric = metrics(:bond_rating)
+
+    visit metric_path(text_metric)
+
+    assert_text "Type:"
+    assert_text "Text"
+    # Text metrics should NOT show display format
+    assert_no_text "Display Format:"
   end
 end

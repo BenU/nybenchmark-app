@@ -28,6 +28,25 @@
         <strong>Code:</strong> <%= @metric.key %>
       </div>
     </div>
+
+    <div class="grid">
+      <div>
+        <strong>Type:</strong> <%= @metric.value_type.humanize %>
+      </div>
+      <% if @metric.numeric? %>
+        <div>
+          <strong>Display Format:</strong> <%= @metric.display_format&.humanize %>
+        </div>
+      <% else %>
+        <div></div>
+      <% end %>
+    </div>
+
+    <% if @metric.formula.present? %>
+      <div>
+        <strong>Formula:</strong> <code><%= @metric.formula %></code>
+      </div>
+    <% end %>
   </article>
 
   <div>

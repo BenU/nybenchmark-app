@@ -3,21 +3,37 @@ one:
   label: Test Metric One
   unit: USD
   description: A generic metric for testing.
+  value_type: 0
+  display_format: currency
 
 two:
   key: metric_two
   label: Test Metric Two
   unit: Count
   description: Another generic metric.
-  
+  value_type: 0
+  display_format: integer
+
 expenditures:
   key: total_expenditures
   label: Total General Fund Expenditures
   unit: USD
   description: Total spending from the general fund.
+  value_type: 0
+  display_format: currency
 
 revenue:
   key: total_revenue
   label: Total General Fund Revenue
   unit: USD
   description: Total revenue collected into the general fund.
+  value_type: 0
+  display_format: currency
+
+bond_rating:
+  key: bond_credit_rating
+  label: Bond Credit Rating
+  unit: Text
+  description: Credit rating from rating agencies (e.g., Aa1, AA+).
+  value_type: 1
+  display_format: ~

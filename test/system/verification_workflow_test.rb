@@ -9,8 +9,9 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     @user = users(:one)
     sign_in @user
 
-    # Start with a known provisional fixture
-    @observation = observations(:new_rochelle_revenue_text)
+    # Use a numeric metric provisional fixture to test numeric workflow
+    # (value entry, formatting preview, etc.)
+    @observation = observations(:yonkers_schools_metric_one)
 
     # Dynamically find what the database thinks is "Next"
     # This prevents the test from breaking if fixture IDs shuffle
@@ -37,9 +38,8 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     assert_selector "[data-pdf-navigator-target='zoomSelect']"
     assert_button "Capture"
 
-    # 3. Verify & Next Workflow
-    fill_in "Text", with: ""
-    fill_in "Numeric", with: "999.99"
+    # 3. Verify & Next Workflow (numeric metric - only numeric field shown)
+    fill_in "Value (USD)", with: "999.99"
     fill_in "PDF Page:", with: "42"
     select "Verified", from: "Status"
 
@@ -192,9 +192,8 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
   test "Skip & Next saves changes and moves to next without verifying" do
     visit verify_observation_path(@observation)
 
-    # Make some changes
-    fill_in "Text", with: ""
-    fill_in "Numeric", with: "555.55"
+    # Make some changes (numeric metric - only numeric field shown)
+    fill_in "Value (USD)", with: "555.55"
     fill_in "PDF Page:", with: "77"
 
     # Click Skip & Next (don't change status)
@@ -211,6 +210,34 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     assert_equal 555.55, @observation.value_numeric
   end
 
+  test "verification workflow works with text metric" do
+    # Use a text metric observation to ensure text workflow is covered
+    text_obs = observations(:new_rochelle_bond_rating_text)
+    attach_sample_pdf(text_obs.document)
+
+    visit verify_observation_path(text_obs)
+
+    # Should show text input, not numeric
+    assert_selector "input[name='observation[value_text]']"
+    assert_no_selector "input[type='number'][name='observation[value_numeric]']"
+
+    # Fill in text value and verify
+    fill_in "observation[value_text]", with: "Aa1"
+    fill_in "PDF Page:", with: "15"
+    select "Verified", from: "Status"
+
+    click_button "Verify & Next"
+
+    # Wait for redirect to complete
+    assert_text "Observation verified"
+
+    # Check that the observation was updated correctly
+    text_obs.reload
+    assert_equal "verified", text_obs.verification_status
+    assert_equal "Aa1", text_obs.value_text
+    assert_equal 15, text_obs.pdf_page
+  end
+
   # ==========================================
   # VERIFY COCKPIT UI REFINEMENTS
   # ==========================================
@@ -219,7 +246,8 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     visit verify_observation_path(@observation)
 
     # Header should include both metric label AND entity name
-    assert_text "Verify: Total General Fund Revenue for New Rochelle"
+    # @observation is yonkers_schools_metric_one (numeric metric)
+    assert_text "Verify: Test Metric One for Yonkers Public Schools"
   end
 
   test "verification cockpit header has readable font size" do
@@ -312,12 +340,22 @@ class VerificationWorkflowTest < ApplicationSystemTestCase
     page_display = find("[data-pdf-navigator-target='pageDisplay']")
     _initial_page = page_display.text.to_i
 
-    # Scroll to second page
-    second_page = find(".pdf-page-wrapper[data-page='2']")
-    second_page.scroll_to(:center)
+    # Scroll the container directly to show page 2
+    # We need to scroll the container element (not the viewport) to trigger the scroll listener
+    execute_script <<~JS
+      const container = document.querySelector("[data-pdf-navigator-target='container']");
+      const page2 = document.querySelector(".pdf-page-wrapper[data-page='2']");
+      if (container && page2) {
+        // Calculate scroll position to center page 2 in the container
+        const containerRect = container.getBoundingClientRect();
+        const page2Rect = page2.getBoundingClientRect();
+        const scrollOffset = page2Rect.top - containerRect.top + container.scrollTop - (containerRect.height / 2) + (page2Rect.height / 2);
+        container.scrollTop = scrollOffset;
+      }
+    JS
 
-    # Wait for scroll sync debounce
-    sleep 0.2
+    # Wait for scroll sync debounce (50ms in controller + buffer)
+    sleep 0.15
 
     # Page display should update to 2
     assert_equal "2", page_display.text, "Page display should update when scrolling to page 2"

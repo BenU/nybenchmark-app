@@ -13,6 +13,7 @@
       <thead>
         <tr>
           <th scope="col">Label</th>
+          <th scope="col">Type</th>
           <th scope="col">Unit</th>
           <th scope="col">Description</th>
         </tr>
@@ -23,6 +24,7 @@
             <td>
               <%= link_to metric.label, metric_path(metric) %>
             </td>
+            <td><%= metric.value_type.humanize %></td>
             <td><%= metric.unit %></td>
             <td><%= metric.description %></td>
           </tr>

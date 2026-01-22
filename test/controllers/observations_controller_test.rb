@@ -9,7 +9,7 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user = users(:one)
     @observation = observations(:yonkers_expenditures_numeric) # verified
-    @provisional_obs = observations(:new_rochelle_revenue_text) # provisional
+    @provisional_obs = observations(:new_rochelle_bond_rating_text) # provisional
     @entity = entities(:yonkers)
     @metric = metrics(:expenditures)
     @document = documents(:yonkers_acfr_fy2024)
@@ -38,11 +38,11 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     get observations_url
     assert_response :success
 
-    # Should see the verified one
-    assert_select "td", text: "105,000,000.0"
+    # Should see the verified one (formatted as currency)
+    assert_select "td", text: "$105,000,000.00"
 
-    # Should NOT see the provisional one
-    assert_select "td", text: "Pending Audit", count: 0
+    # Should NOT see the provisional one (bond rating "Aa2")
+    assert_select "td", text: "Aa2", count: 0
   end
 
   test "guest denies access to edit" do
@@ -64,10 +64,10 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     get observations_url
     assert_response :success
 
-    # Should see verified
-    assert_select "td", text: "105,000,000.0"
-    # Should ALSO see provisional
-    assert_select "td", text: "Pending Audit"
+    # Should see verified (formatted as currency)
+    assert_select "td", text: "$105,000,000.00"
+    # Should ALSO see provisional (bond rating "Aa2")
+    assert_select "td", text: "Aa2"
   end
 
   test "user can access edit" do
@@ -139,7 +139,8 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     sign_in @user
 
     # Setup: Use a provisional item that has a 'next' item in the queue
-    current_obs = observations(:new_rochelle_revenue_text)
+    # bond_rating is a text metric, so update with value_text
+    current_obs = observations(:new_rochelle_bond_rating_text)
     next_obs = current_obs.next_provisional_observation
 
     # Ensure current_obs document also has a file attached (for robustness)
@@ -149,16 +150,16 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
       commit_action: "verify_next",
       observation: {
         verification_status: "verified",
-        value_numeric: 999,
-        value_text: nil # FIX for Failure B: Explicitly clear text to pass Model Validation
+        value_text: "Aa1",
+        value_numeric: nil
       }
     }
 
     # 1. Assert Data Update
     current_obs.reload
     assert_equal "verified", current_obs.verification_status
-    assert_equal 999, current_obs.value_numeric
-    assert_nil current_obs.value_text
+    assert_equal "Aa1", current_obs.value_text
+    assert_nil current_obs.value_numeric
 
     # 2. Assert Redirect to Next
     assert_redirected_to verify_observation_url(next_obs)
@@ -287,7 +288,8 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
   test "update with 'Skip & Next' saves and redirects to next provisional without verifying" do
     sign_in @user
 
-    current_obs = observations(:new_rochelle_revenue_text)
+    # bond_rating is a text metric, so update with value_text
+    current_obs = observations(:new_rochelle_bond_rating_text)
     next_obs = current_obs.next_provisional_observation
     attach_sample_pdf(current_obs.document)
 
@@ -298,8 +300,8 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
       commit_action: "skip_next",
       observation: {
         pdf_page: 99,
-        value_text: nil,
-        value_numeric: 123
+        value_text: "Baa1",
+        value_numeric: nil
       }
     }
 
@@ -307,7 +309,7 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     current_obs.reload
     assert_equal "provisional", current_obs.verification_status, "Skip should NOT change verification status"
     assert_equal 99, current_obs.pdf_page
-    assert_equal 123, current_obs.value_numeric
+    assert_equal "Baa1", current_obs.value_text
 
     # 2. Assert Redirect to Next
     assert_redirected_to verify_observation_url(next_obs)
@@ -322,18 +324,27 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     last_provisional = Observation.provisional.order(:id).last
     attach_sample_pdf(last_provisional.document)
 
-    # Verify all other provisional observations first
+    # Verify all other provisional observations first (respecting metric value types)
     Observation.provisional.where.not(id: last_provisional.id).find_each do |obs|
-      obs.update!(verification_status: :verified, value_numeric: 1, value_text: nil)
+      if obs.metric.expects_numeric?
+        obs.update!(verification_status: :verified, value_numeric: 1, value_text: nil)
+      else
+        obs.update!(verification_status: :verified, value_text: "verified", value_numeric: nil)
+      end
     end
 
-    patch observation_url(last_provisional), params: {
-      commit_action: "skip_next",
-      observation: {
-        value_numeric: 1,
-        value_text: nil
+    # Update with correct value type for last provisional's metric
+    if last_provisional.metric.expects_numeric?
+      patch observation_url(last_provisional), params: {
+        commit_action: "skip_next",
+        observation: { value_numeric: 1, value_text: nil }
       }
-    }
+    else
+      patch observation_url(last_provisional), params: {
+        commit_action: "skip_next",
+        observation: { value_text: "skipped", value_numeric: nil }
+      }
+    end
 
     assert_redirected_to observations_path
     follow_redirect!

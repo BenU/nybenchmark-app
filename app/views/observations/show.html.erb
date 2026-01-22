@@ -31,8 +31,8 @@
     <div>
       <strong>Value</strong>
       <p>
-        <% if @observation.value_numeric.present? %>
-          <%= number_with_delimiter(@observation.value_numeric) %>
+        <% if @observation.metric.expects_numeric? %>
+          <%= @observation.metric.format_value(@observation.value_numeric) %>
         <% else %>
           <%= @observation.value_text %>
         <% end %>

@@ -121,19 +121,20 @@
         </div>
       <% end %>
 
-      <%# Values row with note %>
+      <%# Value input - conditional based on metric type %>
       <div class="mb-1">
-        <p class="text-xs text-gray-500 mb-0.5 italic">Value (numeric or text, not both):</p>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <%= form.label :value_numeric, "Numeric", class: "block text-xs font-medium text-gray-700" %>
-            <%= form.number_field :value_numeric, step: :any, class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
-          </div>
-          <div>
-            <%= form.label :value_text, "Text", class: "block text-xs font-medium text-gray-700" %>
-            <%= form.text_field :value_text, class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
-          </div>
-        </div>
+        <% if @observation.metric.expects_numeric? %>
+          <%= form.label :value_numeric, "Value (#{@observation.metric.unit || 'numeric'})", class: "block text-xs font-medium text-gray-700" %>
+          <%= form.number_field :value_numeric, step: :any, class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
+          <% if @observation.value_numeric.present? %>
+            <p class="mt-0.5 text-xs text-gray-500" data-formatted-preview>
+              Displays as: <span class="font-medium"><%= @observation.metric.format_value(@observation.value_numeric) %></span>
+            </p>
+          <% end %>
+        <% else %>
+          <%= form.label :value_text, "Value (text)", class: "block text-xs font-medium text-gray-700" %>
+          <%= form.text_field :value_text, class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
+        <% end %>
       </div>
 
       <%# Notes - compact %>
