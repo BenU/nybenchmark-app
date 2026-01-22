@@ -23,6 +23,7 @@ class Observation < ApplicationRecord
   # Custom Logical Validations
   validate :fiscal_year_matches_document
   validate :validate_value_exclusivity
+  validate :value_type_matches_metric
 
   # -- Scopes --
   scope :search, lambda { |term|
@@ -73,6 +74,16 @@ class Observation < ApplicationRecord
       errors.add(:base, "Cannot have both a numeric and text value")
     elsif !has_numeric && !has_text
       errors.add(:base, "Must have either a numeric value or a text value")
+    end
+  end
+
+  def value_type_matches_metric
+    return unless metric
+
+    if metric.expects_numeric? && value_numeric.nil?
+      errors.add(:value_numeric, "is required for this metric")
+    elsif metric.expects_text? && value_text.blank?
+      errors.add(:value_text, "is required for this metric")
     end
   end
 end

@@ -7,10 +7,11 @@ class AuthenticationNavTest < ApplicationSystemTestCase
 
   setup do
     @user = users(:one)
-    @provisional_obs = observations(:new_rochelle_revenue_text)
 
-    # Attach real PDF so PDF.js viewer renders properly
-    attach_sample_pdf(@provisional_obs.document)
+    # Attach PDF to the FIRST provisional observation (by ID order)
+    # since that's where Verify Queue link navigates to
+    @first_provisional = Observation.provisional.order(:id).first
+    attach_sample_pdf(@first_provisional.document)
   end
 
   test "navbar shows Sign in when logged out" do

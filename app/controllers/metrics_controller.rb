@@ -41,6 +41,6 @@ class MetricsController < ApplicationController
   end
 
   def metric_params
-    params.expect(metric: %i[key label unit description])
+    params.expect(metric: %i[key label unit description value_type display_format formula])
   end
 end

@@ -44,3 +44,22 @@ Metrics/ClassLength:
 Metrics/BlockLength:
   Exclude:
     - 'test/**/*'
+    - 'lib/tasks/**/*'
+
+# One-time data migration scripts have complex business logic
+# that doesn't fit standard method length limits
+Metrics/MethodLength:
+  Exclude:
+    - 'lib/tasks/**/*'
+
+Metrics/AbcSize:
+  Exclude:
+    - 'lib/tasks/**/*'
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - 'lib/tasks/**/*'
+
+Metrics/PerceivedComplexity:
+  Exclude:
+    - 'lib/tasks/**/*'

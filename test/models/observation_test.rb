@@ -13,7 +13,7 @@ class ObservationTest < ActiveSupport::TestCase
   end
 
   test "valid with ONLY text value" do
-    obs = observations(:new_rochelle_revenue_text)
+    obs = observations(:new_rochelle_bond_rating_text)
     assert obs.valid?
     assert_nil obs.value_numeric
     assert_not_nil obs.value_text
@@ -51,7 +51,7 @@ class ObservationTest < ActiveSupport::TestCase
 
   test "fixtures should be valid" do
     assert observations(:yonkers_expenditures_numeric).valid?
-    assert observations(:new_rochelle_revenue_text).valid?
+    assert observations(:new_rochelle_bond_rating_text).valid?
   end
 
   # REPLACED TEST: Now checking for Auto-Correction instead of Invalidity
@@ -121,5 +121,67 @@ class ObservationTest < ActiveSupport::TestCase
     assert next_from_verified.provisional?
     # It must be ONE of the items in our queue (depending on where the ID lands)
     assert_includes queue, next_from_verified
+  end
+
+  # --- 7. Value Type Matches Metric Validation ---
+
+  test "valid when numeric metric has numeric value" do
+    obs = observations(:yonkers_expenditures_numeric)
+    # Fixture uses :expenditures metric which is numeric (value_type: numeric)
+    assert obs.metric.expects_numeric?
+    assert_not_nil obs.value_numeric
+    assert_nil obs.value_text
+    assert obs.valid?
+  end
+
+  test "valid when text metric has text value" do
+    obs = observations(:new_rochelle_bond_rating_text)
+    # Fixture uses :bond_rating metric which is text (value_type: text)
+    assert obs.metric.expects_text?
+    assert_nil obs.value_numeric
+    assert_not_nil obs.value_text
+    assert obs.valid?
+  end
+
+  test "invalid when numeric metric has only text value" do
+    obs = observations(:yonkers_expenditures_numeric)
+    assert obs.metric.expects_numeric?
+
+    obs.value_numeric = nil
+    obs.value_text = "Some text instead"
+
+    assert_not obs.valid?
+    assert_includes obs.errors[:value_numeric], "is required for this metric"
+  end
+
+  test "invalid when text metric has only numeric value" do
+    obs = observations(:new_rochelle_bond_rating_text)
+    assert obs.metric.expects_text?
+
+    obs.value_numeric = 12_345.00
+    obs.value_text = nil
+
+    assert_not obs.valid?
+    assert_includes obs.errors[:value_text], "is required for this metric"
+  end
+
+  test "valid when numeric metric has value of zero" do
+    obs = observations(:yonkers_expenditures_numeric)
+    assert obs.metric.expects_numeric?
+
+    obs.value_numeric = 0
+    obs.value_text = nil
+
+    assert obs.valid?, "Zero should be a valid numeric value"
+  end
+
+  test "valid when numeric metric has negative value" do
+    obs = observations(:yonkers_expenditures_numeric)
+    assert obs.metric.expects_numeric?
+
+    obs.value_numeric = -1000.50
+    obs.value_text = nil
+
+    assert obs.valid?, "Negative numbers should be valid numeric values"
   end
 end
