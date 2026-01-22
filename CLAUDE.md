@@ -38,6 +38,22 @@ This project uses a **Docker-first workflow**. Do not run Rails commands directl
 8. Update local main: `git switch main && git pull && dci`
 9. Deploy: `kd`
 
+### Database Safety
+
+**NEVER use destructive database commands without explicit user approval:**
+
+| Command | Risk | Safe Alternative |
+|---------|------|------------------|
+| `db:seed:replant` | DELETES ALL DATA then seeds | `db:seed` (additive only) |
+| `db:reset` | Drops and recreates database | `db:migrate` |
+| `db:drop` | Destroys entire database | Don't use |
+
+**Safe patterns for data updates:**
+- Use `find_or_create_by` / `find_or_initialize_by` for seeding
+- Write rake tasks that UPDATE existing records, never DELETE
+- Always test data migrations locally with `db:seed` before production
+- For production data backfills, use `kamal app exec "bin/rails task:name"`
+
 ## Current Feature Work
 
 ### Verify Cockpit Refinements (Next Up)
