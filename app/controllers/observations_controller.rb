@@ -3,7 +3,7 @@
 class ObservationsController < ApplicationController
   include Pagy::Method
 
-  layout "verify", only: [:verify]
+  layout "verify", only: %i[new edit verify]
 
   # 1. Strict Security: Guests can ONLY see Index and Show
   before_action :authenticate_user!, except: %i[index show]
