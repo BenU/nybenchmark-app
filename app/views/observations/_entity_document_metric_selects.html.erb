@@ -1,0 +1,85 @@
+<%# Entity, Document, and Metric selection - used by new and edit views %>
+<%# Required locals: form, observation %>
+
+<%# Entity selection (filters documents) %>
+<div class="mb-1">
+  <%= form.label :entity_id, "Entity", class: "block text-xs font-medium text-gray-700" %>
+  <%= form.collection_select :entity_id, @entities, :id, :name,
+        { prompt: "Select Entity..." },
+        {
+          class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1",
+          data: {
+            controller: "redirect-on-change",
+            redirect_on_change_param_value: "entity_id",
+            action: "change->redirect-on-change#update"
+          }
+        }
+  %>
+  <p class="text-xs text-gray-500 mt-0.5">Changing this filters the document list.</p>
+</div>
+
+<%# Document selection %>
+<div class="mb-1">
+  <%= form.label :document_id, "Document", class: "block text-xs font-medium text-gray-700" %>
+  <% if @documents.any? %>
+    <%= form.collection_select :document_id, @documents, :id, :title,
+          { prompt: "Select Document..." },
+          { class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" }
+    %>
+    <p class="text-xs text-gray-500 mt-0.5">Fiscal Year assigned automatically.</p>
+  <% else %>
+    <%= form.select :document_id, [], { prompt: "Select an Entity first" },
+          { disabled: true, class: "mt-0.5 block w-full text-sm rounded border-gray-300 bg-gray-100 px-2 py-1" }
+    %>
+  <% end %>
+</div>
+
+<%# Metric selection with dynamic value field %>
+<% metric_types = @metrics.each_with_object({}) { |m, h| h[m.id.to_s] = m.value_type } %>
+<div data-controller="metric-value-field"
+     data-metric-value-field-metric-types-value="<%= metric_types.to_json %>">
+
+  <div class="mb-1">
+    <%= form.label :metric_id, "Metric", class: "block text-xs font-medium text-gray-700" %>
+    <%= form.collection_select :metric_id, @metrics, :id, :label,
+          { prompt: "Select Metric..." },
+          {
+            class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1",
+            data: {
+              metric_value_field_target: "metricSelect",
+              action: "change->metric-value-field#metricChanged"
+            }
+          }
+    %>
+  </div>
+
+  <%# Value input - dynamic based on metric type %>
+  <div class="mb-1 border p-2 rounded bg-gray-50">
+    <% if observation.metric&.persisted? %>
+      <%# Editing with known metric - show appropriate field %>
+      <% if observation.metric.expects_numeric? %>
+        <%= form.label :value_numeric, "Value (#{observation.metric.unit || 'numeric'})", class: "block text-xs font-medium text-gray-700" %>
+        <%= form.number_field :value_numeric, step: :any, class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
+        <% if observation.value_numeric.present? %>
+          <p class="text-xs text-gray-500 mt-0.5">Displays as: <span class="font-medium"><%= observation.metric.format_value(observation.value_numeric) %></span></p>
+        <% end %>
+      <% else %>
+        <%= form.label :value_text, "Value (text)", class: "block text-xs font-medium text-gray-700" %>
+        <%= form.text_field :value_text, class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
+      <% end %>
+    <% else %>
+      <%# New observation - dynamic field switching %>
+      <div data-metric-value-field-target="placeholder">
+        <p class="text-gray-500 text-xs">Select a metric to see value field</p>
+      </div>
+      <div data-metric-value-field-target="numericField" class="hidden">
+        <%= form.label :value_numeric, "Numeric Value", class: "block text-xs font-medium text-gray-700" %>
+        <%= form.number_field :value_numeric, step: :any, class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
+      </div>
+      <div data-metric-value-field-target="textField" class="hidden">
+        <%= form.label :value_text, "Text Value", class: "block text-xs font-medium text-gray-700" %>
+        <%= form.text_field :value_text, class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
+      </div>
+    <% end %>
+  </div>
+</div>

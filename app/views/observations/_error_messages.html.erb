@@ -1,0 +1,8 @@
+<%# Error messages partial %>
+<% if observation.errors.any? %>
+  <div class="bg-red-50 text-red-700 p-1 rounded mb-1 text-xs">
+    <% observation.errors.full_messages.each do |message| %>
+      <span><%= message %></span>
+    <% end %>
+  </div>
+<% end %>

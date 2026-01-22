@@ -395,4 +395,112 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal new_url, @observation.document.source_url, "Document source_url should be updated"
     assert_not_equal original_url, @observation.document.source_url
   end
+
+  # ==========================================
+  # NEW/EDIT COCKPIT LAYOUT (Unified UI)
+  # ==========================================
+
+  test "new uses verify layout with cockpit structure" do
+    sign_in @user
+    get new_observation_url
+
+    assert_response :success
+    # Should use the full-width verify layout
+    assert_select "body.verify-layout"
+    # Should have the two-pane structure
+    assert_select ".md\\:w-3\\/5" # Left pane (PDF viewer area)
+    assert_select ".md\\:w-2\\/5" # Right pane (form area)
+  end
+
+  test "new shows PDF placeholder when no document selected" do
+    sign_in @user
+    get new_observation_url
+
+    assert_response :success
+    # Should show placeholder message in PDF viewer area
+    assert_select "[data-pdf-viewer-placeholder]", text: /Select a document/i
+    # Should NOT have PDF.js controller active (no URL yet)
+    assert_select "[data-controller='pdf-navigator']", count: 0
+  end
+
+  test "new does not show Verify & Next or Skip buttons" do
+    sign_in @user
+    get new_observation_url
+
+    assert_response :success
+    # These buttons are verify-only
+    assert_select "button[value='verify_next']", count: 0
+    assert_select "button[value='skip_next']", count: 0
+  end
+
+  test "edit uses verify layout with cockpit structure" do
+    sign_in @user
+    get edit_observation_url(@observation)
+
+    assert_response :success
+    # Should use the full-width verify layout
+    assert_select "body.verify-layout"
+    # Should have the two-pane structure
+    assert_select ".md\\:w-3\\/5" # Left pane (PDF viewer area)
+    assert_select ".md\\:w-2\\/5" # Right pane (form area)
+  end
+
+  test "edit shows PDF viewer when document has PDF attached" do
+    sign_in @user
+    get edit_observation_url(@observation)
+
+    assert_response :success
+    # Should have PDF.js controller with URL
+    assert_select "[data-controller='pdf-navigator'][data-pdf-navigator-url-value]"
+    # Should have the pages container for continuous scroll
+    assert_select "[data-pdf-navigator-target='pagesContainer']"
+  end
+
+  test "edit shows PDF placeholder for URL-only documents" do
+    url_only_obs = observations(:yonkers_population_url_only)
+    sign_in @user
+    get edit_observation_url(url_only_obs)
+
+    assert_response :success
+    # Should show source URL link instead of PDF viewer
+    assert_select "a[href='#{url_only_obs.document.source_url}']"
+    # Should NOT have PDF.js pages container
+    assert_select "[data-pdf-navigator-target='pagesContainer']", count: 0
+  end
+
+  test "edit does not show Verify & Next or Skip buttons" do
+    sign_in @user
+    get edit_observation_url(@observation)
+
+    assert_response :success
+    # These buttons are verify-only
+    assert_select "button[value='verify_next']", count: 0
+    assert_select "button[value='skip_next']", count: 0
+  end
+
+  test "edit shows entity, document, and metric selects" do
+    sign_in @user
+    get edit_observation_url(@observation)
+
+    assert_response :success
+    assert_select "select[name='observation[entity_id]']"
+    assert_select "select[name='observation[document_id]']"
+    assert_select "select[name='observation[metric_id]']"
+  end
+
+  test "edit shows pdf_page field when document has PDF" do
+    sign_in @user
+    get edit_observation_url(@observation)
+
+    assert_response :success
+    assert_select "input[name='observation[pdf_page]']"
+  end
+
+  test "edit shows source_url field for document" do
+    sign_in @user
+    get edit_observation_url(@observation)
+
+    assert_response :success
+    assert_select "input[name='observation[document_attributes][source_url]']"
+  end
 end

@@ -24,8 +24,8 @@ class ObservationsTest < ApplicationSystemTestCase
     assert_link "New observation"
     click_on "New observation"
 
-    # 2. Verify Destination
-    assert_selector "h1", text: "New observation"
+    # 2. Verify Destination (uses cockpit layout with h2)
+    assert_selector "h2", text: "New Observation"
     assert_current_path new_observation_path
   end
 
@@ -36,8 +36,8 @@ class ObservationsTest < ApplicationSystemTestCase
     assert_link "Edit"
     click_on "Edit"
 
-    # 2. Verify Destination
-    assert_selector "h1", text: "Editing observation"
+    # 2. Verify Destination (uses cockpit layout with h2)
+    assert_selector "h2", text: "Edit Observation"
     assert_current_path edit_observation_path(@observation)
   end
 
@@ -59,7 +59,7 @@ class ObservationsTest < ApplicationSystemTestCase
 
     # 4. Fill Value (Numeric)
     fill_in "Numeric Value", with: "500000.00"
-    fill_in "Page reference", with: "p. 42"
+    fill_in "Citation (printed page)", with: "p. 42"
 
     click_on "Create Observation"
 
@@ -84,7 +84,7 @@ class ObservationsTest < ApplicationSystemTestCase
     assert_no_selector "input[name='observation[value_text]']", visible: true
 
     fill_in "Numeric Value", with: "100"
-    fill_in "Page reference", with: "p. 10"
+    fill_in "Citation (printed page)", with: "p. 10"
 
     click_on "Create Observation"
 

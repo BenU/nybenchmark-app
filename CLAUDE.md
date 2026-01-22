@@ -56,18 +56,44 @@ This project uses a **Docker-first workflow**. Do not run Rails commands directl
 
 ## Current Feature Work
 
-### Verify Cockpit Refinements (Next Up)
+### Unify Observation New/Edit with Verify Cockpit (Next Up)
 
-The verify cockpit now has continuous scroll PDF viewing. Next steps are UI refinements.
+The observation new and edit pages should use the same layout as the verify cockpit, with shared partials for consistency.
+
+**Goal:** Users creating or editing observations should see the PDF viewer alongside the form, just like in the verify cockpit.
+
+**Approach (TDD):**
+1. Write failing tests for new/edit pages using cockpit layout
+2. Extract shared partials from `verify.html.erb`:
+   - `_pdf_viewer.html.erb` - Left pane with PDF.js viewer or URL fallback
+   - `_observation_form.html.erb` - Right pane with form fields
+3. Update `new.html.erb` and `edit.html.erb` to use the verify layout and partials
+4. Handle the entity/document selection flow for new observations (entity selection triggers document filter)
 
 **Key files:**
-- `app/javascript/controllers/pdf_navigator_controller.js` - Stimulus controller with PDF.js logic
-- `app/views/observations/verify.html.erb` - Verify cockpit view template
-- `app/views/layouts/verify.html.erb` - Custom full-width layout for cockpit
+- `app/views/observations/verify.html.erb` - Source of truth for cockpit UI
+- `app/views/observations/new.html.erb` - Needs cockpit layout
+- `app/views/observations/edit.html.erb` - Needs cockpit layout
+- `app/views/observations/_form.html.erb` - Current form partial (to be refactored)
+- `app/views/layouts/verify.html.erb` - Full-width layout for cockpit views
+- `app/javascript/controllers/pdf_navigator_controller.js` - PDF.js Stimulus controller
+- `app/javascript/controllers/metric_value_field_controller.js` - Dynamic value field switching
 
-**Current implementation (as of PR #91):**
+**Considerations:**
+- New observations won't have a document selected initially, so PDF viewer shows placeholder until document is chosen
+- Entity selection should filter available documents (existing Stimulus controller handles this)
+- The form needs to work for both create (new) and update (edit/verify) actions
+- Preserve the "Verify & Next" and "Skip" buttons only for verify action
+
+### Verify Cockpit Technical Details
+
+**Current implementation (as of PR #95):**
 - PDF.js via importmap CDN pins (see `config/importmap.rb`)
 - Continuous scroll with virtualization (IntersectionObserver renders visible pages + 200px buffer)
 - Bidirectional sync: scroll updates page display, page input/buttons scroll to target
 - Click any page to capture that page number to form
 - Toolbar: prev/next buttons, zoom dropdown, capture button
+- Conditional value input (numeric vs text) based on metric type
+- Source URL editing via nested attributes
+
+**Production note:** DigitalOcean Spaces requires CORS configuration to allow PDF.js to fetch files. The bucket must allow origin `https://app.nybenchmark.org` with GET/HEAD methods.

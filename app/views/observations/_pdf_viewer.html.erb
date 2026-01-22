@@ -1,0 +1,77 @@
+<%# PDF Viewer partial - shared across verify, new, and edit views %>
+<%# Local variables: observation (optional - may be nil for new) %>
+
+<% document = local_assigns[:observation]&.document %>
+<% has_pdf = document&.file&.attached? %>
+<% has_source_url = document&.source_url.present? %>
+<% initial_page = local_assigns[:observation]&.pdf_page || 1 %>
+
+<div class="w-full md:w-3/5 h-1/2 md:h-full border-r border-gray-300 bg-gray-100 flex flex-col">
+  <% if has_pdf %>
+    <%# Toolbar - compact %>
+    <div class="flex items-center gap-1 px-1 py-0.5 bg-gray-200 border-b border-gray-300 flex-shrink-0">
+      <button type="button"
+              data-action="pdf-navigator#previousPage"
+              class="px-2 py-0.5 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
+              title="Previous page">&#9664;</button>
+      <span class="text-xs font-mono">
+        <span data-pdf-navigator-target="pageDisplay">1</span>/<span data-pdf-navigator-target="totalPages">?</span>
+      </span>
+      <button type="button"
+              data-action="pdf-navigator#nextPage"
+              class="px-2 py-0.5 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
+              title="Next page">&#9654;</button>
+      <span class="mx-1 text-gray-300">|</span>
+      <select id="zoom-select"
+              data-pdf-navigator-target="zoomSelect"
+              data-action="change->pdf-navigator#zoomChanged"
+              class="text-xs border border-gray-300 rounded px-1 py-0.5 bg-white">
+        <option value="fit-width" selected>Fit Width</option>
+        <option value="fit-page">Fit Page</option>
+        <option value="0.5">50%</option>
+        <option value="0.75">75%</option>
+        <option value="1">100%</option>
+        <option value="1.25">125%</option>
+        <option value="1.5">150%</option>
+        <option value="2">200%</option>
+      </select>
+      <span class="mx-1 text-gray-300">|</span>
+      <button type="button"
+              data-action="pdf-navigator#captureCurrentPage"
+              class="px-2 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs"
+              title="Capture current page to form">Capture</button>
+    </div>
+
+    <%# Continuous scroll container %>
+    <div class="flex-1 overflow-auto relative" data-pdf-navigator-target="container">
+      <div data-pdf-navigator-target="pagesContainer"
+           class="flex flex-col items-center gap-2 py-2">
+        <%# Page wrappers inserted by JavaScript %>
+      </div>
+      <div data-pdf-navigator-target="loading"
+           class="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-90">
+        <div class="flex flex-col items-center gap-1">
+          <div class="w-6 h-6 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <span class="text-gray-600 text-xs">Loading...</span>
+        </div>
+      </div>
+      <div data-pdf-navigator-target="error"
+           class="hidden absolute inset-0 flex items-center justify-center bg-red-50 text-red-700 p-4 text-center text-sm"></div>
+    </div>
+  <% elsif has_source_url %>
+    <%# URL-only document - show link %>
+    <div class="flex flex-col items-center justify-center h-full text-gray-500 p-4 text-center">
+      <p class="text-sm">No PDF attached.</p>
+      <a href="<%= document.source_url %>" target="_blank" class="text-blue-600 underline text-sm mt-1 break-all"><%= document.source_url %></a>
+    </div>
+  <% else %>
+    <%# No document selected yet - placeholder %>
+    <div class="flex flex-col items-center justify-center h-full text-gray-400 p-4 text-center" data-pdf-viewer-placeholder>
+      <svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <p class="text-sm font-medium">Select a document to view PDF</p>
+      <p class="text-xs mt-1">The PDF viewer will appear here once you select a document with an attached file.</p>
+    </div>
+  <% end %>
+</div>
