@@ -1,0 +1,94 @@
+# New York Benchmarking Project - Data Application - LLM Context
+
+> Data collection, validation, and analysis engine.
+
+## About This Application
+
+This is the data application for the New York Benchmarking Project, a civic-tech Rails application for collecting, verifying, and benchmarking financial and operational data from New York State local governments.
+
+The application ingests financial documents (ACFRs, budgets), extracts standardized metrics, and provides a rigid audit trail for data integrity.
+
+## Related Sites
+
+- Data Application: https://app.nybenchmark.org (this site)
+- Project Blog: https://nybenchmark.org
+- Source Code (App): https://github.com/BenU/nybenchmark-app
+- Source Code (Blog): https://github.com/BenU/nybenchmark-website
+
+## Key Pages
+
+- Entities: https://app.nybenchmark.org/entities
+- Documents: https://app.nybenchmark.org/documents
+- Metrics: https://app.nybenchmark.org/metrics
+- Observations: https://app.nybenchmark.org/observations
+- LLM Context: https://app.nybenchmark.org/for-llms
+
+## Project Identity
+
+- Official Name: New York Benchmarking Project
+- Tagline: Civic reform through benchmarking
+- App Tagline: Data collection, validation, and analysis engine
+
+## Data Model
+
+### Entity
+A government body (city, town, school district). Entities may have parent-child relationships representing fiscal dependency. Example: Yonkers Public Schools is fiscally dependent on the City of Yonkers.
+
+### Document
+A source financial or statistical document (PDF or URL) tied to an entity and fiscal year. Types include ACFRs, budgets, census data, crime statistics.
+
+### Metric
+A standardized definition of a datapoint with:
+- Label (human-readable name)
+- Value type (numeric or text)
+- Display format (currency, percentage, integer, decimal, text)
+- Unit (optional, e.g., "USD", "per capita")
+
+### Observation
+A single extracted, citable fact linking:
+- Entity (who)
+- Document (source)
+- Metric (what)
+- Value (numeric or text)
+- Page reference (citation)
+- Verification status (provisional, verified, flagged)
+
+## Verification Workflow
+
+All observations start as "provisional" and must be verified against source documents. The verification cockpit displays the PDF alongside the form for side-by-side verification.
+
+## API Access
+
+This application does not currently expose a public API. Data is accessed through the web interface. Future API access is planned.
+
+## Technology Stack
+
+- Framework: Ruby on Rails 8
+- Database: PostgreSQL
+- Deployment: Kamal on DigitalOcean
+- Storage: DigitalOcean Spaces (S3-compatible)
+- PDF Viewing: PDF.js
+
+## Data Principles
+
+1. Every datapoint must trace to a specific document and page
+2. Primary sources (ACFRs, audits) preferred over secondary summaries
+3. Conservative interpretation over aggressive normalization
+4. Verification status tracked for all observations
+5. Full audit trail via PaperTrail
+
+## Current Coverage
+
+- Pilot cities: Yonkers, New Rochelle (and expanding)
+- Document types: ACFRs, budgets, census, crime data
+- Metrics: Expenditures, revenues, population, bond ratings, and more
+
+## Contact
+
+- Email: contact@nybenchmark.org
+- Issues: https://github.com/BenU/nybenchmark-app/issues
+
+## License
+
+- Application code: MIT License
+- Data: Public domain government documents with attribution

@@ -3,6 +3,10 @@
 #
 # This app benchmarks financial/operational data from NY State local governments.
 # We welcome indexing to improve public access to government transparency data.
+#
+# LLM-readable context available at:
+# https://app.nybenchmark.org/llms.txt
+# https://app.nybenchmark.org/for-llms
 
 User-agent: *
 Allow: /

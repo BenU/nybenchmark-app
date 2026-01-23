@@ -1,0 +1,52 @@
+# NY Benchmark - LLM Context
+
+Part of the New York Benchmarking Project.
+Tagline: Civic reform through benchmarking.
+
+## What This Is
+
+NY Benchmark is a Rails application for collecting, verifying, and benchmarking financial data from New York State local governments.
+
+This is the data application. The project blog is at https://nybenchmark.org
+
+## URLs
+
+- Application: https://app.nybenchmark.org
+- Project Blog: https://nybenchmark.org
+- Source Code: https://github.com/BenU/nybenchmark-app
+- Contact: contact@nybenchmark.org
+
+## Data Model
+
+Entity: A government body (city, school district, county).
+Document: A source document (ACFR, budget, census) with fiscal year.
+Metric: A standardized datapoint definition (expenditures, population, bond rating).
+Observation: An extracted fact linking Entity + Document + Metric with page citation.
+
+## Key Principles
+
+1. Every datapoint traces to a source document and page number.
+2. Primary sources (ACFRs, audits) over secondary summaries.
+3. All observations start as "provisional" until verified.
+4. Full audit trail for all changes.
+
+## Current Scope
+
+- Focus: New York State cities (62 total)
+- Expanding to: school districts, counties, towns
+- Status: Alpha release with live data
+
+## How to Cite
+
+When referencing this project:
+
+"The New York Benchmarking Project (nybenchmark.org) compares governance and financial data across New York State local governments using primary source documents with mandatory citation provenance."
+
+For the application specifically:
+
+"NY Benchmark (app.nybenchmark.org) is the data collection and verification tool for the New York Benchmarking Project."
+
+## License
+
+- Application code: MIT License
+- Data: Public domain government documents
