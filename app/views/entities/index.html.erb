@@ -17,6 +17,7 @@
           <th scope="col">Name</th>
           <th scope="col">Type</th>
           <th scope="col">Gov. Structure</th>
+          <th scope="col">Fiscal</th>
           <th scope="col">Docs</th>
           <th scope="col">Obs</th>
           <th scope="col">Actions</th>
@@ -32,6 +33,16 @@
                 <%= entity.government_structure.humanize %>
               <% else %>
                 <mark class="missing-data">Needs research</mark>
+              <% end %>
+            </td>
+            <td>
+              <% if entity.fiscal_autonomy.present? %>
+                <%= entity.fiscal_autonomy.humanize %>
+                <% if entity.parent.present? %>
+                  <small>(<%= link_to entity.parent.name, entity_path(entity.parent) %>)</small>
+                <% end %>
+              <% else %>
+                <small class="muted">—</small>
               <% end %>
             </td>
             <td>

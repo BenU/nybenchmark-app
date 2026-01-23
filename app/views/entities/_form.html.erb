@@ -25,14 +25,19 @@
     <%= form.select :state, ["NY"], {}, class: "form-select" %>
   </div>
 
-  <div>
-    <%= form.label :kind, style: "display: block" %>
-    <%= form.select :kind, Entity.kinds.keys.map { |k| [k.titleize, k] }, {}, class: "form-select" %>
-  </div>
+  <div data-controller="entity-kind">
+    <div>
+      <%= form.label :kind, style: "display: block" %>
+      <%= form.select :kind,
+                      Entity.kinds.keys.map { |k| [k.titleize, k] },
+                      {},
+                      class: "form-select",
+                      data: { entity_kind_target: "kindSelect", action: "change->entity-kind#kindChanged" } %>
+    </div>
 
-  <hr>
+    <hr>
 
-  <h3>Governance</h3>
+    <h3>Governance</h3>
 
   <div>
     <%= form.label :government_structure, style: "display: block" %>
@@ -68,26 +73,28 @@
     <%= form.text_area :organization_note, rows: 3, placeholder: "Additional governance notes..." %>
   </div>
 
-  <hr>
+    <div data-entity-kind-target="schoolFields" class="<%= 'hidden' unless entity.school_district_kind? %>">
+      <hr>
 
-  <h3>School Specifics</h3>
-  <p><em>Only fill these out if Kind is "School District"</em></p>
+      <h3>School Specifics</h3>
 
-  <div>
-    <%= form.label :school_legal_type, style: "display: block" %>
-    <%= form.select :school_legal_type, Entity.school_legal_types.keys.map { |k| [k.titleize, k] }, { include_blank: true } %>
+      <div>
+        <%= form.label :school_legal_type, style: "display: block" %>
+        <%= form.select :school_legal_type, Entity.school_legal_types.keys.map { |k| [k.titleize, k] }, { include_blank: true } %>
+      </div>
+
+      <div>
+        <%= form.label :board_selection, style: "display: block" %>
+        <%= form.select :board_selection, Entity.board_selections.keys.map { |k| [k.titleize, k] }, { include_blank: true } %>
+      </div>
+
+      <div>
+        <%= form.label :executive_selection, style: "display: block" %>
+        <%= form.select :executive_selection, Entity.executive_selections.keys.map { |k| [k.titleize, k] }, { include_blank: true } %>
+      </div>
+    </div>
   </div>
 
-  <div>
-    <%= form.label :board_selection, style: "display: block" %>
-    <%= form.select :board_selection, Entity.board_selections.keys.map { |k| [k.titleize, k] }, { include_blank: true } %>
-  </div>
-
-  <div>
-    <%= form.label :executive_selection, style: "display: block" %>
-    <%= form.select :executive_selection, Entity.executive_selections.keys.map { |k| [k.titleize, k] }, { include_blank: true } %>
-  </div>
-  
   <br>
 
   <div>

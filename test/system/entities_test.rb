@@ -285,4 +285,60 @@ class EntitiesTest < ApplicationSystemTestCase
     assert_text "Parent Entity"
     assert_text "Yonkers"
   end
+
+  # ==========================================
+  # NAVIGATION AND RELATED ENTITY DISPLAY
+  # ==========================================
+
+  test "entity show page has back link to index" do
+    visit entity_url(entities(:yonkers))
+
+    assert_link "Back to Entities"
+    click_on "Back to Entities"
+    assert_current_path entities_path
+  end
+
+  test "entity show displays children entities for parent" do
+    # Yonkers is parent of Yonkers Schools
+    yonkers = entities(:yonkers)
+    visit entity_url(yonkers)
+
+    assert_text "Dependent Entities"
+    assert_link "Yonkers Public Schools"
+  end
+
+  test "entity index shows fiscal autonomy column" do
+    visit entities_url
+
+    assert_selector "th", text: "Fiscal"
+    # Yonkers is independent
+    yonkers_row = find("tr") { |row| row.text.include?("Yonkers") && row.text.include?("City") }
+    within(yonkers_row) do
+      assert_text "Independent"
+    end
+  end
+
+  # ==========================================
+  # CONDITIONAL SCHOOL DISTRICT FIELDS
+  # ==========================================
+
+  test "entity form hides school fields when kind is not school district" do
+    visit new_entity_url
+
+    select "City", from: "Kind"
+
+    # School fields should be hidden
+    assert_no_selector "select[name='entity[school_legal_type]']", visible: true
+  end
+
+  test "entity form shows school fields when kind is school district" do
+    visit new_entity_url
+
+    select "School District", from: "Kind"
+
+    # School fields should be visible
+    assert_selector "select[name='entity[school_legal_type]']", visible: true
+    assert_selector "select[name='entity[board_selection]']", visible: true
+    assert_selector "select[name='entity[executive_selection]']", visible: true
+  end
 end

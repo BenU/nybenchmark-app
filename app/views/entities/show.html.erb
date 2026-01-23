@@ -6,6 +6,7 @@
     </hgroup>
 
     <div>
+      <%= link_to "Back to Entities", entities_path, role: "button", class: "outline" %>
       <%= link_to "Edit", edit_entity_path(@entity), role: "button", class: "secondary outline" %>
     </div>
   </div>
@@ -73,6 +74,18 @@
         <% end %>
       </article>
     </div>
+
+    <% if @entity.children.any? %>
+      <article>
+        <header><strong>Dependent Entities</strong></header>
+        <p>Fiscally dependent entities that roll up to <%= @entity.name %>:</p>
+        <ul>
+          <% @entity.children.order(:name).each do |child| %>
+            <li><%= link_to child.name, entity_path(child) %> (<%= child.kind.humanize %>)</li>
+          <% end %>
+        </ul>
+      </article>
+    <% end %>
   <hr />
 
   <div class="grid">
