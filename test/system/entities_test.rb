@@ -430,4 +430,94 @@ class EntitiesTest < ApplicationSystemTestCase
     # Should show sort indicator
     assert_selector "a.sortable-header.active", text: /Gov. Structure.*↑/
   end
+
+  # ==========================================
+  # FILTERING
+  # ==========================================
+
+  test "entity index has filter dropdowns" do
+    visit entities_url
+
+    # Should have filter dropdowns for Kind and Government Structure
+    assert_selector "select[name='kind']"
+    assert_selector "select[name='government_structure']"
+  end
+
+  test "filtering by kind shows only matching entities" do
+    visit entities_url
+
+    # Filter by city
+    select "City", from: "kind"
+    click_on "Apply"
+
+    # Should only show cities
+    assert_selector "td", text: "City"
+    assert_no_selector "td", text: "School district"
+  end
+
+  test "filtering by government structure shows only matching entities" do
+    visit entities_url
+
+    # Filter by council_manager
+    select "Council Manager", from: "government_structure"
+    click_on "Apply"
+
+    # Should show council manager entities
+    assert_selector "td", text: "Council manager"
+    # Should not show strong mayor entities
+    assert_no_selector "td", text: "Strong mayor"
+  end
+
+  test "filtering by both kind and government structure" do
+    # Create a council_manager city for this test
+    Entity.create!(
+      name: "Test CM City",
+      kind: "city",
+      state: "NY",
+      slug: "test-cm-city",
+      government_structure: "council_manager"
+    )
+
+    visit entities_url
+
+    # Filter by city AND council_manager
+    select "City", from: "kind"
+    select "Council Manager", from: "government_structure"
+    click_on "Apply"
+
+    # Should show the test entity
+    assert_text "Test CM City"
+
+    # Should have both filter params in URL
+    assert_current_path(/kind=city/)
+    assert_current_path(/government_structure=council_manager/)
+  end
+
+  test "clear button removes filters" do
+    visit entities_url(kind: "city", government_structure: "council_manager")
+
+    # Should have filters applied
+    assert_current_path(/kind=city/)
+
+    # Click clear
+    click_on "Clear"
+
+    # Should be back to unfiltered URL
+    assert_current_path entities_path
+    assert_no_current_path(/kind=/)
+    assert_no_current_path(/government_structure=/)
+  end
+
+  test "filters preserve sort params" do
+    visit entities_url(sort: "name", direction: "desc")
+
+    # Apply a filter
+    select "City", from: "kind"
+    click_on "Apply"
+
+    # Should preserve sort params
+    assert_current_path(/sort=name/)
+    assert_current_path(/direction=desc/)
+    assert_current_path(/kind=city/)
+  end
 end
