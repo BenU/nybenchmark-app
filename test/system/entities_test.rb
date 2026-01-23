@@ -341,4 +341,93 @@ class EntitiesTest < ApplicationSystemTestCase
     assert_selector "select[name='entity[board_selection]']", visible: true
     assert_selector "select[name='entity[executive_selection]']", visible: true
   end
+
+  # ==========================================
+  # SORTABLE COLUMNS AND PAGINATION
+  # ==========================================
+
+  test "entity index has sortable column headers" do
+    visit entities_url
+
+    # Should have sortable headers for Name, Type, Docs, Obs
+    assert_selector "a.sortable-header", text: "Name"
+    assert_selector "a.sortable-header", text: "Type"
+    assert_selector "a.sortable-header", text: "Docs"
+    assert_selector "a.sortable-header", text: "Obs"
+  end
+
+  test "clicking sortable column header sorts table" do
+    visit entities_url
+
+    # Click on Name header to sort (should be ascending by default)
+    click_on "Name"
+
+    # Should have sort params in URL
+    assert_current_path(/sort=name/)
+    assert_current_path(/direction=asc/)
+
+    # Should show sort indicator (up arrow) and active class
+    assert_selector "a.sortable-header.active", text: /Name.*↑/
+  end
+
+  test "clicking same column header toggles sort direction" do
+    visit entities_url(sort: "name", direction: "asc")
+
+    # Click Name again to toggle to desc
+    click_on "Name"
+
+    assert_current_path(/direction=desc/)
+    assert_selector "a.sortable-header.active", text: /Name.*↓/
+  end
+
+  test "entity index shows pagination when many entities exist" do
+    # Create enough entities to trigger pagination (25 per page)
+    30.times do |i|
+      Entity.create!(name: "Paginated Entity #{i}", kind: "city", state: "NY", slug: "paginated-#{i}")
+    end
+
+    visit entities_url
+
+    # Should show pagination controls
+    assert_selector "nav[aria-label='Entity pages']"
+  end
+
+  test "pagination preserves sort params" do
+    # Create enough entities for multiple pages
+    30.times do |i|
+      Entity.create!(name: "Paginated Entity #{i}", kind: "city", state: "NY", slug: "paginated-#{i}")
+    end
+
+    visit entities_url(sort: "name", direction: "desc")
+
+    # Click page 2 within the pagination nav
+    within "nav[aria-label='Entity pages']" do
+      click_on "2"
+    end
+
+    # Should preserve sort params
+    assert_current_path(/sort=name/)
+    assert_current_path(/direction=desc/)
+  end
+
+  test "entity index has sortable government structure column" do
+    visit entities_url
+
+    # Should have sortable header for Gov. Structure
+    assert_selector "a.sortable-header", text: "Gov. Structure"
+  end
+
+  test "clicking government structure header sorts entities" do
+    visit entities_url
+
+    # Click on Gov. Structure header to sort
+    click_on "Gov. Structure"
+
+    # Should have sort params in URL
+    assert_current_path(/sort=government_structure/)
+    assert_current_path(/direction=asc/)
+
+    # Should show sort indicator
+    assert_selector "a.sortable-header.active", text: /Gov. Structure.*↑/
+  end
 end

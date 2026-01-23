@@ -20,6 +20,24 @@ class Document < ApplicationRecord
     entity_ids = [entity.id, entity.parent_id].compact
     where(entity_id: entity_ids).order(fiscal_year: :desc, title: :asc)
   }
+
+  scope :sorted_by, lambda { |column, direction|
+    direction = "desc" unless %w[asc desc].include?(direction)
+
+    case column
+    when "title"
+      order(title: direction)
+    when "entity_name"
+      left_joins(:entity).order("entities.name #{direction.upcase}", fiscal_year: :desc)
+    when "fiscal_year"
+      order(fiscal_year: direction, title: :asc)
+    when "doc_type"
+      order(doc_type: direction, title: :asc)
+    else
+      order(fiscal_year: :desc, title: :asc)
+    end
+  }
+
   validate :source_url_must_be_valid_http
 
   # Enforces that an entity can only have one document of a specific type per year.

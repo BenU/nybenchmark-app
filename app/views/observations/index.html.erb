@@ -20,14 +20,48 @@
   <table role="grid">
     <thead>
       <tr>
-        <th>Entity</th>
-        <th>Metric</th>
-        <th>Fiscal year</th>
+        <th>
+          <%= sortable_column_header(
+                column: "entity_name",
+                label: "Entity",
+                path: :observations_path,
+                current_sort: params[:sort],
+                current_direction: params[:direction]
+              ) %>
+        </th>
+        <th>
+          <%= sortable_column_header(
+                column: "metric_label",
+                label: "Metric",
+                path: :observations_path,
+                current_sort: params[:sort],
+                current_direction: params[:direction]
+              ) %>
+        </th>
+        <th>
+          <%= sortable_column_header(
+                column: "fiscal_year",
+                label: "Year",
+                path: :observations_path,
+                current_sort: params[:sort],
+                current_direction: params[:direction],
+                default_direction: "desc"
+              ) %>
+        </th>
         <th>Value</th>
         <% if user_signed_in? %><th>Status</th><% end %>
         <th>Document</th>
         <th>PDF Page</th>
-        <th>Updated at</th>
+        <th>
+          <%= sortable_column_header(
+                column: "updated_at",
+                label: "Updated",
+                path: :observations_path,
+                current_sort: params[:sort],
+                current_direction: params[:direction],
+                default_direction: "desc"
+              ) %>
+        </th>
         <th>Actions</th>
       </tr>
     </thead>

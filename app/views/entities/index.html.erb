@@ -14,12 +14,54 @@
     <table role="grid">
       <thead>
         <tr>
-          <th scope="col">Name</th>
-          <th scope="col">Type</th>
-          <th scope="col">Gov. Structure</th>
+          <th scope="col">
+            <%= sortable_column_header(
+                  column: "name",
+                  label: "Name",
+                  path: :entities_path,
+                  current_sort: params[:sort],
+                  current_direction: params[:direction]
+                ) %>
+          </th>
+          <th scope="col">
+            <%= sortable_column_header(
+                  column: "kind",
+                  label: "Type",
+                  path: :entities_path,
+                  current_sort: params[:sort],
+                  current_direction: params[:direction]
+                ) %>
+          </th>
+          <th scope="col">
+            <%= sortable_column_header(
+                  column: "government_structure",
+                  label: "Gov. Structure",
+                  path: :entities_path,
+                  current_sort: params[:sort],
+                  current_direction: params[:direction]
+                ) %>
+          </th>
           <th scope="col">Fiscal</th>
-          <th scope="col">Docs</th>
-          <th scope="col">Obs</th>
+          <th scope="col">
+            <%= sortable_column_header(
+                  column: "documents_count",
+                  label: "Docs",
+                  path: :entities_path,
+                  current_sort: params[:sort],
+                  current_direction: params[:direction],
+                  default_direction: "desc"
+                ) %>
+          </th>
+          <th scope="col">
+            <%= sortable_column_header(
+                  column: "observations_count",
+                  label: "Obs",
+                  path: :entities_path,
+                  current_sort: params[:sort],
+                  current_direction: params[:direction],
+                  default_direction: "desc"
+                ) %>
+          </th>
           <th scope="col">Actions</th>
         </tr>
       </thead>
@@ -67,6 +109,13 @@
       </tbody>
     </table>
   </figure>
+
+  <% if @pagy.pages > 1 %>
+    <section>
+      <%== @pagy.info_tag %>
+      <%== @pagy.series_nav(aria_label: "Entity pages") %>
+    </section>
+  <% end %>
 
   <style>
     .missing-data {

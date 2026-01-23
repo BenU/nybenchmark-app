@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 
 class MetricsController < ApplicationController
+  include Pagy::Method
+
   before_action :authenticate_user!, except: %i[index show]
   before_action :set_metric, only: %i[show edit update]
 
   def index
-    @metrics = Metric.order(:label)
+    scope = Metric.sorted_by(params[:sort], params[:direction])
+    @pagy, @metrics = pagy(:offset, scope, limit: 25)
   end
 
   def show; end

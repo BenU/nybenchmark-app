@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 
 class DocumentsController < ApplicationController
+  include Pagy::Method
+
   before_action :authenticate_user!, except: %i[index show]
   before_action :set_document, only: %i[show edit update]
 
   def index
-    @documents = Document.includes(:entity).order(fiscal_year: :desc)
+    scope = Document.includes(:entity).sorted_by(params[:sort], params[:direction])
+    @pagy, @documents = pagy(:offset, scope, limit: 25)
   end
 
   def show; end

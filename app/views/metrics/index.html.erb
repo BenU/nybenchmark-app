@@ -1,6 +1,4 @@
 <main class="container">
-  <h1>Metrics</h1>
-
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <h1>Metrics</h1>
     <% if user_signed_in? %>
@@ -12,8 +10,24 @@
     <table role="grid">
       <thead>
         <tr>
-          <th scope="col">Label</th>
-          <th scope="col">Type</th>
+          <th scope="col">
+            <%= sortable_column_header(
+                  column: "label",
+                  label: "Label",
+                  path: :metrics_path,
+                  current_sort: params[:sort],
+                  current_direction: params[:direction]
+                ) %>
+          </th>
+          <th scope="col">
+            <%= sortable_column_header(
+                  column: "value_type",
+                  label: "Type",
+                  path: :metrics_path,
+                  current_sort: params[:sort],
+                  current_direction: params[:direction]
+                ) %>
+          </th>
           <th scope="col">Unit</th>
           <th scope="col">Description</th>
         </tr>
@@ -32,4 +46,11 @@
       </tbody>
     </table>
   </figure>
+
+  <% if @pagy.pages > 1 %>
+    <section>
+      <%== @pagy.info_tag %>
+      <%== @pagy.series_nav(aria_label: "Metric pages") %>
+    </section>
+  <% end %>
 </main>
