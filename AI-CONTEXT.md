@@ -290,9 +290,22 @@ When in doubt, ask.
 
 ## 10. Current Context Snapshot (Non-Authoritative)
 
-- Entity governance modeling implemented via enums
-- School districts are first-class entities
-- Education metrics reassigned to school entities
-- Fiscal parent relationships reflect reporting reality
+### Domain Model
+- Entity governance modeling implemented via enums (kind, government_structure, fiscal_autonomy, school_legal_type)
+- School districts are first-class entities with conditional fields
+- Fiscal parent relationships (`parent_id`) reflect reporting/budget roll-up only
+- Documents can be inherited by dependent entities from their fiscal parent
+
+### UI Features
+- All index pages have Pagy pagination (25 items/page)
+- Sortable column headers via `sortable_column_header` helper
+- Entity index has Kind and Government Structure filter dropdowns
+- "Needs research" indicators for missing governance data
+- Verify Cockpit for observation data entry with PDF.js viewer
+
+### Key Helpers & Patterns
+- `ApplicationHelper#sortable_column_header` - reusable sortable headers
+- `Model.sorted_by(column, direction)` - sorting scope pattern on all models
+- `Document.for_entity(entity)` - includes parent entity documents
 
 Always verify against uploaded code.
