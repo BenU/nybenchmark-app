@@ -46,4 +46,16 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
       assert_select "h2", "Recent Data"
     end
   end
+
+  test "update accepts icma_recognition_year" do
+    sign_in users(:one)
+
+    patch entity_url(@entity.slug), params: {
+      entity: { icma_recognition_year: 1975 }
+    }
+
+    assert_redirected_to entity_url(@entity.slug)
+    @entity.reload
+    assert_equal 1975, @entity.icma_recognition_year
+  end
 end
