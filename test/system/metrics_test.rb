@@ -158,4 +158,57 @@ class MetricsTest < ApplicationSystemTestCase
     # Text metrics should NOT show display format
     assert_no_text "Display Format:"
   end
+
+  # ==========================================
+  # SORTABLE COLUMNS AND PAGINATION
+  # ==========================================
+
+  test "metric index has sortable column headers" do
+    visit metrics_path
+
+    # Should have sortable headers for Label and Type
+    assert_selector "a.sortable-header", text: "Label"
+    assert_selector "a.sortable-header", text: "Type"
+  end
+
+  test "clicking sortable column header sorts metrics" do
+    visit metrics_path
+
+    # Click on Label header to sort
+    click_on "Label"
+
+    # Should have sort params in URL
+    assert_current_path(/sort=label/)
+    assert_current_path(/direction=asc/)
+
+    # Should show sort indicator
+    assert_selector "a.sortable-header.active", text: /Label.*↑/
+  end
+
+  test "clicking same column header toggles sort direction" do
+    visit metrics_url(sort: "label", direction: "asc")
+
+    # Click Label again to toggle to desc
+    click_on "Label"
+
+    assert_current_path(/direction=desc/)
+    assert_selector "a.sortable-header.active", text: /Label.*↓/
+  end
+
+  test "metric index shows pagination when many metrics exist" do
+    # Create enough metrics to trigger pagination (25 per page)
+    30.times do |i|
+      Metric.create!(
+        key: "paginated_metric_#{i}",
+        label: "Paginated Metric #{i}",
+        value_type: :numeric,
+        display_format: "decimal"
+      )
+    end
+
+    visit metrics_path
+
+    # Should show pagination controls
+    assert_selector "nav[aria-label='Metric pages']"
+  end
 end

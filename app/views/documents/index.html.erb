@@ -17,10 +17,35 @@
     <table role="grid">
       <thead>
         <tr>
-          <th>Title</th>
-          <th>Entity</th>
+          <th>
+            <%= sortable_column_header(
+                  column: "title",
+                  label: "Title",
+                  path: :documents_path,
+                  current_sort: params[:sort],
+                  current_direction: params[:direction]
+                ) %>
+          </th>
+          <th>
+            <%= sortable_column_header(
+                  column: "entity_name",
+                  label: "Entity",
+                  path: :documents_path,
+                  current_sort: params[:sort],
+                  current_direction: params[:direction]
+                ) %>
+          </th>
           <th>Type</th>
-          <th>Year</th>
+          <th>
+            <%= sortable_column_header(
+                  column: "fiscal_year",
+                  label: "Year",
+                  path: :documents_path,
+                  current_sort: params[:sort],
+                  current_direction: params[:direction],
+                  default_direction: "desc"
+                ) %>
+          </th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -48,4 +73,11 @@
       </tbody>
     </table>
   </figure>
+
+  <% if @pagy.pages > 1 %>
+    <section>
+      <%== @pagy.info_tag %>
+      <%== @pagy.series_nav(aria_label: "Document pages") %>
+    </section>
+  <% end %>
 </main>

@@ -18,7 +18,7 @@ class ObservationsController < ApplicationController
     scope = base_scope.includes(:entity, :metric, :document)
                       .where(filter_params)
                       .search(params[:q])
-                      .sorted_by(params[:sort])
+                      .sorted_by(params[:sort], params[:direction])
 
     @pagy, @observations = pagy(:offset, scope, limit: 20)
     load_filter_options

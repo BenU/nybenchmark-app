@@ -1,19 +1,23 @@
 # frozen_string_literal: true
 
 class EntitiesController < ApplicationController
+  include Pagy::Method
+
   before_action :authenticate_user!, except: %i[index show]
   before_action :set_entity, only: %i[show edit update]
 
   def index
-    @entities = Entity
-                .left_joins(:documents, :observations)
-                .select(
-                  "entities.*",
-                  "COUNT(DISTINCT documents.id) AS documents_count",
-                  "COUNT(DISTINCT observations.id) AS observations_count"
-                )
-                .group("entities.id")
-                .order(:name)
+    scope = Entity
+            .left_joins(:documents, :observations)
+            .select(
+              "entities.*",
+              "COUNT(DISTINCT documents.id) AS documents_count",
+              "COUNT(DISTINCT observations.id) AS observations_count"
+            )
+            .group("entities.id")
+            .sorted_by(params[:sort], params[:direction])
+
+    @pagy, @entities = pagy(:offset, scope, limit: 25)
   end
 
   def show

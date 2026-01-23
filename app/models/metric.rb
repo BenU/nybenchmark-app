@@ -15,6 +15,22 @@ class Metric < ApplicationRecord
   validates :key, uniqueness: true
   validate :validate_display_format
 
+  # -- Scopes --
+  scope :sorted_by, lambda { |column, direction|
+    direction = "asc" unless %w[asc desc].include?(direction)
+
+    case column
+    when "label"
+      order(label: direction)
+    when "value_type"
+      order(value_type: direction, label: :asc)
+    when "key"
+      order(key: direction)
+    else
+      order(label: :asc)
+    end
+  }
+
   # -- Helper Methods --
   def derived?
     formula.present?

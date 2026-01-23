@@ -47,14 +47,6 @@
     </div>
     
     <div class="grid">
-       <label>
-        Sort
-        <%= select_tag :sort, 
-              options_for_select([['Most recent', ''], ['Fiscal year ↓', 'fiscal_year_desc'], ['Entity A→Z', 'entity_name_asc']], params[:sort]) %>
-      </label>
-    </div>
-
-    <div class="grid">
       <%= submit_tag "Apply" %>
       <%= link_to "Clear", observations_path, role: "button", class: "secondary" %>
     </div>

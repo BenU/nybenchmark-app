@@ -255,4 +255,41 @@ class ObservationsTest < ApplicationSystemTestCase
     assert_selector "input[name='observation[value_text]']", visible: true
     assert_no_selector "input[type='number'][name='observation[value_numeric]']", visible: true
   end
+
+  # ==========================================
+  # SORTABLE COLUMN HEADERS
+  # ==========================================
+
+  test "observation index has sortable column headers" do
+    visit observations_path
+
+    # Should have sortable headers for Entity, Metric, Value, Year
+    assert_selector "a.sortable-header", text: "Entity"
+    assert_selector "a.sortable-header", text: "Metric"
+    assert_selector "a.sortable-header", text: "Year"
+  end
+
+  test "clicking sortable column header sorts observations" do
+    visit observations_path
+
+    # Click on Entity header to sort
+    click_on "Entity"
+
+    # Should have sort params in URL
+    assert_current_path(/sort=entity_name/)
+    assert_current_path(/direction=asc/)
+
+    # Should show sort indicator
+    assert_selector "a.sortable-header.active", text: /Entity.*↑/
+  end
+
+  test "clicking same column header toggles sort direction" do
+    visit observations_url(sort: "fiscal_year", direction: "desc")
+
+    # Click Year again to toggle to asc
+    click_on "Year"
+
+    assert_current_path(/direction=asc/)
+    assert_selector "a.sortable-header.active", text: /Year.*↑/
+  end
 end

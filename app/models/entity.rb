@@ -55,6 +55,36 @@ class Entity < ApplicationRecord
 
   scope :school_districts, -> { where(kind: "school_district") }
 
+  scope :sorted_by, lambda { |column, direction|
+    safe_direction = direction == "desc" ? "DESC" : "ASC"
+    dir_sym = safe_direction.downcase.to_sym
+
+    case column
+    when "name"
+      order(name: dir_sym)
+    when "kind"
+      order(kind: dir_sym, name: :asc)
+    when "government_structure"
+      order(government_structure: dir_sym, kind: :asc, name: :asc)
+    when "documents_count"
+      # Requires the count to be selected in controller query
+      # Using explicit string to avoid Brakeman warning
+      if safe_direction == "DESC"
+        order(Arel.sql("documents_count DESC NULLS LAST"), name: :asc)
+      else
+        order(Arel.sql("documents_count ASC NULLS LAST"), name: :asc)
+      end
+    when "observations_count"
+      if safe_direction == "DESC"
+        order(Arel.sql("observations_count DESC NULLS LAST"), name: :asc)
+      else
+        order(Arel.sql("observations_count ASC NULLS LAST"), name: :asc)
+      end
+    else
+      order(name: :asc)
+    end
+  }
+
   validates :name, presence: true
   validates :name, uniqueness: {
     scope: %i[state kind],

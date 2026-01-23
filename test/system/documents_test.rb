@@ -103,4 +103,60 @@ class DocumentsTest < ApplicationSystemTestCase
     # But should still see View links
     assert_link "View"
   end
+
+  # ==========================================
+  # SORTABLE COLUMNS AND PAGINATION
+  # ==========================================
+
+  test "document index has sortable column headers" do
+    visit documents_path
+
+    # Should have sortable headers for Title, Entity, Year
+    assert_selector "a.sortable-header", text: "Title"
+    assert_selector "a.sortable-header", text: "Entity"
+    assert_selector "a.sortable-header", text: "Year"
+  end
+
+  test "clicking sortable column header sorts documents" do
+    visit documents_path
+
+    # Click on Title header to sort
+    click_on "Title"
+
+    # Should have sort params in URL
+    assert_current_path(/sort=title/)
+    assert_current_path(/direction=asc/)
+
+    # Should show sort indicator
+    assert_selector "a.sortable-header.active", text: /Title.*↑/
+  end
+
+  test "clicking same column header toggles sort direction" do
+    visit documents_url(sort: "fiscal_year", direction: "desc")
+
+    # Click Year again to toggle to asc
+    click_on "Year"
+
+    assert_current_path(/direction=asc/)
+    assert_selector "a.sortable-header.active", text: /Year.*↑/
+  end
+
+  test "document index shows pagination when many documents exist" do
+    # Create enough documents to trigger pagination (25 per page)
+    # Use unique fiscal_year for each to avoid uniqueness constraint
+    30.times do |i|
+      Document.create!(
+        title: "Paginated Doc #{i}",
+        entity: @entity,
+        doc_type: "budget",
+        fiscal_year: 1990 + i,
+        source_url: "https://example.com/doc-#{i}.pdf"
+      )
+    end
+
+    visit documents_path
+
+    # Should show pagination controls
+    assert_selector "nav[aria-label='Document pages']"
+  end
 end

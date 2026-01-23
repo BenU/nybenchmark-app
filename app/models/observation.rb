@@ -36,11 +36,31 @@ class Observation < ApplicationRecord
     )
   }
 
-  scope :sorted_by, lambda { |selection|
-    case selection
-    when "fiscal_year_desc" then order(fiscal_year: :desc, updated_at: :desc)
-    when "entity_name_asc"  then left_joins(:entity).order("entities.name ASC", updated_at: :desc)
-    else order(updated_at: :desc)
+  scope :sorted_by, lambda { |column, direction = nil|
+    # Support both new format (column, direction) and legacy format (selection string)
+    if direction.nil?
+      # Legacy format - single selection string
+      case column
+      when "fiscal_year_desc" then order(fiscal_year: :desc, updated_at: :desc)
+      when "entity_name_asc"  then left_joins(:entity).order("entities.name ASC", updated_at: :desc)
+      else order(updated_at: :desc)
+      end
+    else
+      # New format - column + direction
+      direction = "desc" unless %w[asc desc].include?(direction)
+
+      case column
+      when "entity_name"
+        left_joins(:entity).order("entities.name #{direction.upcase}", updated_at: :desc)
+      when "metric_label"
+        left_joins(:metric).order("metrics.label #{direction.upcase}", updated_at: :desc)
+      when "fiscal_year"
+        order(fiscal_year: direction, updated_at: :desc)
+      when "updated_at"
+        order(updated_at: direction)
+      else
+        order(updated_at: :desc)
+      end
     end
   }
 
