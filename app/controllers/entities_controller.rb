@@ -7,17 +7,7 @@ class EntitiesController < ApplicationController
   before_action :set_entity, only: %i[show edit update]
 
   def index
-    scope = Entity
-            .left_joins(:documents, :observations)
-            .select(
-              "entities.*",
-              "COUNT(DISTINCT documents.id) AS documents_count",
-              "COUNT(DISTINCT observations.id) AS observations_count"
-            )
-            .group("entities.id")
-            .sorted_by(params[:sort], params[:direction])
-
-    @pagy, @entities = pagy(:offset, scope, limit: 25)
+    @pagy, @entities = pagy(:offset, entities_scope, limit: 25)
   end
 
   def show
@@ -64,5 +54,20 @@ class EntitiesController < ApplicationController
                  school_legal_type board_selection executive_selection
                  organization_note]
     )
+  end
+
+  def filter_params
+    params.permit(:kind, :government_structure).compact_blank
+  end
+
+  def entities_scope
+    Entity
+      .left_joins(:documents, :observations)
+      .select("entities.*",
+              "COUNT(DISTINCT documents.id) AS documents_count",
+              "COUNT(DISTINCT observations.id) AS observations_count")
+      .group("entities.id")
+      .where(filter_params)
+      .sorted_by(params[:sort], params[:direction])
   end
 end
