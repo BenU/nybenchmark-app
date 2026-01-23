@@ -55,19 +55,46 @@ This project uses a **Docker-first workflow**. Do not run Rails commands directl
 
 ## Recently Completed
 
-### Unified Observation New/Edit with Verify Cockpit (PR #98)
+### Entity Index Filtering (PR #105)
 
-Observation new and edit pages now use the same cockpit layout as the verify page, with shared partials.
+Added filter dropdowns to the Entities index page:
+- Filter by **Kind** (city, county, town, village, school district)
+- Filter by **Government Structure** (strong mayor, council manager, etc.)
+- Filters preserve sort params; sorting preserves filter params
+- Enables ICMA use case: find "all council manager cities"
 
-**Extracted partials:**
-- `_pdf_viewer.html.erb` - Left pane with PDF.js viewer or URL fallback
-- `_error_messages.html.erb` - Form error display
-- `_entity_document_metric_selects.html.erb` - Entity/document/metric dropdowns
-- `_observation_form_fields.html.erb` - Value, citation, and notes fields
+### Pagination and Sortable Columns (PR #104)
 
-### Parent Document Inheritance for Dependent Entities (PR #97)
+All four index pages now have:
+- **Pagy pagination** (25 items per page) with info tags and navigation
+- **Clickable sortable column headers** with up/down arrows indicating sort direction
+- URL params (`?sort=column&direction=asc|desc`) for bookmarkable/shareable sorted views
+- Helper method: `sortable_column_header` in ApplicationHelper
 
-Dependent entities (e.g., Yonkers Public Schools) can now see documents from their parent entity (e.g., City of Yonkers). The `Document.for_entity` scope includes parent entity documents.
+| Index | Sortable Columns |
+|-------|------------------|
+| Entities | Name, Kind, Gov. Structure, Docs count, Obs count |
+| Documents | Title, Entity, Fiscal Year |
+| Metrics | Label, Value Type |
+| Observations | Entity, Metric, Year |
+
+### Entity Parent Selector and Governance (PRs #101, #102)
+
+Entity model now supports:
+- **ICMA recognition year** for council-manager governments
+- **Organization notes** for governance structure details
+- **Fiscal parent selector** (shown when `fiscal_autonomy == dependent`)
+- **Conditional school district fields** (legal type, board/executive selection)
+
+Entity index improvements:
+- Gov. Structure column (sortable) with "Needs research" indicator for missing data
+- Fiscal Autonomy column showing parent entity links
+- Document and Observation counts
+
+Entity show page improvements:
+- "Help wanted" banner when governance data is missing
+- "Dependent Entities" section for parent entities
+- Parent Entity link for dependent entities
 
 ### LLM Discoverability (PR #99)
 
@@ -75,7 +102,10 @@ Added machine-readable context for LLM crawlers:
 - `/llms.txt` - Machine-readable site context
 - `/for-llms` - Clean Markdown context page
 - Schema.org JSON-LD in `app/views/shared/_schema_org.html.erb`
-- Updated `robots.txt` with llms.txt reference
+
+### Parent Document Inheritance (PR #98)
+
+Dependent entities (e.g., Yonkers Public Schools) can see documents from their parent entity. The `Document.for_entity` scope includes parent entity documents.
 
 ## Verify Cockpit Technical Details
 
