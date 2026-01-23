@@ -130,11 +130,18 @@ class EntitiesTest < ApplicationSystemTestCase
     assert_no_text "Government structure information is missing"
   end
 
-  test "entity show displays needs research message in governance section when empty" do
+  test "entity show displays Not specified for missing governance fields" do
     albany = entities(:albany)
     visit entity_url(albany)
 
-    assert_text "Governance structure needs research"
+    # All governance fields should show, with "Not specified" for empty ones
+    assert_text "Structure"
+    assert_text "Fiscal Autonomy"
+    assert_text "ICMA Recognition"
+    assert_text "Notes"
+
+    # Albany has no government_structure or fiscal_autonomy
+    assert_text "Not specified"
     assert_link "Add details"
   end
 
@@ -143,6 +150,64 @@ class EntitiesTest < ApplicationSystemTestCase
     visit entity_url(yonkers)
 
     assert_text "Strong mayor"
-    assert_no_text "Governance structure needs research"
+    assert_text "Independent" # fiscal_autonomy
+  end
+
+  # ==========================================
+  # ORGANIZATION NOTE AND ICMA RECOGNITION
+  # ==========================================
+
+  test "entity form includes organization_note textarea" do
+    visit entities_url
+    click_on "New Entity"
+
+    assert_selector "textarea[name='entity[organization_note]']"
+    assert_selector "label", text: "Organization note"
+  end
+
+  test "entity form includes icma_recognition_year field" do
+    visit entities_url
+    click_on "New Entity"
+
+    assert_selector "input[name='entity[icma_recognition_year]']"
+    assert_selector "label", text: "ICMA Recognition Year"
+  end
+
+  test "creating an entity with organization_note and icma_recognition_year" do
+    visit entities_url
+    click_on "New Entity"
+
+    fill_in "Name", with: "Test ICMA City"
+    fill_in "Slug", with: "test-icma-city"
+    select "City", from: "Kind"
+    select "NY", from: "State"
+    select "Council Manager", from: "Government structure"
+    fill_in "ICMA Recognition Year", with: "1950"
+    fill_in "Organization note", with: "Council-manager form since 1950"
+
+    click_on "Create Entity"
+
+    assert_text "Entity was successfully created"
+    assert_text "Test ICMA City"
+  end
+
+  test "entity show displays organization_note when present" do
+    yonkers = entities(:yonkers)
+    visit entity_url(yonkers)
+
+    # Yonkers fixture has organization_note: "Council President + 6 District Representatives"
+    assert_text "Notes"
+    assert_text "Council President + 6 District Representatives"
+  end
+
+  test "entity show displays icma_recognition_year when present" do
+    # Update New Rochelle to have ICMA recognition year
+    nr = entities(:new_rochelle)
+    nr.update!(icma_recognition_year: 1932)
+
+    visit entity_url(nr)
+
+    assert_text "ICMA Recognition"
+    assert_text "1932"
   end
 end

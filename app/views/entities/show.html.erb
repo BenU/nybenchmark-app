@@ -26,23 +26,21 @@
     <div class="grid">
       <article>
         <header><strong>Governance Structure</strong></header>
-        <% if @entity.government_structure.present? || @entity.fiscal_autonomy.present? %>
-          <dl>
-            <% if @entity.government_structure.present? %>
-              <dt>Structure</dt>
-              <dd><%= @entity.government_structure.humanize %></dd>
-            <% end %>
+        <dl>
+          <dt>Structure</dt>
+          <dd><%= @entity.government_structure&.humanize || content_tag(:em, "Not specified", class: "needs-research") %></dd>
 
-            <% if @entity.fiscal_autonomy.present? %>
-              <dt>Fiscal Autonomy</dt>
-              <dd><%= @entity.fiscal_autonomy.humanize %></dd>
-            <% end %>
-          </dl>
-        <% else %>
-          <p class="needs-research"><em>Governance structure needs research.</em></p>
-          <% if user_signed_in? %>
-            <p><%= link_to "Add details", edit_entity_path(@entity), class: "outline" %></p>
-          <% end %>
+          <dt>Fiscal Autonomy</dt>
+          <dd><%= @entity.fiscal_autonomy&.humanize || content_tag(:em, "Not specified", class: "needs-research") %></dd>
+
+          <dt>ICMA Recognition</dt>
+          <dd><%= @entity.icma_recognition_year || content_tag(:em, "Not specified", class: "needs-research") %></dd>
+
+          <dt>Notes</dt>
+          <dd><%= @entity.organization_note.presence || content_tag(:em, "None", class: "muted") %></dd>
+        </dl>
+        <% if @entity.government_structure.blank? && !@entity.school_district_kind? && user_signed_in? %>
+          <p><%= link_to "Add details", edit_entity_path(@entity), class: "outline" %></p>
         <% end %>
       </article>
 

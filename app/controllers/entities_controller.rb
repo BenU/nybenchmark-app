@@ -56,7 +56,7 @@ class EntitiesController < ApplicationController
   def entity_params
     params.expect(
       entity: %i[name kind slug state parent_id
-                 government_structure fiscal_autonomy
+                 government_structure fiscal_autonomy icma_recognition_year
                  school_legal_type board_selection executive_selection
                  organization_note]
     )

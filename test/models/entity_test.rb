@@ -115,4 +115,18 @@ class EntityTest < ActiveSupport::TestCase
     assert_not entity.valid?
     assert_includes entity.errors[:school_legal_type], "must be blank unless kind is school_district"
   end
+
+  test "entity can have icma_recognition_year" do
+    entity = entities(:new_rochelle)
+    entity.icma_recognition_year = 1932
+
+    assert entity.valid?
+    assert_equal 1932, entity.icma_recognition_year
+  end
+
+  test "icma_recognition_year can be nil" do
+    entity = entities(:albany)
+    assert_nil entity.icma_recognition_year
+    assert entity.valid?
+  end
 end
