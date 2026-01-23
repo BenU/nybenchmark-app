@@ -34,9 +34,8 @@ This project uses a **Docker-first workflow**. Do not run Rails commands directl
 4. Commit with descriptive message
 5. Push branch and create PR: `git push -u origin feat/your-feature-name && gh pr create`
 6. Wait for CI checks to pass on GitHub
-7. Merge PR: `gh pr merge --merge --delete-branch`
-8. Update local main: `git switch main && git pull && dci`
-9. Deploy: `kd`
+7. **User merges PR on GitHub website** (not via CLI)
+8. **User handles in separate terminal:** `git switch main && git pull && dci && kd`
 
 ### Database Safety
 
