@@ -39,9 +39,22 @@
     <%= form.select :government_structure, Entity.government_structures.keys.map { |k| [k.titleize, k] }, { include_blank: true } %>
   </div>
 
-  <div>
-    <%= form.label :fiscal_autonomy, style: "display: block" %>
-    <%= form.select :fiscal_autonomy, Entity.fiscal_autonomies.keys.map { |k| [k.titleize, k] }, { include_blank: true } %>
+  <div data-controller="fiscal-autonomy">
+    <div>
+      <%= form.label :fiscal_autonomy, style: "display: block" %>
+      <%= form.select :fiscal_autonomy,
+                      Entity.fiscal_autonomies.keys.map { |k| [k.titleize, k] },
+                      { include_blank: true },
+                      data: { fiscal_autonomy_target: "autonomySelect", action: "change->fiscal-autonomy#autonomyChanged" } %>
+    </div>
+
+    <div data-fiscal-autonomy-target="parentField" class="<%= 'hidden' unless entity.dependent_fiscal_autonomy? %>">
+      <%= form.label :parent_id, "Parent entity", style: "display: block" %>
+      <%= form.select :parent_id,
+                      Entity.where.not(kind: "school_district").order(:name).map { |e| ["#{e.name} (#{e.kind.titleize})", e.id] },
+                      { include_blank: "Select parent entity..." } %>
+      <small>Required for fiscally dependent entities (e.g., Big Five school districts)</small>
+    </div>
   </div>
 
   <div>

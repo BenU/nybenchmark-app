@@ -210,4 +210,79 @@ class EntitiesTest < ApplicationSystemTestCase
     assert_text "ICMA Recognition"
     assert_text "1932"
   end
+
+  # ==========================================
+  # PARENT ENTITY SELECTOR (Fiscal Dependency)
+  # ==========================================
+  # Note: parent_id represents fiscal/reporting roll-up only, not geographic containment.
+  # Examples: Big Five school districts are fiscally dependent on their city.
+  # Villages are geographically within towns but fiscally independent.
+
+  test "entity form hides parent selector when fiscal_autonomy is independent" do
+    visit new_entity_url
+
+    select "Independent", from: "Fiscal autonomy"
+
+    # Parent selector should be hidden
+    assert_no_selector "select[name='entity[parent_id]']", visible: true
+  end
+
+  test "entity form shows parent selector when fiscal_autonomy is dependent" do
+    visit new_entity_url
+
+    select "Dependent", from: "Fiscal autonomy"
+
+    # Parent selector should be visible
+    assert_selector "select[name='entity[parent_id]']", visible: true
+    assert_selector "label", text: "Parent entity"
+  end
+
+  test "parent selector lists cities, counties, towns, and villages but not school districts" do
+    # Create a town and village for testing
+    Entity.create!(name: "Test Town", kind: "town", state: "NY", slug: "test-town")
+    Entity.create!(name: "Test Village", kind: "village", state: "NY", slug: "test-village")
+
+    visit new_entity_url
+
+    select "Dependent", from: "Fiscal autonomy"
+
+    # Should include cities, counties, towns, villages with their type shown
+    within "select[name='entity[parent_id]']" do
+      assert_selector "option", text: "Yonkers (City)"
+      assert_selector "option", text: "New Rochelle (City)"
+      assert_selector "option", text: "Test Town (Town)"
+      assert_selector "option", text: "Test Village (Village)"
+      # Should NOT include school districts (never fiscal parents)
+      assert_no_selector "option", text: "Yonkers Public Schools"
+      assert_no_selector "option", text: "New Rochelle City School District"
+    end
+  end
+
+  test "creating a dependent school district with parent city" do
+    visit new_entity_url
+
+    fill_in "Name", with: "Test Dependent District"
+    fill_in "Slug", with: "test-dependent-district"
+    select "School District", from: "Kind"
+    select "Dependent", from: "Fiscal autonomy"
+    select "Big Five", from: "School legal type"
+    select "Yonkers (City)", from: "Parent entity"
+
+    click_on "Create Entity"
+
+    assert_text "Entity was successfully created"
+
+    # Verify the parent was saved
+    entity = Entity.find_by(name: "Test Dependent District")
+    assert_equal entities(:yonkers), entity.parent
+  end
+
+  test "entity show displays parent entity when present" do
+    # Yonkers Schools is fiscally dependent on Yonkers
+    yonkers_schools = entities(:yonkers_schools)
+    visit entity_url(yonkers_schools)
+
+    assert_text "Parent Entity"
+    assert_text "Yonkers"
+  end
 end

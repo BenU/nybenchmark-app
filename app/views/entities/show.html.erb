@@ -33,6 +33,17 @@
           <dt>Fiscal Autonomy</dt>
           <dd><%= @entity.fiscal_autonomy&.humanize || content_tag(:em, "Not specified", class: "needs-research") %></dd>
 
+          <% if @entity.dependent_fiscal_autonomy? || @entity.parent.present? %>
+            <dt>Parent Entity</dt>
+            <dd>
+              <% if @entity.parent.present? %>
+                <%= link_to @entity.parent.name, entity_path(@entity.parent) %>
+              <% else %>
+                <%= content_tag(:em, "Not specified", class: "needs-research") %>
+              <% end %>
+            </dd>
+          <% end %>
+
           <dt>ICMA Recognition</dt>
           <dd><%= @entity.icma_recognition_year || content_tag(:em, "Not specified", class: "needs-research") %></dd>
 
