@@ -11,7 +11,14 @@ class Document < ApplicationRecord
   normalizes :source_url, with: ->(url) { url.strip }
 
   scope :for_entity, lambda { |entity_id|
-    entity_id.present? ? where(entity_id: entity_id).order(fiscal_year: :desc, title: :asc) : none
+    return none if entity_id.blank?
+
+    entity = Entity.find_by(id: entity_id)
+    return none unless entity
+
+    # Include parent entity documents for dependent entities
+    entity_ids = [entity.id, entity.parent_id].compact
+    where(entity_id: entity_ids).order(fiscal_year: :desc, title: :asc)
   }
   validate :source_url_must_be_valid_http
 

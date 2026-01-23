@@ -130,6 +130,59 @@ class DocumentTest < ActiveSupport::TestCase
     end
   end
 
+  # ==========================================
+  # for_entity scope - parent document inheritance
+  # ==========================================
+
+  test "for_entity returns documents for the specified entity" do
+    yonkers = entities(:yonkers)
+    docs = Document.for_entity(yonkers.id)
+
+    assert_includes docs, documents(:yonkers_acfr_fy2024)
+    assert_includes docs, documents(:yonkers_census_data_fy2024)
+    # Should NOT include child entity documents
+    assert_not_includes docs, documents(:yonkers_schools_budget_fy2024)
+  end
+
+  test "for_entity includes parent entity documents for dependent entities" do
+    yonkers_schools = entities(:yonkers_schools)
+    docs = Document.for_entity(yonkers_schools.id)
+
+    # Should include own documents
+    assert_includes docs, documents(:yonkers_schools_budget_fy2024)
+    # Should ALSO include parent (Yonkers) documents
+    assert_includes docs, documents(:yonkers_acfr_fy2024)
+    assert_includes docs, documents(:yonkers_census_data_fy2024)
+  end
+
+  test "for_entity does not include parent documents for independent entities" do
+    # new_rochelle_schools has no parent (independent school district)
+    new_rochelle_schools = entities(:new_rochelle_schools)
+    docs = Document.for_entity(new_rochelle_schools.id)
+
+    # Should include own documents
+    assert_includes docs, documents(:new_rochelle_schools_audit_fy2024)
+    # Should NOT include city documents (no parent relationship)
+    assert_not_includes docs, documents(:new_rochelle_acfr_fy2024)
+  end
+
+  test "for_entity returns none for nil entity_id" do
+    assert_empty Document.for_entity(nil)
+  end
+
+  test "for_entity returns none for non-existent entity_id" do
+    assert_empty Document.for_entity(999_999)
+  end
+
+  test "for_entity orders by fiscal_year desc then title asc" do
+    yonkers_schools = entities(:yonkers_schools)
+    docs = Document.for_entity(yonkers_schools.id)
+
+    # Should be ordered by fiscal_year desc, then title asc
+    fiscal_years = docs.pluck(:fiscal_year)
+    assert_equal fiscal_years, fiscal_years.sort.reverse
+  end
+
   test "can handle both url-only and url-with-pdf scenarios" do
     # Scenario 1: URL Only (e.g. Reference to a website)
     doc_url_only = Document.create!(
