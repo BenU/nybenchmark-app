@@ -1,11 +1,11 @@
 <main class="container">
-  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+  <div class="page-header">
     <hgroup>
       <h1><%= @entity.name %></h1>
       <p><%= @entity.kind.humanize %> in <%= @entity.state %> (New York)</p>
     </hgroup>
 
-    <div>
+    <div class="button-group">
       <%= link_to "Back to Entities", entities_path, role: "button", class: "outline" %>
       <%= link_to "Edit", edit_entity_path(@entity), role: "button", class: "secondary outline" %>
     </div>

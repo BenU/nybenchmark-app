@@ -103,3 +103,150 @@
 .sortable-header.active {
   font-weight: bold;
 }
+
+/*
+ * PAGE HEADER LAYOUTS
+ * Common pattern: title on left, action buttons on right
+ */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.page-header--center {
+  align-items: center;
+}
+
+.page-header hgroup {
+  margin-bottom: 0;
+}
+
+/*
+ * BUTTON GROUPS
+ * Horizontal grouping for action buttons
+ */
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.button-group--end {
+  justify-content: flex-end;
+}
+
+.button-group--center {
+  align-items: center;
+}
+
+/*
+ * FILTER FORMS
+ * Consistent styling for index page filters
+ */
+.filter-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+/*
+ * CONTENT SECTIONS
+ * Common spacing patterns
+ */
+.section-spaced {
+  margin-bottom: 1.25rem;
+}
+
+.content-block {
+  margin-top: 1rem;
+}
+
+/*
+ * STATUS INDICATORS
+ * Visual status badges
+ */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.status-indicator--live {
+  color: #2ea44f;
+}
+
+.status-indicator--live::before {
+  content: "●";
+}
+
+/*
+ * SOURCE TYPE BADGES
+ * Document source type visual indicators
+ */
+.source-type-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.source-type-badge.pdf {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.source-type-badge.web {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+/*
+ * UTILITY: Text alignment
+ */
+.text-right {
+  text-align: right;
+}
+
+.align-self-center {
+  align-self: center;
+}
+
+/*
+ * UTILITY: Hidden for JS toggle
+ * Use this instead of inline style="display: none"
+ */
+.hidden {
+  display: none;
+}
+
+/*
+ * DATA INDICATORS
+ * Visual indicators for data states
+ */
+.missing-data {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  font-size: 0.85em;
+}
+
+.muted {
+  color: #6c757d;
+}
+
+/*
+ * UTILITY: Link styling
+ */
+.link-plain {
+  text-decoration: none;
+}
+
+.link-plain:hover {
+  text-decoration: underline;
+}

@@ -11,7 +11,7 @@
       <% end %>
     </p>
   </hgroup>
-  <div style="text-align: right; align-self: center;">
+  <div class="text-right align-self-center">
     <% if user_signed_in? %>
       <% if @observation.provisional? %>
         <%= link_to "Verify this observation", verify_observation_path(@observation), role: "button" %>
@@ -71,8 +71,8 @@
     <small>Updated at: <%= @observation.updated_at.to_fs(:long) %></small>
     
     <% if user_signed_in? %>
-      <div style="margin-top: 1rem;">
-        <%= button_to "Destroy Observation", @observation, method: :delete, class: "contrast outline", form: { style: "display:inline-block;" }, data: { turbo_confirm: "Are you sure?" } %>
+      <div class="content-block">
+        <%= button_to "Destroy Observation", @observation, method: :delete, class: "contrast outline", data: { turbo_confirm: "Are you sure?" } %>
       </div>
     <% end %>
   </footer>

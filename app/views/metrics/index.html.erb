@@ -1,5 +1,5 @@
 <main class="container">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+  <div class="page-header page-header--center">
     <h1>Metrics</h1>
     <% if user_signed_in? %>
       <div><%= link_to "New Metric", new_metric_path, role: "button" %></div>
@@ -20,7 +20,7 @@
                 prompt: "All Types" %>
         </label>
 
-        <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+        <div class="button-group">
           <%= link_to "Clear", metrics_path, role: "button", class: "secondary outline" %>
           <%= submit_tag "Apply", name: nil %>
         </div>

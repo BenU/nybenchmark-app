@@ -1,13 +1,13 @@
 <%= form_with(model: entity) do |form| %>
   <% if entity.errors.any? %>
-    <div style="color: red; margin-bottom: 20px;">
-      <h2><%= pluralize(entity.errors.count, "error") %> prohibited this entity from being saved:</h2>
+    <article class="flash flash--alert">
+      <header><%= pluralize(entity.errors.count, "error") %> prohibited this entity from being saved:</header>
       <ul>
         <% entity.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
       </ul>
-    </div>
+    </article>
   <% end %>
 
   <div>
