@@ -5,9 +5,13 @@ class DocumentsController < ApplicationController
 
   before_action :authenticate_user!, except: %i[index show]
   before_action :set_document, only: %i[show edit update]
+  before_action :load_doc_type_suggestions, only: %i[new edit create update]
 
   def index
-    scope = Document.includes(:entity).sorted_by(params[:sort], params[:direction])
+    load_filter_options
+    scope = Document.includes(:entity)
+                    .where(filter_params)
+                    .sorted_by(params[:sort], params[:direction])
     @pagy, @documents = pagy(:offset, scope, limit: 25)
   end
 
@@ -48,5 +52,21 @@ class DocumentsController < ApplicationController
   def document_params
     # Rails 8 'expect' syntax
     params.expect(document: %i[title doc_type fiscal_year entity_id source_url notes file])
+  end
+
+  def filter_params
+    params.permit(:doc_type, :fiscal_year, :entity_id).compact_blank
+  end
+
+  def load_filter_options
+    @doc_types = Document.distinct.pluck(:doc_type).compact.sort
+    @fiscal_years = Document.distinct.pluck(:fiscal_year).compact.sort.reverse
+    @entities_for_filter = Entity.joins(:documents).distinct.order(:name)
+  end
+
+  def load_doc_type_suggestions
+    common_types = %w[acfr budget school_budget school_financials]
+    existing_types = Document.distinct.pluck(:doc_type).compact
+    @doc_type_suggestions = (common_types + existing_types).uniq.sort
   end
 end

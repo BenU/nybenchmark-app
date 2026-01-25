@@ -503,4 +503,15 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "input[name='observation[document_attributes][source_url]']"
   end
+
+  # ==========================================
+  # FILTER BUTTON ORDER TESTS
+  # ==========================================
+
+  test "index filter form has Clear button before Apply button" do
+    sign_in @user
+    get observations_url
+    assert_response :success
+    assert_match(/Clear.*Apply/m, response.body)
+  end
 end

@@ -103,4 +103,85 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
   end
+
+  # ==========================================
+  # FILTER TESTS
+  # ==========================================
+
+  test "index renders filter form" do
+    get documents_url
+    assert_response :success
+    assert_select "form[method='get'][action='#{documents_path}']"
+    assert_select "fieldset legend", text: "Filters"
+  end
+
+  test "index filters by doc_type" do
+    get documents_url(doc_type: "acfr")
+    assert_response :success
+    # Check for link with document title (td contains title + Source Link)
+    assert_select "td a", text: @document.title
+  end
+
+  test "index filters by fiscal_year" do
+    get documents_url(fiscal_year: 2024)
+    assert_response :success
+    assert_select "tbody tr", minimum: 1
+  end
+
+  test "index filters by entity_id" do
+    get documents_url(entity_id: @entity.id)
+    assert_response :success
+    # Should see Yonkers documents - check for link with document title
+    assert_select "td a", text: @document.title
+  end
+
+  test "index filter preserves sort params" do
+    get documents_url(doc_type: "acfr", sort: "title", direction: "desc")
+    assert_response :success
+    assert_select "input[type='hidden'][name='sort'][value='title']"
+    assert_select "input[type='hidden'][name='direction'][value='desc']"
+  end
+
+  test "index filter form has Clear before Apply" do
+    get documents_url
+    assert_response :success
+    assert_match(/Clear.*Apply/m, response.body)
+  end
+
+  # ==========================================
+  # CUSTOM DOC_TYPE INPUT TESTS
+  # ==========================================
+
+  test "new form shows text input with datalist for doc_type" do
+    sign_in @user
+    get new_document_url
+    assert_response :success
+    assert_select "input[name='document[doc_type]'][list='doc_type_suggestions']"
+    assert_select "datalist#doc_type_suggestions option", minimum: 1
+  end
+
+  test "edit form shows text input with datalist for doc_type" do
+    sign_in @user
+    get edit_document_url(@document)
+    assert_response :success
+    assert_select "input[name='document[doc_type]'][list='doc_type_suggestions']"
+  end
+
+  test "create accepts custom doc_type value" do
+    sign_in @user
+
+    assert_difference("Document.count") do
+      post documents_url, params: {
+        document: {
+          title: "Custom Type Doc",
+          doc_type: "quarterly_report",
+          fiscal_year: 2025,
+          entity_id: @entity.id,
+          source_url: "https://example.com/report.pdf"
+        }
+      }
+    end
+
+    assert_equal "quarterly_report", Document.last.doc_type
+  end
 end
