@@ -24,10 +24,17 @@
         </div>
       <% end %>
 
-      <%# Citation %>
+      <%# Citation - required for PDF documents, optional for web documents %>
+      <% is_pdf_document = @observation.document&.pdf? %>
       <div class="mb-1">
         <%= form.label :page_reference, "Citation (printed page)", class: "block text-xs font-medium text-gray-700" %>
-        <%= form.text_field :page_reference, placeholder: "p. 42", class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
+        <%= form.text_field :page_reference,
+            placeholder: is_pdf_document ? "p. 42" : "e.g. Table DP05 (optional)",
+            required: is_pdf_document,
+            class: "mt-0.5 block w-full text-sm rounded border-gray-300 shadow-sm px-2 py-1" %>
+        <% unless is_pdf_document %>
+          <p class="text-xs text-gray-500 mt-0.5">Optional for web sources.</p>
+        <% end %>
       </div>
 
       <%# Source URL %>

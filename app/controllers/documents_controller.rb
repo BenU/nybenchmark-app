@@ -4,7 +4,7 @@ class DocumentsController < ApplicationController
   include Pagy::Method
 
   before_action :authenticate_user!, except: %i[index show]
-  before_action :set_document, only: %i[show edit update]
+  before_action :set_document, only: %i[show edit update destroy]
   before_action :load_doc_type_suggestions, only: %i[new edit create update]
 
   def index
@@ -41,6 +41,11 @@ class DocumentsController < ApplicationController
     else
       render :edit, status: :unprocessable_content
     end
+  end
+
+  def destroy
+    @document.destroy
+    redirect_to documents_url, notice: "Document was successfully deleted."
   end
 
   private

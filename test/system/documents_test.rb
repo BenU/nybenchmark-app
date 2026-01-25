@@ -141,6 +141,35 @@ class DocumentsTest < ApplicationSystemTestCase
     assert_selector "a.sortable-header.active", text: /Year.*↑/
   end
 
+  # ==========================================
+  # DELETE DOCUMENT
+  # ==========================================
+
+  test "deleting a document from show page" do
+    document = documents(:yonkers_acfr_fy2024)
+    visit document_path(document)
+
+    assert_selector "h1", text: document.title
+
+    # Click delete and accept confirmation dialog (Turbo confirmation)
+    accept_confirm do
+      click_on "Delete Document"
+    end
+
+    # Should redirect to index with flash message
+    assert_current_path documents_path
+    assert_text "Document was successfully deleted"
+    assert_no_text document.title
+  end
+
+  test "guest cannot see delete button" do
+    sign_out @user
+    document = documents(:yonkers_acfr_fy2024)
+    visit document_path(document)
+
+    assert_no_button "Delete Document"
+  end
+
   test "document index shows pagination when many documents exist" do
     # Create enough documents to trigger pagination (25 per page)
     # Use unique fiscal_year for each to avoid uniqueness constraint

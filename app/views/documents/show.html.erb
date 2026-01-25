@@ -11,8 +11,12 @@
     </hgroup>
     
     <% if user_signed_in? %>
-      <div>
+      <div style="display: flex; gap: 8px;">
         <%= link_to "Update Document", edit_document_path(@document), role: "button", class: "secondary outline" %>
+        <%= button_to "Delete Document", document_path(@document),
+            method: :delete,
+            class: "contrast outline",
+            form: { data: { turbo_confirm: "Are you sure you want to delete this document? This action cannot be undone." } } %>
       </div>
     <% end %>
   </div>

@@ -514,4 +514,90 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match(/Clear.*Apply/m, response.body)
   end
+
+  # ==========================================
+  # PAGE_REFERENCE FIELD BASED ON DOCUMENT SOURCE TYPE
+  # ==========================================
+
+  test "edit form shows page_reference as required for PDF documents" do
+    sign_in @user
+    get edit_observation_url(@observation)
+
+    assert_response :success
+    # page_reference field should be shown and required
+    assert_select "input[name='observation[page_reference]'][required]"
+  end
+
+  test "edit form shows page_reference as optional for web documents" do
+    url_only_obs = observations(:yonkers_population_url_only)
+    sign_in @user
+    get edit_observation_url(url_only_obs)
+
+    assert_response :success
+    # page_reference field should be shown but NOT required
+    assert_select "input[name='observation[page_reference]']"
+    assert_select "input[name='observation[page_reference]'][required]", count: 0
+  end
+
+  test "create observation for web document without page_reference succeeds" do
+    sign_in @user
+    web_doc = documents(:yonkers_census_data_fy2024)
+
+    assert_difference("Observation.count") do
+      post observations_url, params: {
+        observation: {
+          entity_id: web_doc.entity_id,
+          metric_id: @metric.id,
+          document_id: web_doc.id,
+          fiscal_year: web_doc.fiscal_year,
+          value_numeric: 12_345,
+          page_reference: "" # Empty - should be allowed for web docs
+        }
+      }
+    end
+
+    new_obs = Observation.order(created_at: :desc).first
+    assert_nil new_obs.page_reference
+  end
+
+  test "create observation for PDF document without page_reference fails" do
+    sign_in @user
+
+    assert_no_difference("Observation.count") do
+      post observations_url, params: {
+        observation: {
+          entity_id: @entity.id,
+          metric_id: @metric.id,
+          document_id: @document.id,
+          fiscal_year: @document.fiscal_year,
+          value_numeric: 12_345,
+          page_reference: "" # Empty - should fail for PDF docs
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "update clears pdf_page when document changes from PDF to web" do
+    sign_in @user
+    web_doc = documents(:yonkers_census_data_fy2024)
+
+    # Start with a PDF document observation that has pdf_page set
+    assert @observation.document.pdf?
+    assert_equal 45, @observation.pdf_page
+
+    patch observation_url(@observation), params: {
+      observation: {
+        document_id: web_doc.id,
+        entity_id: web_doc.entity_id,
+        value_numeric: @observation.value_numeric,
+        page_reference: "Table DP05" # Optional but providing one
+      }
+    }
+
+    @observation.reload
+    assert_nil @observation.pdf_page, "pdf_page should be cleared when switching to web document"
+    assert_equal web_doc.id, @observation.document_id
+  end
 end

@@ -184,4 +184,65 @@ class ObservationTest < ActiveSupport::TestCase
 
     assert obs.valid?, "Negative numbers should be valid numeric values"
   end
+
+  # --- 8. Web vs PDF Document Source Type Handling ---
+
+  test "page_reference is required for pdf documents" do
+    obs = observations(:yonkers_expenditures_numeric)
+    assert obs.document.pdf?
+
+    obs.page_reference = nil
+    assert_not obs.valid?, "page_reference should be required for PDF documents"
+    assert_includes obs.errors[:page_reference], "is required for PDF documents"
+  end
+
+  test "page_reference is optional for web documents" do
+    obs = observations(:yonkers_population_url_only)
+    assert obs.document.web?
+
+    obs.page_reference = nil
+    assert obs.valid?, "page_reference should be optional for web documents"
+  end
+
+  test "page_reference can have a value for web documents" do
+    obs = observations(:yonkers_population_url_only)
+    assert obs.document.web?
+
+    obs.page_reference = "Table DP05"
+    assert obs.valid?, "page_reference can optionally be set for web documents"
+  end
+
+  test "clears pdf_page when document changes to web source" do
+    obs = observations(:yonkers_expenditures_numeric)
+    assert obs.document.pdf?
+    assert_equal 45, obs.pdf_page
+
+    # Change to a web document
+    web_doc = documents(:yonkers_census_data_fy2024)
+    assert web_doc.web?
+
+    obs.document = web_doc
+    obs.page_reference = nil # Clear page_reference since it's now optional
+    obs.save!
+
+    assert_nil obs.reload.pdf_page, "pdf_page should be cleared when switching to web document"
+  end
+
+  test "preserves pdf_page when document changes to another pdf source" do
+    obs = observations(:yonkers_expenditures_numeric)
+    original_pdf_page = obs.pdf_page
+    assert_equal 45, original_pdf_page
+
+    # Change to another PDF document
+    other_pdf_doc = documents(:new_rochelle_acfr_fy2024)
+    assert other_pdf_doc.pdf?
+
+    obs.document = other_pdf_doc
+    obs.entity = other_pdf_doc.entity
+    obs.page_reference = "p. 10" # Still required for PDF
+    obs.save!
+
+    assert_equal original_pdf_page, obs.reload.pdf_page,
+                 "pdf_page should be preserved when switching between PDF documents"
+  end
 end

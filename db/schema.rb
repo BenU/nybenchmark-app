@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_25_165709) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_25_200154) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -102,7 +102,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_25_165709) do
     t.integer "fiscal_year", null: false
     t.bigint "metric_id", null: false
     t.text "notes"
-    t.string "page_reference", null: false
+    t.string "page_reference"
     t.integer "pdf_page"
     t.datetime "updated_at", null: false
     t.decimal "value_numeric", precision: 20, scale: 2
