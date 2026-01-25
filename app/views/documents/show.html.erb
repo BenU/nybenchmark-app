@@ -1,5 +1,5 @@
 <main class="container">
-  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+  <div class="page-header">
     <hgroup>
       <h1><%= @document.title %></h1>
       <p>
@@ -9,9 +9,9 @@
         <span class="source-type-badge <%= @document.source_type %>"><%= @document.source_type.upcase %></span>
       </p>
     </hgroup>
-    
+
     <% if user_signed_in? %>
-      <div style="display: flex; gap: 8px;">
+      <div class="button-group button-group--center">
         <%= link_to "Update Document", edit_document_path(@document), role: "button", class: "secondary outline" %>
         <%= button_to "Delete Document", document_path(@document),
             method: :delete,
@@ -26,8 +26,8 @@
   <div class="grid">
     <article>
       <header><strong>Access File</strong></header>
-      
-      <div style="margin-bottom: 20px;">
+
+      <div class="section-spaced">
         <strong>Original Source:</strong><br>
           <% if @document.source_url.to_s.match?(/\Ahttps?:\/\//) %>
             <%= link_to @document.source_url, @document.source_url, target: "_blank", rel: "noopener" %>

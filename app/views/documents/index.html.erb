@@ -7,7 +7,7 @@
       <p>Source files for all verified data.</p>
     </hgroup>
     <% if user_signed_in? %>
-      <div style="text-align: right; align-self: center;">
+      <div class="text-right align-self-center">
         <%= link_to "New document", new_document_path, role: "button" %>
       </div>
     <% end %>
@@ -48,7 +48,7 @@
                 prompt: "All Sources" %>
         </label>
       </div>
-      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+      <div class="filter-actions">
         <%= link_to "Clear", documents_path, role: "button", class: "secondary outline" %>
         <%= submit_tag "Apply", name: nil %>
       </div>

@@ -5,9 +5,9 @@
     <h1>Observations</h1>
     <p>Audit-first browsing: every value is traceable to a document and page reference.</p>
   </hgroup>
-  
+
   <% if user_signed_in? %>
-    <div style="text-align: right; align-self: center;">
+    <div class="text-right align-self-center">
       <%= link_to "New observation", new_observation_path, role: "button" %>
     </div>
   <% end %>

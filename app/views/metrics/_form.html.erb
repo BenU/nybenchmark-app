@@ -1,13 +1,13 @@
 <%= form_with(model: metric) do |form| %>
   <% if metric.errors.any? %>
-    <div style="color: red; margin-bottom: 20px;">
-      <h2><%= pluralize(metric.errors.count, "error") %> prohibited this metric from being saved:</h2>
+    <article class="flash flash--alert">
+      <header><%= pluralize(metric.errors.count, "error") %> prohibited this metric from being saved:</header>
       <ul>
         <% metric.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
       </ul>
-    </div>
+    </article>
   <% end %>
 
   <div>

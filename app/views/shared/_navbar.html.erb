@@ -17,13 +17,12 @@
         <% queue_count = Observation.provisional.count %>
         <% if first_provisional %>
           <%= link_to verify_observation_path(first_provisional),
-                      class: "contrast font-bold flex items-center gap-2",
-                      style: "text-decoration: none;" do %>
+                      class: "contrast font-bold flex items-center gap-2 link-plain" do %>
             Verify Queue
             <span class="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full"><%= queue_count %></span>
           <% end %>
         <% else %>
-          <span class="secondary text-sm flex items-center gap-2" style="text-decoration: none;">
+          <span class="secondary text-sm flex items-center gap-2">
             Verify Queue
             <span class="bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">0</span>
           </span>

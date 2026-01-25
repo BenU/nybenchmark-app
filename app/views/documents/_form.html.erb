@@ -1,13 +1,13 @@
 <%= form_with(model: document, data: { controller: "document-source-type" }) do |form| %>
   <% if document.errors.any? %>
-    <div style="color: red; margin-bottom: 20px;">
-      <h2><%= pluralize(document.errors.count, "error") %> prohibited this document from being saved:</h2>
+    <article class="flash flash--alert">
+      <header><%= pluralize(document.errors.count, "error") %> prohibited this document from being saved:</header>
       <ul>
         <% document.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
       </ul>
-    </div>
+    </article>
   <% end %>
 
   <div class="grid">
@@ -57,7 +57,7 @@
       <%= form.url_field :source_url %>
       <small data-document-source-type-target="urlHint">
         <span data-hint-for="pdf">Link to where the original PDF can be downloaded.</span>
-        <span data-hint-for="web" style="display: none;">The webpage URL containing the data.</span>
+        <span data-hint-for="web" class="hidden">The webpage URL containing the data.</span>
       </small>
     </div>
   </div>
