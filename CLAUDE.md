@@ -55,6 +55,32 @@ This project uses a **Docker-first workflow**. Do not run Rails commands directl
 
 ## Recently Completed
 
+### Document Source Type (PR #108)
+
+Added `source_type` enum to Document model to distinguish PDF documents from web-only sources:
+
+**Model changes:**
+- `source_type` enum: `pdf` (default), `web`
+- Validation: web documents cannot have file attachments
+- Scopes: `Document.pdf`, `Document.web`
+
+**UI changes:**
+- Document form: Source Type selector toggles file upload visibility
+- Document index: Source filter dropdown (Entity, Type, Year, Source)
+- Document show: Source type badge displayed in header
+- Stimulus controller: `document_source_type_controller.js` handles conditional display
+
+**Form field order:** Entity, Document Type, Fiscal Year, Title, Source Type, Source URL, File Upload, Notes
+
+**Verify cockpit:** Gracefully handles both PDF and URL-only documents (shows source link for web documents instead of PDF viewer)
+
+### Index Filters and Custom Doc Types (PR #107)
+
+- Added filter dropdowns to Documents index (Entity, Type, Year, Source)
+- Added filter dropdown to Metrics index (Value Type)
+- Custom doc_type input with datalist suggestions
+- Consistent "Clear | Apply" button order across all filter forms
+
 ### Entity Index Filtering (PR #105)
 
 Added filter dropdowns to the Entities index page:
@@ -119,3 +145,7 @@ Dependent entities (e.g., Yonkers Public Schools) can see documents from their p
 - Source URL editing via nested attributes
 
 **Production note:** DigitalOcean Spaces requires CORS configuration to allow PDF.js to fetch files. The bucket must allow origin `https://app.nybenchmark.org` with GET/HEAD methods.
+
+## In Progress
+
+None currently.
