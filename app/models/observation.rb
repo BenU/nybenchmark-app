@@ -14,6 +14,8 @@ class Observation < ApplicationRecord
 
   # -- Callbacks --
   before_validation :sync_fiscal_year_from_document
+  before_validation :clear_pdf_fields_for_web_documents
+  before_validation :normalize_blank_page_reference
 
   # Basic Type Checks
   validates :value_numeric, numericality: true, allow_nil: true
@@ -24,6 +26,7 @@ class Observation < ApplicationRecord
   validate :fiscal_year_matches_document
   validate :validate_value_exclusivity
   validate :value_type_matches_metric
+  validate :page_reference_required_for_pdf_documents
 
   # -- Scopes --
   scope :search, lambda { |term|
@@ -105,5 +108,21 @@ class Observation < ApplicationRecord
     elsif metric.expects_text? && value_text.blank?
       errors.add(:value_text, "is required for this metric")
     end
+  end
+
+  def page_reference_required_for_pdf_documents
+    return unless document&.pdf? && page_reference.blank?
+
+    errors.add(:page_reference, "is required for PDF documents")
+  end
+
+  def clear_pdf_fields_for_web_documents
+    return unless document&.web?
+
+    self.pdf_page = nil
+  end
+
+  def normalize_blank_page_reference
+    self.page_reference = nil if page_reference.blank?
   end
 end

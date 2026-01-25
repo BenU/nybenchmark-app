@@ -107,8 +107,17 @@
   </div>
 
   <div class="my-5">
+    <% is_pdf_document = observation.document&.pdf? %>
     <%= form.label :page_reference, class: "block font-medium" %>
-    <%= form.text_field :page_reference, placeholder: "e.g. p. 42", class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
+    <%= form.text_field :page_reference,
+        placeholder: is_pdf_document ? "e.g. p. 42" : "e.g. Table DP05 (optional)",
+        required: is_pdf_document,
+        class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
+    <% if is_pdf_document %>
+      <p class="text-xs text-gray-500 mt-1">Required: reference the page in the PDF where this data appears.</p>
+    <% else %>
+      <p class="text-xs text-gray-500 mt-1">Optional: reference a specific table or section on the webpage.</p>
+    <% end %>
   </div>
 
   <% if observation.persisted? && observation.document&.file&.attached? %>

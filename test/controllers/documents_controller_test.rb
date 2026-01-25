@@ -293,4 +293,40 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".source-type-badge", text: /Web/i
   end
+
+  # ==========================================
+  # DELETE TESTS
+  # ==========================================
+
+  test "should deny access to destroy without auth" do
+    assert_no_difference("Document.count") do
+      delete document_url(@document)
+    end
+    assert_redirected_to new_user_session_url
+  end
+
+  test "should destroy document with auth" do
+    sign_in @user
+
+    assert_difference("Document.count", -1) do
+      delete document_url(@document)
+    end
+
+    assert_redirected_to documents_url
+    follow_redirect!
+    assert_select ".flash--notice", /deleted/i
+  end
+
+  test "show page has delete button when signed in" do
+    sign_in @user
+    get document_url(@document)
+    assert_response :success
+    assert_select "button", text: /Delete/i
+  end
+
+  test "show page does not have delete button when signed out" do
+    get document_url(@document)
+    assert_response :success
+    assert_select "button", text: /Delete/i, count: 0
+  end
 end
