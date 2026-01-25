@@ -7,7 +7,7 @@ class MetricsController < ApplicationController
   before_action :set_metric, only: %i[show edit update]
 
   def index
-    scope = Metric.sorted_by(params[:sort], params[:direction])
+    scope = Metric.where(filter_params).sorted_by(params[:sort], params[:direction])
     @pagy, @metrics = pagy(:offset, scope, limit: 25)
   end
 
@@ -45,5 +45,9 @@ class MetricsController < ApplicationController
 
   def metric_params
     params.expect(metric: %i[key label unit description value_type display_format formula])
+  end
+
+  def filter_params
+    params.permit(:value_type).compact_blank
   end
 end

@@ -6,6 +6,28 @@
     <% end %>
   </div>
 
+  <form method="get" action="<%= metrics_path %>">
+    <%= hidden_field_tag :sort, params[:sort] if params[:sort].present? %>
+    <%= hidden_field_tag :direction, params[:direction] if params[:direction].present? %>
+
+    <fieldset>
+      <legend>Filters</legend>
+      <div class="grid">
+        <label>
+          Value Type
+          <%= select_tag :value_type,
+                options_for_select(Metric.value_types.keys.map { |t| [t.humanize, t] }, params[:value_type]),
+                prompt: "All Types" %>
+        </label>
+
+        <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+          <%= link_to "Clear", metrics_path, role: "button", class: "secondary outline" %>
+          <%= submit_tag "Apply", name: nil %>
+        </div>
+      </div>
+    </fieldset>
+  </form>
+
   <figure>
     <table role="grid">
       <thead>

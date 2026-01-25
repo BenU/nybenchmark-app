@@ -58,4 +58,14 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
     @entity.reload
     assert_equal 1975, @entity.icma_recognition_year
   end
+
+  # ==========================================
+  # FILTER TESTS
+  # ==========================================
+
+  test "index filter form has Clear button before Apply button" do
+    get entities_url
+    assert_response :success
+    assert_match(/Clear.*Apply/m, response.body)
+  end
 end

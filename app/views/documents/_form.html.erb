@@ -30,9 +30,15 @@
 
     <div>
       <%= form.label :doc_type, "Document Type", style: "display: block" %>
-      <%= form.select :doc_type, 
-          [["ACFR", "acfr"], ["Budget", "budget"], ["School Budget", "school_budget"], ["School Financials", "school_financials"]], 
-          { prompt: "Select Type" } %>
+      <%= form.text_field :doc_type,
+          list: "doc_type_suggestions",
+          placeholder: "e.g. acfr, budget, quarterly_report" %>
+      <datalist id="doc_type_suggestions">
+        <% @doc_type_suggestions.each do |type| %>
+          <option value="<%= type %>"><%= type.humanize %></option>
+        <% end %>
+      </datalist>
+      <small>Select from suggestions or type a custom document type.</small>
     </div>
   </div>
 
