@@ -184,4 +184,113 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal "quarterly_report", Document.last.doc_type
   end
+
+  # ==========================================
+  # SOURCE_TYPE TESTS
+  # ==========================================
+
+  test "new form shows source_type select" do
+    sign_in @user
+    get new_document_url
+    assert_response :success
+    assert_select "select[name='document[source_type]']"
+    assert_select "select[name='document[source_type]'] option[value='pdf']"
+    assert_select "select[name='document[source_type]'] option[value='web']"
+  end
+
+  test "edit form shows source_type select with current value" do
+    sign_in @user
+    get edit_document_url(@document)
+    assert_response :success
+    assert_select "select[name='document[source_type]']"
+  end
+
+  test "create pdf document with source_type" do
+    sign_in @user
+
+    assert_difference("Document.count") do
+      post documents_url, params: {
+        document: {
+          title: "PDF Source Doc",
+          doc_type: "acfr",
+          source_type: "pdf",
+          fiscal_year: 2025,
+          entity_id: @entity.id,
+          source_url: "https://example.com/doc.pdf",
+          file: fixture_file_upload("sample.pdf", "application/pdf")
+        }
+      }
+    end
+
+    new_doc = Document.last
+    assert_equal "pdf", new_doc.source_type
+    assert new_doc.file.attached?
+  end
+
+  test "create web document with source_type" do
+    sign_in @user
+
+    assert_difference("Document.count") do
+      post documents_url, params: {
+        document: {
+          title: "Web Source Doc",
+          doc_type: "census_data",
+          source_type: "web",
+          fiscal_year: 2025,
+          entity_id: @entity.id,
+          source_url: "https://data.census.gov/some-data"
+        }
+      }
+    end
+
+    new_doc = Document.last
+    assert_equal "web", new_doc.source_type
+    assert_not new_doc.file.attached?
+  end
+
+  test "create web document fails if file is attached" do
+    sign_in @user
+
+    assert_no_difference("Document.count") do
+      post documents_url, params: {
+        document: {
+          title: "Invalid Web Doc",
+          doc_type: "census_data",
+          source_type: "web",
+          fiscal_year: 2025,
+          entity_id: @entity.id,
+          source_url: "https://example.com/data",
+          file: fixture_file_upload("sample.pdf", "application/pdf")
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "index filters by source_type" do
+    get documents_url(source_type: "web")
+    assert_response :success
+    # Should see web documents (census)
+    assert_select "td a", text: documents(:yonkers_census_data_fy2024).title
+  end
+
+  test "index filter includes source_type dropdown" do
+    get documents_url
+    assert_response :success
+    assert_select "select[name='source_type']"
+  end
+
+  test "show displays source_type badge for pdf document" do
+    get document_url(@document)
+    assert_response :success
+    assert_select ".source-type-badge", text: /PDF/i
+  end
+
+  test "show displays source_type badge for web document" do
+    web_doc = documents(:yonkers_census_data_fy2024)
+    get document_url(web_doc)
+    assert_response :success
+    assert_select ".source-type-badge", text: /Web/i
+  end
 end

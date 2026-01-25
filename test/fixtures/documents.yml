@@ -36,5 +36,6 @@ yonkers_census_data_fy2024:
   title: "Yonkers Census Demographics 2024"
   doc_type: census
   fiscal_year: 2024
+  source_type: 1  # web
   source_url: https://data.census.gov/yonkers-demographics-2024
   notes: "URL-only source - no PDF attachment"

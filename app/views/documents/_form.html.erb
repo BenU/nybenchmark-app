@@ -1,4 +1,4 @@
-<%= form_with(model: document) do |form| %>
+<%= form_with(model: document, data: { controller: "document-source-type" }) do |form| %>
   <% if document.errors.any? %>
     <div style="color: red; margin-bottom: 20px;">
       <h2><%= pluralize(document.errors.count, "error") %> prohibited this document from being saved:</h2>
@@ -17,18 +17,6 @@
     </div>
 
     <div>
-      <%= form.label :fiscal_year, style: "display: block" %>
-      <%= form.number_field :fiscal_year %>
-    </div>
-  </div>
-
-  <div class="grid">
-    <div>
-      <%= form.label :title, style: "display: block" %>
-      <%= form.text_field :title, placeholder: "e.g. Yonkers ACFR 2024" %>
-    </div>
-
-    <div>
       <%= form.label :doc_type, "Document Type", style: "display: block" %>
       <%= form.text_field :doc_type,
           list: "doc_type_suggestions",
@@ -42,15 +30,41 @@
     </div>
   </div>
 
-  <div>
-    <%= form.label :source_url, "Original Source URL", style: "display: block" %>
-    <%= form.url_field :source_url %>
-    <small>Link to where this was found on the web.</small>
+  <div class="grid">
+    <div>
+      <%= form.label :fiscal_year, style: "display: block" %>
+      <%= form.number_field :fiscal_year %>
+    </div>
+
+    <div>
+      <%= form.label :title, style: "display: block" %>
+      <%= form.text_field :title, placeholder: "e.g. Yonkers ACFR 2024" %>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <%= form.label :source_type, "Source Type", style: "display: block" %>
+      <%= form.select :source_type,
+          Document.source_types.keys.map { |t| [t.humanize.upcase, t] },
+          {},
+          { data: { document_source_type_target: "select", action: "document-source-type#toggle" } } %>
+      <small>PDF = downloadable document. Web = online data source (no file upload).</small>
+    </div>
+
+    <div>
+      <%= form.label :source_url, "Source URL", style: "display: block" %>
+      <%= form.url_field :source_url %>
+      <small data-document-source-type-target="urlHint">
+        <span data-hint-for="pdf">Link to where the original PDF can be downloaded.</span>
+        <span data-hint-for="web" style="display: none;">The webpage URL containing the data.</span>
+      </small>
+    </div>
   </div>
 
   <hr>
 
-  <div>
+  <div data-document-source-type-target="fileSection">
     <%= form.label :file, "Upload PDF", style: "display: block" %>
     <%= form.file_field :file, accept: "application/pdf" %>
     <% if document.file.attached? %>

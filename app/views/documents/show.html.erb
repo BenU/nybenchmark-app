@@ -3,9 +3,10 @@
     <hgroup>
       <h1><%= @document.title %></h1>
       <p>
-        <%= link_to @document.entity.name, entity_path(@document.entity) %> • 
-        FY <%= @document.fiscal_year %> • 
-        <%= @document.doc_type.upcase %>
+        <%= link_to @document.entity.name, entity_path(@document.entity) %> •
+        FY <%= @document.fiscal_year %> •
+        <%= @document.doc_type.upcase %> •
+        <span class="source-type-badge <%= @document.source_type %>"><%= @document.source_type.upcase %></span>
       </p>
     </hgroup>
     

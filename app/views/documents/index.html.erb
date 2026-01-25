@@ -21,6 +21,13 @@
       <legend>Filters</legend>
       <div class="grid">
         <label>
+          Entity
+          <%= select_tag :entity_id,
+                options_from_collection_for_select(@entities_for_filter, :id, :name, params[:entity_id]),
+                prompt: "All Entities" %>
+        </label>
+
+        <label>
           Document Type
           <%= select_tag :doc_type,
                 options_for_select(@doc_types.map { |t| [t.humanize, t] }, params[:doc_type]),
@@ -35,16 +42,15 @@
         </label>
 
         <label>
-          Entity
-          <%= select_tag :entity_id,
-                options_from_collection_for_select(@entities_for_filter, :id, :name, params[:entity_id]),
-                prompt: "All Entities" %>
+          Source
+          <%= select_tag :source_type,
+                options_for_select(Document.source_types.keys.map { |t| [t.humanize.upcase, t] }, params[:source_type]),
+                prompt: "All Sources" %>
         </label>
-
-        <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
-          <%= link_to "Clear", documents_path, role: "button", class: "secondary outline" %>
-          <%= submit_tag "Apply", name: nil %>
-        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+        <%= link_to "Clear", documents_path, role: "button", class: "secondary outline" %>
+        <%= submit_tag "Apply", name: nil %>
       </div>
     </fieldset>
   </form>

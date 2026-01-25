@@ -8,10 +8,15 @@ class AuthenticationNavTest < ApplicationSystemTestCase
   setup do
     @user = users(:one)
 
-    # Attach PDF to the FIRST provisional observation (by ID order)
-    # since that's where Verify Queue link navigates to
-    @first_provisional = Observation.provisional.order(:id).first
-    attach_sample_pdf(@first_provisional.document)
+    # Attach PDF to a provisional observation with a PDF-type document
+    # The verify queue may show PDF or URL-only documents, so we ensure
+    # at least one PDF-type observation has its file attached for testing
+    @pdf_provisional = Observation.provisional
+                                  .joins(:document)
+                                  .where(documents: { source_type: :pdf })
+                                  .order(:id)
+                                  .first
+    attach_sample_pdf(@pdf_provisional.document) if @pdf_provisional
   end
 
   test "navbar shows Sign in when logged out" do
@@ -37,10 +42,16 @@ class AuthenticationNavTest < ApplicationSystemTestCase
     # Click should go to verification cockpit, not the filtered observations list
     click_link "Verify Queue"
 
-    # Should be on the verify cockpit page with PDF.js continuous scroll viewer
+    # Should be on the verify cockpit page - always shows verification form
     # Wait for the page to fully load - use visible: :all since layout may vary
     assert_selector "form.verification-form", visible: :all
-    assert_selector "[data-pdf-navigator-target='pagesContainer']", visible: :all
+
+    # The cockpit shows either PDF viewer (for PDF documents) or URL fallback (for web sources)
+    # Check that one of these is present
+    has_pdf_viewer = page.has_selector?("[data-pdf-navigator-target='pagesContainer']", visible: :all, wait: 1)
+    has_url_fallback = page.has_content?("No PDF attached.")
+    assert has_pdf_viewer || has_url_fallback,
+           "Expected either PDF viewer or URL-only fallback, but found neither"
   end
 
   test "navbar Verify Queue shows count badge when provisional observations exist" do
