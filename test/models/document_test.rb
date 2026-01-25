@@ -218,4 +218,95 @@ class DocumentTest < ActiveSupport::TestCase
     assert doc_with_pdf.file.attached? # Has PDF
     assert_equal "audit.pdf", doc_with_pdf.file.filename.to_s # Filename stored in ActiveStorage
   end
+
+  # ==========================================
+  # SOURCE_TYPE ENUM TESTS
+  # ==========================================
+
+  test "source_type defaults to pdf" do
+    doc = Document.new
+    assert_equal "pdf", doc.source_type
+    assert doc.pdf?
+  end
+
+  test "source_type can be set to web" do
+    doc = Document.new(source_type: :web)
+    assert_equal "web", doc.source_type
+    assert doc.web?
+  end
+
+  test "source_type enum provides pdf? and web? helper methods" do
+    pdf_doc = Document.new(source_type: :pdf)
+    web_doc = Document.new(source_type: :web)
+
+    assert pdf_doc.pdf?
+    assert_not pdf_doc.web?
+    assert web_doc.web?
+    assert_not web_doc.pdf?
+  end
+
+  test "web source_type does not allow file attachment" do
+    doc = documents(:yonkers_census_data_fy2024)
+    doc.source_type = :web
+
+    doc.file.attach(
+      io: StringIO.new("fake pdf content"),
+      filename: "should_not_attach.pdf",
+      content_type: "application/pdf"
+    )
+
+    assert_not doc.valid?
+    assert_includes doc.errors[:file], "cannot be attached to web sources"
+  end
+
+  test "pdf source_type allows file attachment" do
+    doc = documents(:yonkers_acfr_fy2024)
+    doc.source_type = :pdf
+
+    doc.file.attach(
+      io: Rails.root.join("test/fixtures/files/sample.pdf").open,
+      filename: "valid.pdf",
+      content_type: "application/pdf"
+    )
+
+    assert doc.valid?
+  end
+
+  test "web source requires source_url" do
+    doc = Document.new(
+      title: "Web Source",
+      doc_type: "census_data",
+      fiscal_year: 2024,
+      entity: entities(:yonkers),
+      source_type: :web,
+      source_url: nil
+    )
+
+    assert_not doc.valid?
+    assert_includes doc.errors[:source_url], "can't be blank"
+  end
+
+  test "Document.pdf scope returns only pdf source_type documents" do
+    pdf_docs = Document.pdf
+    pdf_docs.each do |doc|
+      assert doc.pdf?, "Expected #{doc.title} to be pdf source_type"
+    end
+  end
+
+  test "Document.web scope returns only web source_type documents" do
+    web_docs = Document.web
+    web_docs.each do |doc|
+      assert doc.web?, "Expected #{doc.title} to be web source_type"
+    end
+  end
+
+  test "for_entity includes both pdf and web source documents" do
+    yonkers = entities(:yonkers)
+    docs = Document.for_entity(yonkers.id)
+
+    # Should include PDF documents
+    assert_includes docs, documents(:yonkers_acfr_fy2024)
+    # Should include web documents
+    assert_includes docs, documents(:yonkers_census_data_fy2024)
+  end
 end

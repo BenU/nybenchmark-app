@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_23_151934) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_25_165709) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -48,11 +48,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_23_151934) do
     t.bigint "entity_id", null: false
     t.integer "fiscal_year", null: false
     t.text "notes"
+    t.integer "source_type", default: 0, null: false
     t.text "source_url", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["entity_id", "fiscal_year", "doc_type"], name: "index_documents_on_entity_id_and_fiscal_year_and_doc_type", unique: true
     t.index ["entity_id"], name: "index_documents_on_entity_id"
+    t.index ["source_type"], name: "index_documents_on_source_type"
   end
 
   create_table "entities", force: :cascade do |t|

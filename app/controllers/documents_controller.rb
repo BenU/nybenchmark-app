@@ -51,11 +51,11 @@ class DocumentsController < ApplicationController
 
   def document_params
     # Rails 8 'expect' syntax
-    params.expect(document: %i[title doc_type fiscal_year entity_id source_url notes file])
+    params.expect(document: %i[title doc_type source_type fiscal_year entity_id source_url notes file])
   end
 
   def filter_params
-    params.permit(:doc_type, :fiscal_year, :entity_id).compact_blank
+    params.permit(:doc_type, :fiscal_year, :entity_id, :source_type).compact_blank
   end
 
   def load_filter_options
