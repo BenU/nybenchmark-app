@@ -5,8 +5,8 @@
 Import bulk financial data from the NYS Office of the State Comptroller (OSC) into the nybenchmark app, starting with a clean slate for metrics and observations while preserving entities and documents.
 
 **Data Sources:**
-- **Primary:** https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm (all 62 cities, 1995-2024)
-- **NYC 2011+:** https://checkbooknyc.com/ (separate data source due to OSC gap)
+- **Primary:** https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm (61 cities, 1995-2024)
+- **NYC (all years):** https://checkbooknyc.com/ (NYC is never in OSC system - has own Comptroller)
 
 **Historical Range:** As far back as available (1995-2024 for most cities)
 
@@ -91,12 +91,42 @@ enum :data_source, {
 - NYC is uniquely large and has its own transparency portal
 - Keeps OSC data "pure" for the other 61 cities
 
-### 1.3 Add Account Code Fields to Metric
+### 1.3 Add OSC Fields to Entity
+
+```ruby
+# Migration: add_osc_fields_to_entities
+add_column :entities, :osc_municipal_code, :string     # 12-digit OSC code for matching
+
+add_index :entities, :osc_municipal_code
+```
+
+### 1.4 Track Filing Status (DECISION PENDING)
+
+**Problem:** Simple fields like `osc_last_filed_year` don't capture sporadic filing patterns (e.g., Mount Vernon filed through 2015, skipped 2016-2019, filed 2020, then stopped again).
+
+**Options under consideration:**
+- **Option A:** Separate `entity_filing_records` table tracking every year
+- **Option B:** Separate `entity_filing_gaps` table tracking only problems
+- **Option C:** Derive filing status from observations (no new table)
+
+See `db/seeds/osc_data/DATA_QUALITY.md` for full analysis.
+
+**Late Filers (as of 2024):**
+| City | Last Filed | Gap | Notes |
+|------|------------|-----|-------|
+| Mount Vernon | 2020 | 4 years | Lost credit rating per OSC audit |
+| Ithaca | 2021 | 3 years | Late filer |
+| Rensselaer | 2021 | 3 years | Late filer |
+| Fulton | 2022 | 2 years | Late filer |
+
+**NYC:** Never in OSC system (has own Comptroller, uses Checkbook NYC)
+
+### 1.5 Add Account Code Fields to Metric
 
 ```ruby
 # Migration: add_osc_fields_to_metrics
 add_column :metrics, :data_source, :integer, default: 0, null: false
-add_column :metrics, :account_code, :string      # Full code: "A3120.1"
+add_column :metrics, :account_code, :string      # Full code: "A31201" (no dots)
 add_column :metrics, :fund_code, :string         # "A" (General Fund)
 add_column :metrics, :function_code, :string     # "3120" (Police)
 add_column :metrics, :object_code, :string       # "1" (Personal Services)
@@ -107,14 +137,18 @@ add_index :metrics, :fund_code
 ```
 
 **Account Code Structure (Uniform System of Accounts):**
+
+> **Note:** OSC CSV files use codes WITHOUT dots (e.g., `A31201` not `A3120.1`).
+> The object code is appended directly to the function code.
+
 ```
-A3120.1
-│ │     │
-│ │     └── Object Code: .1 = Personal Services, .2 = Equipment, .4 = Contractual, .8 = Benefits
+A31201
+│ │   │
+│ │   └── Object Code: 1 = Personal Services, 2 = Equipment, 4 = Contractual, 8 = Benefits
 │ │
-│ └──────── Function Code: 3120 = Police, 3410 = Fire, 8160 = Sanitation, 9015 = PFRS Pension
+│ └────── Function Code: 3120 = Police, 3410 = Fire, 8160 = Sanitation, 9015 = PFRS Pension
 │
-└────────── Fund Code: A = General, F = Water, G = Sewer, V = Debt Service
+└──────── Fund Code: A = General, F = Water, G = Sewer, V = Debt Service
 ```
 
 ---
@@ -154,19 +188,19 @@ A3120.1
 
 | Code | Label | Strategic Value |
 |------|-------|-----------------|
-| A3120.1 | Police - Personal Services | Baumol labor cost |
-| A3120.2 | Police - Equipment | Capital intensity |
-| A3120.4 | Police - Contractual | Operational overhead |
-| A3410.1 | Fire - Personal Services | Comparative benchmark |
-| A3410.4 | Fire - Contractual | Equipment/supplies |
+| A31201 | Police - Personal Services | Baumol labor cost |
+| A31202 | Police - Equipment | Capital intensity |
+| A31204 | Police - Contractual | Operational overhead |
+| A34101 | Fire - Personal Services | Comparative benchmark |
+| A34104 | Fire - Contractual | Equipment/supplies |
 
 ### 2.5 Expenditure Codes - Sanitation (Efficiency Benchmark!)
 
 | Code | Label | Strategic Value |
 |------|-------|-----------------|
-| A8160.1 | Refuse & Garbage - Personal Services | **Labor cost (your Yonkers vs Watertown example!)** |
-| A8160.2 | Refuse & Garbage - Equipment | Trucks, bins, automation level |
-| A8160.4 | Refuse & Garbage - Contractual | Contracted vs in-house collection |
+| A81601 | Refuse & Garbage - Personal Services | **Labor cost (your Yonkers vs Watertown example!)** |
+| A81602 | Refuse & Garbage - Equipment | Trucks, bins, automation level |
+| A81604 | Refuse & Garbage - Contractual | Contracted vs in-house collection |
 
 **Strategic Note:** Sanitation is a perfect efficiency benchmark because:
 - Service output is measurable (tons collected, households served)
@@ -178,21 +212,21 @@ A3120.1
 
 | Code | Label | Strategic Value |
 |------|-------|-----------------|
-| A9015.8 | Police & Fire Retirement (PFRS) | CRITICAL - uniformed pension load |
-| A9010.8 | State Retirement (ERS) | Non-uniformed pensions |
-| A9030.8 | Social Security | Federal mandate |
-| A9040.8 | Workers Compensation | Risk/injury costs |
-| A9060.8 | Health Insurance | Fastest-growing cost |
+| A90158 | Police & Fire Retirement (PFRS) | CRITICAL - uniformed pension load |
+| A90108 | State Retirement (ERS) | Non-uniformed pensions |
+| A90308 | Social Security | Federal mandate |
+| A90408 | Workers Compensation | Risk/injury costs |
+| A90608 | Health Insurance | Fastest-growing cost |
 
 ### 2.7 Expenditure Codes - Infrastructure & Debt
 
 | Code | Label | Strategic Value |
 |------|-------|-----------------|
-| A5110.1 | Street Maintenance | Infrastructure capacity |
-| A5142.4 | Snow Removal | Variable cost (upstate) |
-| A7110.1 | Parks | Quality of life |
-| A9710.6 | Serial Bonds - Principal | Debt burden |
-| A9710.7 | Serial Bonds - Interest | Debt cost |
+| A51101 | Street Maintenance | Infrastructure capacity |
+| A51424 | Snow Removal | Variable cost (upstate) |
+| A71101 | Parks | Quality of life |
+| A97106 | Serial Bonds - Principal | Debt burden |
+| A97107 | Serial Bonds - Interest | Debt cost |
 
 ---
 
@@ -209,20 +243,20 @@ Raw spending numbers are misleading:
 
 | Derived Metric | Formula | Strategic Value |
 |----------------|---------|-----------------|
-| police_cost_per_capita | (A3120.* + A9015.8) / population | True cost of policing |
-| sanitation_cost_per_capita | A8160.* / population | Garbage collection efficiency |
-| fire_cost_per_capita | (A3410.* + A9015.8 allocated) / population | Fire service cost |
+| police_cost_per_capita | (A3120* + A90158) / population | True cost of policing |
+| sanitation_cost_per_capita | A8160* / population | Garbage collection efficiency |
+| fire_cost_per_capita | (A3410* + A90158 allocated) / population | Fire service cost |
 | state_aid_per_capita | A3xxx / population | Dependency on Albany |
 | federal_aid_per_capita | A4xxx / population | Federal dependency |
 | property_tax_per_capita | A1001 / population | Local tax burden |
-| debt_service_per_capita | A9710.* / population | Legacy cost burden |
+| debt_service_per_capita | A9710* / population | Legacy cost burden |
 
 ### 3.3 Implementation Approach
 
 ```ruby
 # Derived metrics stored in metrics table with:
 #   data_source: :derived
-#   formula: "A3120.* + A9015.8 / population"
+#   formula: "A3120* + A90158 / population"
 #
 # Calculation happens at query time or via background job
 # Requires population observation for same entity/year
@@ -245,26 +279,62 @@ Per capita metrics require population data. Sources:
 2. Select export type: **"Revenue, Expenditure and Balance Sheet Data"**
 3. Select detail: **"Single Class of Government for All Years"**
 4. Select class: **"City"**
-5. Click Download (ZIP file)
+5. Click Download (downloads as a **folder**, not ZIP)
 
 ### 4.2 File Organization
 
 ```
 db/seeds/osc_data/
 ├── README.md                    # Download date, source URL, notes
-├── city_all_years.zip           # Original download (archive)
-├── city_expenditure.csv         # Extracted
-├── city_revenue.csv             # Extracted
-└── city_balance_sheet.csv       # Extracted
+└── city_all_years/              # Downloaded folder
+    ├── 1995_City.csv
+    ├── 1996_City.csv
+    ├── ...
+    ├── 2023_City.csv
+    ├── 2024_City.csv
+    ├── 2025_City.csv            # Partial (current year)
+    └── 2026_City.csv            # Empty (future year)
 ```
 
-### 4.3 NYC Data (Post-2010)
+### 4.3 CSV Structure
 
-OSC data for NYC only available through 2010. For 2011+:
-- Source: https://checkbooknyc.com/
-- Download budget/spending data
+Each yearly file contains ALL data types (revenue, expenditure, balance sheet) for ALL cities.
+
+**Columns:**
+| Column | Example | Description |
+|--------|---------|-------------|
+| CALENDAR_YEAR | 2023 | Fiscal year |
+| MUNICIPAL_CODE | 010201000000 | 12-digit OSC entity code |
+| ENTITY_NAME | City of Albany | Official name |
+| CLASS_DESCRIPTION | City | Government type |
+| COUNTY | Albany | County location |
+| PERIOD_START | 2023-01-01 | Fiscal period start |
+| PERIOD_END | 2023-12-31 | Fiscal period end |
+| ACCOUNT_CODE | A31201 | OSC account code (no dots) |
+| ACCOUNT_CODE_NARRATIVE | Police | Account description |
+| ACCOUNT_CODE_SECTION | EXPENDITURE | REVENUE, EXPENDITURE, or BALANCE_SHEET |
+| LEVEL_1_CATEGORY | Public Safety | High-level category |
+| LEVEL_2_CATEGORY | Police | Sub-category |
+| OBJECT_OF_EXPENDITURE | Personal Services | Object class (expenditures only) |
+| AMOUNT | 37566026 | Dollar amount (may have decimals) |
+| SNAPSHOT_DATE | 2025-12-31 | Data snapshot date |
+
+**Data Notes:**
+- Amounts may include decimals (e.g., `3619538.81`)
+- Fiscal years vary by city (calendar year vs July-June)
+- 2023 file has ~20,000 rows covering all 62 cities
+
+### 4.4 NYC Data (All Years)
+
+**Important:** NYC is **never** in the OSC AFR system. NYC has its own independently elected Comptroller who operates Checkbook NYC separately. The OSC AFR Filing Status page explicitly states: "New York City is not included in this data."
+
+For ALL NYC data:
+- Source: https://checkbooknyc.com/ (launched July 2010)
 - Uses `data_source: :nyc_checkbook` on metrics
 - Different document (doc_type: "nyc_checkbook")
+- Separate import task needed: `osc:import_nyc_checkbook`
+
+**Note:** Pre-2010 NYC data may require different sources (NYC Comptroller archives, CAFR reports).
 
 ---
 
@@ -298,19 +368,22 @@ The OSC download interface supports:
 # Design allows for future expansion:
 namespace :osc do
   desc "Import OSC data for a specific government class"
-  task :import, [:file_path, :data_type, :gov_class] => :environment do |t, args|
+  task :import, [:directory, :gov_class] => :environment do |t, args|
     # gov_class: city, town, village, county, school_district, fire_district
+    # directory contains yearly CSV files (e.g., 2023_City.csv)
     OscImporter.new(
-      file_path: args[:file_path],
-      data_type: args[:data_type],
+      directory: args[:directory],
       gov_class: args[:gov_class] || 'city'
     ).import
   end
 end
 
-# Future usage:
-# rails osc:import[db/seeds/osc_data/town_expenditure.csv,expenditure,town]
-# rails osc:import[db/seeds/osc_data/village_expenditure.csv,expenditure,village]
+# Usage:
+# rails osc:import[db/seeds/osc_data/city_all_years,city]
+#
+# Future usage for other government types:
+# rails osc:import[db/seeds/osc_data/town_all_years,town]
+# rails osc:import[db/seeds/osc_data/village_all_years,village]
 ```
 
 ### 5.4 Authority Support (Deferred)
@@ -349,16 +422,19 @@ These will be entered via the app UI or a separate seed file, linked to `web` so
 ### Week 1: Schema & Reset
 1. [ ] Create migration: add OSC fields to metrics
 2. [ ] Create migration: add bulk_data to document source_type
-3. [ ] Update Document model validations
-4. [ ] Update Observation model validations
-5. [ ] Create data:reset_for_osc rake task
-6. [ ] **RUN RESET** (after backup confirmation)
+3. [ ] Create migration: add osc_municipal_code to entities
+4. [ ] **DECIDE:** Filing status schema (see DATA_QUALITY.md)
+5. [ ] Create migration: filing status table (after decision)
+6. [ ] Update Document model validations
+7. [ ] Update Observation model validations
+8. [ ] Create data:reset_for_osc rake task
+9. [ ] **RUN RESET** (after backup confirmation)
 
 ### Week 2: Download & Explore
-7. [ ] Manually download OSC CSV files
-8. [ ] Analyze CSV structure (columns, format, quirks)
-9. [ ] Create entity name mapping
-10. [ ] Document any data quality issues
+7. [x] Manually download OSC CSV files
+8. [x] Analyze CSV structure (columns, format, quirks)
+9. [x] Create entity name mapping (see `db/seeds/osc_data/entity_mapping.yml`)
+10. [x] Document any data quality issues (see `db/seeds/osc_data/DATA_QUALITY.md`)
 
 ### Week 3: Import Task
 11. [ ] Build OscImporter service class
@@ -383,16 +459,17 @@ These will be entered via the app UI or a separate seed file, linked to `web` so
 ## Success Criteria
 
 - [ ] Database reset completed (0 observations, 0 metrics, 62 entities, 6 documents preserved)
-- [ ] OSC data imported for all 62 cities (61 from OSC, NYC from Checkbook post-2010)
+- [ ] OSC data imported for 61 cities (NYC requires separate Checkbook import)
 - [ ] Historical depth: 1995-2024 where available
 - [ ] Can query: "Police spending for Yonkers, 2015-2023"
-- [ ] Can compare: "A3120.1 across Big Five cities"
+- [ ] Can compare: "A31201 across Big Five cities"
 - [ ] **Per capita comparisons work** (police cost per capita, sanitation per capita, etc.)
-- [ ] **Sanitation metrics included** (A8160.* for labor efficiency analysis)
+- [ ] **Sanitation metrics included** (A8160* for labor efficiency analysis)
 - [ ] **Federal aid tracked** alongside state aid (A4xxx codes)
 - [ ] Every observation traces to source document (OSC or NYC Checkbook)
 - [ ] Census/crime data re-added for key metrics
 - [ ] **Design supports future expansion** to towns, villages, counties, school districts
+- [ ] **Late filers tracked and highlighted** (Mount Vernon, Ithaca, Rensselaer, Fulton)
 
 ---
 

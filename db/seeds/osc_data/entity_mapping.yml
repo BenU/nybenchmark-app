@@ -1,0 +1,106 @@
+# OSC Entity Mapping
+# Maps OSC MUNICIPAL_CODE and ENTITY_NAME to database entity names
+#
+# Naming convention: OSC uses "City of X", database uses "X"
+# Import logic: entity_name = osc_row["ENTITY_NAME"].sub("City of ", "")
+
+# Cities present in OSC data (57 cities)
+# Format: municipal_code => { osc_name, db_name, county }
+cities:
+  "010201000000": { osc_name: "City of Albany", db_name: "Albany", county: "Albany" }
+  "270202000000": { osc_name: "City of Amsterdam", db_name: "Amsterdam", county: "Montgomery" }
+  "050203000000": { osc_name: "City of Auburn", db_name: "Auburn", county: "Cayuga" }
+  "180204000000": { osc_name: "City of Batavia", db_name: "Batavia", county: "Genesee" }
+  "130205000000": { osc_name: "City of Beacon", db_name: "Beacon", county: "Dutchess" }
+  "030206000000": { osc_name: "City of Binghamton", db_name: "Binghamton", county: "Broome" }
+  "140207000000": { osc_name: "City of Buffalo", db_name: "Buffalo", county: "Erie" }
+  "320208000000": { osc_name: "City of Canandaigua", db_name: "Canandaigua", county: "Ontario" }
+  "010209000000": { osc_name: "City of Cohoes", db_name: "Cohoes", county: "Albany" }
+  "460210000000": { osc_name: "City of Corning", db_name: "Corning", county: "Steuben" }
+  "110211000000": { osc_name: "City of Cortland", db_name: "Cortland", county: "Cortland" }
+  "060212000000": { osc_name: "City of Dunkirk", db_name: "Dunkirk", county: "Chautauqua" }
+  "070213000000": { osc_name: "City of Elmira", db_name: "Elmira", county: "Chemung" }
+  "320215000000": { osc_name: "City of Geneva", db_name: "Geneva", county: "Ontario" }
+  "280216000000": { osc_name: "City of Glen Cove", db_name: "Glen Cove", county: "Nassau" }
+  "520217000000": { osc_name: "City of Glens Falls", db_name: "Glens Falls", county: "Warren" }
+  "170218000000": { osc_name: "City of Gloversville", db_name: "Gloversville", county: "Fulton" }
+  "460219000000": { osc_name: "City of Hornell", db_name: "Hornell", county: "Steuben" }
+  "100220000000": { osc_name: "City of Hudson", db_name: "Hudson", county: "Columbia" }
+  "060222000000": { osc_name: "City of Jamestown", db_name: "Jamestown", county: "Chautauqua" }
+  "170223000000": { osc_name: "City of Johnstown", db_name: "Johnstown", county: "Fulton" }
+  "510224000000": { osc_name: "City of Kingston", db_name: "Kingston", county: "Ulster" }
+  "140225000000": { osc_name: "City of Lackawanna", db_name: "Lackawanna", county: "Erie" }
+  "210226000000": { osc_name: "City of Little Falls", db_name: "Little Falls", county: "Herkimer" }
+  "290227000000": { osc_name: "City of Lockport", db_name: "Lockport", county: "Niagara" }
+  "280228000000": { osc_name: "City of Long Beach", db_name: "Long Beach", county: "Nassau" }
+  "410229000000": { osc_name: "City of Mechanicville", db_name: "Mechanicville", county: "Saratoga" }
+  "330230000000": { osc_name: "City of Middletown", db_name: "Middletown", county: "Orange" }
+  "550233000000": { osc_name: "City of New Rochelle", db_name: "New Rochelle", county: "Westchester" }
+  "330232000000": { osc_name: "City of Newburgh", db_name: "Newburgh", county: "Orange" }
+  "290235000000": { osc_name: "City of Niagara Falls", db_name: "Niagara Falls", county: "Niagara" }
+  "290236000000": { osc_name: "City of North Tonawanda", db_name: "North Tonawanda", county: "Niagara" }
+  "080237000000": { osc_name: "City of Norwich", db_name: "Norwich", county: "Chenango" }
+  "400238000000": { osc_name: "City of Ogdensburg", db_name: "Ogdensburg", county: "St. Lawrence" }
+  "040239000000": { osc_name: "City of Olean", db_name: "Olean", county: "Cattaraugus" }
+  "250240000000": { osc_name: "City of Oneida", db_name: "Oneida", county: "Madison" }
+  "360241000000": { osc_name: "City of Oneonta", db_name: "Oneonta", county: "Otsego" }
+  "350242000000": { osc_name: "City of Oswego", db_name: "Oswego", county: "Oswego" }
+  "550243000000": { osc_name: "City of Peekskill", db_name: "Peekskill", county: "Westchester" }
+  "090244000000": { osc_name: "City of Plattsburgh", db_name: "Plattsburgh", county: "Clinton" }
+  "330245000000": { osc_name: "City of Port Jervis", db_name: "Port Jervis", county: "Orange" }
+  "130246000000": { osc_name: "City of Poughkeepsie", db_name: "Poughkeepsie", county: "Dutchess" }
+  "260248000000": { osc_name: "City of Rochester", db_name: "Rochester", county: "Monroe" }
+  "300249000000": { osc_name: "City of Rome", db_name: "Rome", county: "Oneida" }
+  "550250000000": { osc_name: "City of Rye", db_name: "Rye", county: "Westchester" }
+  "040251000000": { osc_name: "City of Salamanca", db_name: "Salamanca", county: "Cattaraugus" }
+  "410252000000": { osc_name: "City of Saratoga Springs", db_name: "Saratoga Springs", county: "Saratoga" }
+  "420253000000": { osc_name: "City of Schenectady", db_name: "Schenectady", county: "Schenectady" }
+  "300254000000": { osc_name: "City of Sherrill", db_name: "Sherrill", county: "Oneida" }
+  "310255000000": { osc_name: "City of Syracuse", db_name: "Syracuse", county: "Onondaga" }
+  "140256000000": { osc_name: "City of Tonawanda", db_name: "Tonawanda", county: "Erie" }
+  "380257000000": { osc_name: "City of Troy", db_name: "Troy", county: "Rensselaer" }
+  "300258000000": { osc_name: "City of Utica", db_name: "Utica", county: "Oneida" }
+  "220259000000": { osc_name: "City of Watertown", db_name: "Watertown", county: "Jefferson" }
+  "010260000000": { osc_name: "City of Watervliet", db_name: "Watervliet", county: "Albany" }
+  "550261000000": { osc_name: "City of White Plains", db_name: "White Plains", county: "Westchester" }
+  "550262000000": { osc_name: "City of Yonkers", db_name: "Yonkers", county: "Westchester" }
+
+# Cities in database but missing from OSC data
+# These require special handling during import
+missing_from_osc:
+  new_york_city:
+    db_name: "New York City"
+    reason: "NYC is NEVER in OSC AFR system - has own elected Comptroller"
+    data_source: "nyc_checkbook"
+    note: "NYC excluded from OSC. Use https://checkbooknyc.com/ (launched 2010). Pre-2010 may require NYC Comptroller archives."
+
+  fulton:
+    db_name: "Fulton"
+    reason: "Last OSC data: 2022"
+    osc_years: "1995-2022"
+    note: "May be late filer or changed reporting"
+
+  ithaca:
+    db_name: "Ithaca"
+    reason: "Last OSC data: 2021"
+    osc_years: "1995-2021"
+    note: "May be late filer or changed reporting"
+
+  mount_vernon:
+    db_name: "Mount Vernon"
+    reason: "Last OSC data: 2020"
+    osc_years: "1995-2020"
+    note: "May be late filer or fiscal stress issues"
+
+  rensselaer:
+    db_name: "Rensselaer"
+    reason: "Last OSC data: 2021"
+    osc_years: "1995-2021"
+    note: "May be late filer or changed reporting"
+
+# Import logic for OscImporter:
+#
+# def find_entity(osc_row)
+#   db_name = osc_row["ENTITY_NAME"].sub("City of ", "")
+#   Entity.find_by!(name: db_name, kind: :city, state: "NY")
+# end
