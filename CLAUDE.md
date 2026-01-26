@@ -54,6 +54,16 @@ This file provides essential context for Claude Code sessions. For detailed hist
 **Document source types:**
 - `pdf` (default) - Has file attachment, requires `page_reference` on observations
 - `web` - URL-only, `page_reference` optional, `pdf_page` auto-cleared
+- `bulk_data` - Machine-readable imports (OSC, etc.), `page_reference` optional
+
+**Metric data sources:**
+- `manual` (default) - Manually entered data
+- `osc` - NYS Comptroller AFR data (account codes like A3120.1)
+- `census` - US Census Bureau (population, income, poverty)
+- `dcjs` - NYS Division of Criminal Justice Services (crime stats)
+- `rating_agency` - Bond ratings (Moody's, S&P)
+- `derived` - Calculated from other metrics (per capita, ratios)
+- `nyc_checkbook` - NYC Checkbook data (NYC 2011+, separate from OSC)
 
 **Observation validation:**
 - `page_reference` required for PDF documents, optional for web
@@ -86,4 +96,17 @@ Avoid inline `style=` attributes; use CSS classes.
 
 ## In Progress
 
-**CSS Centralization** (branch: `refactor/centralize-form-error-styles`) - Replacing remaining inline styles with CSS classes. PR pending.
+**OSC Data Import** - Schema ready for NYS Comptroller bulk data import. See `PLAN.md` for full roadmap.
+
+**Next steps:**
+1. Download OSC CSV files to local dev environment
+2. Analyze CSV structure, confirm data integrity
+3. Build and test `osc:import` rake task locally
+4. Verify local database populated correctly
+5. Replicate in production: download CSVs to server, run rake task
+
+**Rake tasks available:**
+- `data:counts` - Check current stats (non-destructive)
+- `data:reset_for_osc` - Clear metrics/observations before import
+
+**Account code fields on Metric:** `account_code`, `fund_code`, `function_code`, `object_code`
