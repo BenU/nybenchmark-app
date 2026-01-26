@@ -27,6 +27,14 @@ class AuthenticationBoundariesTest < ActionDispatch::IntegrationTest
     assert_redirected_to "/sign_in"
   end
 
+  test "entity index shows New Entity button for authenticated users" do
+    sign_in users(:one)
+
+    get entities_path, headers: @headers
+    assert_response :success
+    assert_match(/New Entity/, response.body)
+  end
+
   test "authenticated users can access mutation endpoints" do
     # Create a user manually for integration test speed
     user = User.create!(
