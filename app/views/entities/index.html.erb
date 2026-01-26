@@ -5,9 +5,11 @@
       <p>Select a local government to view financial performance and documents.</p>
     </hgroup>
 
-    <div>
-      <%= link_to "New Entity", new_entity_path, role: "button" %>
-    </div>
+    <% if user_signed_in? %>
+      <div>
+        <%= link_to "New Entity", new_entity_path, role: "button" %>
+      </div>
+    <% end %>
   </div>
 
   <form method="get" action="<%= entities_path %>">

@@ -12,6 +12,12 @@ class PublicReadAccessTest < ActionDispatch::IntegrationTest
     }
   end
 
+  test "entity index hides New Entity button for guests" do
+    get entities_path, headers: @headers
+    assert_response :success
+    assert_no_match(/New Entity/, response.body)
+  end
+
   test "unauthenticated users can access read-only index/show pages" do
     # Entities
     get entities_path, headers: @headers

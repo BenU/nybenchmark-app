@@ -37,6 +37,8 @@ This file provides essential context for Claude Code sessions. For detailed hist
 
 **Skip TDD for:** Pure CSS/styling changes, simple config updates, documentation.
 
+**Use fixtures:** Prefer existing fixtures (e.g., `users(:one)`, `entities(:yonkers)`) over creating records from scratch in tests.
+
 ## Database Safety
 
 **Never use destructive commands without explicit approval:**
