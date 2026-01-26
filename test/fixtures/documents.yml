@@ -39,3 +39,22 @@ yonkers_census_data_fy2024:
   source_type: 1  # web
   source_url: https://data.census.gov/yonkers-demographics-2024
   notes: "URL-only source - no PDF attachment"
+
+# Bulk data document - represents OSC/Comptroller machine-readable data imports
+yonkers_osc_afr_fy2023:
+  entity: yonkers
+  title: "OSC Annual Financial Report 2023"
+  doc_type: osc_afr
+  fiscal_year: 2023
+  source_type: 2  # bulk_data
+  source_url: https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm
+  notes: "Bulk imported from NYS Comptroller"
+
+new_rochelle_osc_afr_fy2023:
+  entity: new_rochelle
+  title: "OSC Annual Financial Report 2023"
+  doc_type: osc_afr
+  fiscal_year: 2023
+  source_type: 2  # bulk_data
+  source_url: https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm
+  notes: "Bulk imported from NYS Comptroller"

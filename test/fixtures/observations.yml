@@ -58,3 +58,28 @@ yonkers_population_url_only:
   notes: "Population from Census website - URL-only source"
   verification_status: provisional
   pdf_page: ~
+
+# Observation from bulk_data source (OSC Comptroller data)
+yonkers_police_salaries_osc:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2023
+  metric: police_personal_services
+  fiscal_year: 2023
+  value_numeric: 125000000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Bulk imported from OSC - no page reference needed"
+  verification_status: verified
+  pdf_page: ~
+
+new_rochelle_sanitation_osc:
+  entity: new_rochelle
+  document: new_rochelle_osc_afr_fy2023
+  metric: sanitation_personal_services
+  fiscal_year: 2023
+  value_numeric: 8500000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Bulk imported from OSC"
+  verification_status: verified
+  pdf_page: ~

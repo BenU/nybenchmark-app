@@ -110,14 +110,16 @@ class Observation < ApplicationRecord
     end
   end
 
+  # Page reference is required for PDF documents, optional for web and bulk_data
   def page_reference_required_for_pdf_documents
     return unless document&.pdf? && page_reference.blank?
 
     errors.add(:page_reference, "is required for PDF documents")
   end
 
+  # Clear PDF-specific fields for non-PDF documents (web and bulk_data)
   def clear_pdf_fields_for_web_documents
-    return unless document&.web?
+    return unless document&.web? || document&.bulk_data?
 
     self.pdf_page = nil
   end

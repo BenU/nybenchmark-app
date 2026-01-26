@@ -309,4 +309,78 @@ class DocumentTest < ActiveSupport::TestCase
     # Should include web documents
     assert_includes docs, documents(:yonkers_census_data_fy2024)
   end
+
+  # ==========================================
+  # BULK_DATA SOURCE TYPE TESTS (OSC Import)
+  # ==========================================
+
+  test "source_type can be set to bulk_data" do
+    doc = documents(:yonkers_osc_afr_fy2023)
+    assert_equal "bulk_data", doc.source_type
+    assert doc.bulk_data?
+  end
+
+  test "source_type enum provides bulk_data? helper method" do
+    bulk_doc = documents(:yonkers_osc_afr_fy2023)
+    pdf_doc = documents(:yonkers_acfr_fy2024)
+    web_doc = documents(:yonkers_census_data_fy2024)
+
+    assert bulk_doc.bulk_data?
+    assert_not bulk_doc.pdf?
+    assert_not bulk_doc.web?
+
+    assert pdf_doc.pdf?
+    assert_not pdf_doc.bulk_data?
+
+    assert web_doc.web?
+    assert_not web_doc.bulk_data?
+  end
+
+  test "bulk_data source_type does not allow file attachment" do
+    doc = documents(:yonkers_osc_afr_fy2023)
+    assert doc.bulk_data?
+
+    doc.file.attach(
+      io: StringIO.new("fake content"),
+      filename: "should_not_attach.pdf",
+      content_type: "application/pdf"
+    )
+
+    assert_not doc.valid?
+    assert_includes doc.errors[:file], "cannot be attached to bulk data sources"
+  end
+
+  test "bulk_data source requires source_url" do
+    doc = Document.new(
+      title: "OSC AFR Data",
+      doc_type: "osc_afr_new",
+      fiscal_year: 2024,
+      entity: entities(:yonkers),
+      source_type: :bulk_data,
+      source_url: nil
+    )
+
+    assert_not doc.valid?
+    assert_includes doc.errors[:source_url], "can't be blank"
+  end
+
+  test "Document.bulk_data scope returns only bulk_data source_type documents" do
+    bulk_docs = Document.bulk_data
+
+    assert bulk_docs.any?, "Should have at least one bulk_data document from fixtures"
+    assert_includes bulk_docs, documents(:yonkers_osc_afr_fy2023)
+    assert_includes bulk_docs, documents(:new_rochelle_osc_afr_fy2023)
+
+    bulk_docs.each do |doc|
+      assert doc.bulk_data?, "Expected #{doc.title} to be bulk_data source_type"
+    end
+  end
+
+  test "for_entity includes bulk_data documents" do
+    yonkers = entities(:yonkers)
+    docs = Document.for_entity(yonkers.id)
+
+    # Should include bulk_data documents
+    assert_includes docs, documents(:yonkers_osc_afr_fy2023)
+  end
 end

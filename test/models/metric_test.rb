@@ -198,4 +198,151 @@ class MetricTest < ActiveSupport::TestCase
     @metric.display_format = nil
     assert_equal "Some text", @metric.format_value("Some text")
   end
+
+  # ==========================================
+  # DATA_SOURCE ENUM TESTS (OSC Import)
+  # ==========================================
+
+  test "data_source defaults to manual" do
+    metric = Metric.new(key: "test_default", label: "Test", display_format: "integer")
+    assert metric.manual_data_source?
+    assert_equal "manual", metric.data_source
+  end
+
+  test "data_source can be set to osc" do
+    metric = metrics(:police_personal_services)
+    assert metric.osc_data_source?
+    assert_not metric.manual_data_source?
+  end
+
+  test "data_source can be set to census" do
+    metric = metrics(:population)
+    assert metric.census_data_source?
+  end
+
+  test "data_source can be set to rating_agency" do
+    metric = metrics(:bond_rating)
+    assert metric.rating_agency_data_source?
+  end
+
+  test "data_source can be set to derived" do
+    metric = metrics(:police_cost_per_capita)
+    assert metric.derived_data_source?
+  end
+
+  test "data_source rejects invalid values" do
+    @metric.data_source = "invalid_source"
+    assert_not @metric.valid?
+    assert_includes @metric.errors[:data_source], "is not included in the list"
+  end
+
+  test "data_source scopes return correct metrics" do
+    osc_metrics = Metric.osc_data_source
+    census_metrics = Metric.census_data_source
+    manual_metrics = Metric.manual_data_source
+
+    # OSC metrics from fixtures
+    assert_includes osc_metrics, metrics(:police_personal_services)
+    assert_includes osc_metrics, metrics(:police_equipment)
+    assert_includes osc_metrics, metrics(:sanitation_personal_services)
+    assert_includes osc_metrics, metrics(:pfrs_pension)
+
+    # Census metrics from fixtures
+    assert_includes census_metrics, metrics(:population)
+
+    # Manual metrics from fixtures
+    assert_includes manual_metrics, metrics(:one)
+    assert_includes manual_metrics, metrics(:two)
+    assert_includes manual_metrics, metrics(:expenditures)
+
+    # Cross-check: OSC metrics should not be in manual scope
+    assert_not_includes manual_metrics, metrics(:police_personal_services)
+  end
+
+  # ==========================================
+  # ACCOUNT CODE FIELDS TESTS (OSC Import)
+  # ==========================================
+
+  test "OSC metric has account_code set" do
+    metric = metrics(:police_personal_services)
+    assert_equal "A3120.1", metric.account_code
+  end
+
+  test "OSC metric has fund_code set" do
+    metric = metrics(:police_personal_services)
+    assert_equal "A", metric.fund_code
+  end
+
+  test "OSC metric has function_code set" do
+    metric = metrics(:police_personal_services)
+    assert_equal "3120", metric.function_code
+  end
+
+  test "OSC metric has object_code set" do
+    metric = metrics(:police_personal_services)
+    assert_equal "1", metric.object_code
+  end
+
+  test "account code fields are optional" do
+    # Manual metrics don't have account codes
+    metric = metrics(:one)
+    assert_nil metric.account_code
+    assert_nil metric.fund_code
+    assert_nil metric.function_code
+    assert_nil metric.object_code
+    assert metric.valid?
+  end
+
+  test "can create OSC metric with full account code breakdown" do
+    metric = Metric.new(
+      key: "A5110.1",
+      label: "Street Maintenance - Personal Services",
+      data_source: :osc,
+      account_code: "A5110.1",
+      fund_code: "A",
+      function_code: "5110",
+      object_code: "1",
+      value_type: :numeric,
+      display_format: "currency",
+      description: "Road maintenance salaries and wages"
+    )
+
+    assert metric.valid?
+    assert metric.osc_data_source?
+    assert_equal "A5110.1", metric.account_code
+    assert_equal "A", metric.fund_code
+    assert_equal "5110", metric.function_code
+    assert_equal "1", metric.object_code
+  end
+
+  test "can query metrics by fund_code" do
+    general_fund_metrics = Metric.where(fund_code: "A")
+
+    assert general_fund_metrics.any?, "Should have metrics with fund_code A"
+    assert_includes general_fund_metrics, metrics(:police_personal_services)
+    assert_includes general_fund_metrics, metrics(:sanitation_personal_services)
+
+    general_fund_metrics.each do |m|
+      assert_equal "A", m.fund_code
+    end
+  end
+
+  test "can query metrics by function_code for public safety" do
+    # 3xxx codes are public safety
+    police_metrics = Metric.where(function_code: "3120")
+
+    assert_includes police_metrics, metrics(:police_personal_services)
+    assert_includes police_metrics, metrics(:police_equipment)
+    assert_not_includes police_metrics, metrics(:sanitation_personal_services)
+  end
+
+  test "different object codes distinguish expense types" do
+    # .1 = Personal Services, .2 = Equipment
+    personal_services = metrics(:police_personal_services)
+    equipment = metrics(:police_equipment)
+
+    assert_equal "1", personal_services.object_code
+    assert_equal "2", equipment.object_code
+    assert_equal personal_services.function_code, equipment.function_code # Same function (3120)
+  end
 end

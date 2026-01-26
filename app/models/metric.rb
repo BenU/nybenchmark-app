@@ -7,6 +7,16 @@ class Metric < ApplicationRecord
   # -- Enums --
   enum :value_type, { numeric: 0, text: 1 }, default: :numeric, validate: true
 
+  enum :data_source, {
+    manual: 0,          # Manually entered
+    osc: 1,             # NYS Comptroller AFR data (non-NYC, and NYC pre-2011)
+    census: 2,          # US Census Bureau (population, income, poverty)
+    dcjs: 3,            # NYS Division of Criminal Justice Services (crime stats)
+    rating_agency: 4,   # Bond ratings (Moody's, S&P, Fitch)
+    derived: 5,         # Calculated from other metrics (per capita, ratios)
+    nyc_checkbook: 6    # NYC Checkbook data (NYC 2011+)
+  }, default: :manual, validate: true, suffix: :data_source
+
   # -- Constants --
   VALID_DISPLAY_FORMATS = %w[currency currency_rounded percentage integer decimal fte rate].freeze
 
