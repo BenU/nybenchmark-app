@@ -245,4 +245,58 @@ class ObservationTest < ActiveSupport::TestCase
     assert_equal original_pdf_page, obs.reload.pdf_page,
                  "pdf_page should be preserved when switching between PDF documents"
   end
+
+  # --- 9. Bulk Data Document Source Type Handling ---
+
+  test "page_reference is optional for bulk_data documents" do
+    obs = observations(:yonkers_police_salaries_osc)
+    assert obs.document.bulk_data?
+
+    obs.page_reference = nil
+    assert obs.valid?, "page_reference should be optional for bulk_data documents"
+  end
+
+  test "bulk_data observation is valid without page_reference" do
+    obs = observations(:yonkers_police_salaries_osc)
+    assert obs.document.bulk_data?
+    assert_nil obs.page_reference
+    assert obs.valid?
+  end
+
+  test "bulk_data observation is valid with optional page_reference" do
+    obs = observations(:yonkers_police_salaries_osc)
+    assert obs.document.bulk_data?
+
+    # Can optionally specify a reference (e.g., account code or row number)
+    obs.page_reference = "Account A3120.1"
+    assert obs.valid?, "page_reference can optionally be set for bulk_data documents"
+  end
+
+  test "clears pdf_page when document changes to bulk_data source" do
+    obs = observations(:yonkers_expenditures_numeric)
+    assert obs.document.pdf?
+    assert_equal 45, obs.pdf_page
+
+    # Change to a bulk_data document
+    bulk_doc = documents(:yonkers_osc_afr_fy2023)
+    assert bulk_doc.bulk_data?
+
+    obs.document = bulk_doc
+    obs.metric = metrics(:police_personal_services) # Use OSC metric
+    obs.page_reference = nil # Now optional
+    obs.save!
+
+    assert_nil obs.reload.pdf_page, "pdf_page should be cleared when switching to bulk_data document"
+  end
+
+  test "OSC observation fixtures are valid" do
+    assert observations(:yonkers_police_salaries_osc).valid?
+    assert observations(:new_rochelle_sanitation_osc).valid?
+  end
+
+  test "OSC observations link to OSC metrics" do
+    obs = observations(:yonkers_police_salaries_osc)
+    assert obs.metric.osc_data_source?
+    assert_equal "A3120.1", obs.metric.account_code
+  end
 end

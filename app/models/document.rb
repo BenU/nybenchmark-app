@@ -7,7 +7,7 @@ class Document < ApplicationRecord
   has_one_attached :file
 
   # -- Enums --
-  enum :source_type, { pdf: 0, web: 1 }, default: :pdf, validate: true
+  enum :source_type, { pdf: 0, web: 1, bulk_data: 2 }, default: :pdf, validate: true
 
   validates :title, :doc_type, :fiscal_year, :source_url, presence: true
 
@@ -52,7 +52,7 @@ class Document < ApplicationRecord
   # Custom Security Validations
   validate :correct_file_type
   validate :correct_file_size
-  validate :web_source_cannot_have_file
+  validate :non_pdf_source_cannot_have_file
 
   private
 
@@ -68,10 +68,14 @@ class Document < ApplicationRecord
     errors.add(:file, "must be under 20MB")
   end
 
-  def web_source_cannot_have_file
-    return unless web? && file.attached?
+  def non_pdf_source_cannot_have_file
+    return unless file.attached?
 
-    errors.add(:file, "cannot be attached to web sources")
+    if web?
+      errors.add(:file, "cannot be attached to web sources")
+    elsif bulk_data?
+      errors.add(:file, "cannot be attached to bulk data sources")
+    end
   end
 
   def source_url_must_be_valid_http

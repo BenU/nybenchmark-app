@@ -5,6 +5,7 @@ one:
   description: A generic metric for testing.
   value_type: 0
   display_format: currency
+  data_source: 0  # manual
 
 two:
   key: metric_two
@@ -13,6 +14,7 @@ two:
   description: Another generic metric.
   value_type: 0
   display_format: integer
+  data_source: 0  # manual
 
 expenditures:
   key: total_expenditures
@@ -21,6 +23,7 @@ expenditures:
   description: Total spending from the general fund.
   value_type: 0
   display_format: currency
+  data_source: 0  # manual
 
 revenue:
   key: total_revenue
@@ -29,6 +32,7 @@ revenue:
   description: Total revenue collected into the general fund.
   value_type: 0
   display_format: currency
+  data_source: 0  # manual
 
 bond_rating:
   key: bond_credit_rating
@@ -37,3 +41,78 @@ bond_rating:
   description: Credit rating from rating agencies (e.g., Aa1, AA+).
   value_type: 1
   display_format: ~
+  data_source: 4  # rating_agency
+
+# OSC Comptroller metrics with account codes
+police_personal_services:
+  key: A3120.1
+  label: Police - Personal Services
+  unit: USD
+  description: Police department salaries and wages
+  value_type: 0  # numeric
+  display_format: currency
+  data_source: 1  # osc
+  account_code: A3120.1
+  fund_code: A
+  function_code: "3120"
+  object_code: "1"
+
+police_equipment:
+  key: A3120.2
+  label: Police - Equipment
+  unit: USD
+  description: Police department equipment and capital purchases
+  value_type: 0  # numeric
+  display_format: currency
+  data_source: 1  # osc
+  account_code: A3120.2
+  fund_code: A
+  function_code: "3120"
+  object_code: "2"
+
+sanitation_personal_services:
+  key: A8160.1
+  label: Refuse & Garbage - Personal Services
+  unit: USD
+  description: Sanitation department salaries and wages
+  value_type: 0  # numeric
+  display_format: currency
+  data_source: 1  # osc
+  account_code: A8160.1
+  fund_code: A
+  function_code: "8160"
+  object_code: "1"
+
+pfrs_pension:
+  key: A9015.8
+  label: Police & Fire Retirement (PFRS)
+  unit: USD
+  description: Employer contributions to Police and Fire Retirement System
+  value_type: 0  # numeric
+  display_format: currency
+  data_source: 1  # osc
+  account_code: A9015.8
+  fund_code: A
+  function_code: "9015"
+  object_code: "8"
+
+# Census data metric
+population:
+  key: population_2020
+  label: Population (2020 Census)
+  unit: Count
+  description: Total population count from the 2020 Decennial Census
+  value_type: 0  # numeric
+  display_format: integer
+  data_source: 2  # census
+
+# Derived metric example
+police_cost_per_capita:
+  key: police_cost_per_capita
+  label: Police Cost Per Capita
+  unit: USD
+  description: Total police cost divided by population
+  value_type: 0  # numeric
+  display_format: currency
+  data_source: 5  # derived
+  formula: "(A3120.1 + A3120.2 + A9015.8) / population_2020"
