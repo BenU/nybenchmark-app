@@ -109,9 +109,11 @@ class ObservationsController < ApplicationController
   end
 
   def load_filter_options
-    @entities_for_filter = Entity.joins(:observations).distinct.order(:name)
-    @metrics_for_filter = Metric.joins(:observations).distinct.order(:label)
-    @documents_for_filter = Document.joins(:observations).distinct.order(fiscal_year: :desc, title: :asc)
+    # Avoid expensive JOINs against 600K+ observations table.
+    # Show all options; filtering still works (empty results if no match).
+    @entities_for_filter = Entity.order(:name)
+    @metrics_for_filter = Metric.order(:label)
+    @documents_for_filter = Document.order(fiscal_year: :desc, title: :asc)
   end
 
   def filter_documents

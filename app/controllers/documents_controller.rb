@@ -66,7 +66,8 @@ class DocumentsController < ApplicationController
   def load_filter_options
     @doc_types = Document.distinct.pluck(:doc_type).compact.sort
     @fiscal_years = Document.distinct.pluck(:fiscal_year).compact.sort.reverse
-    @entities_for_filter = Entity.joins(:documents).distinct.order(:name)
+    # Avoid JOIN; show all entities in filter dropdown
+    @entities_for_filter = Entity.order(:name)
   end
 
   def load_doc_type_suggestions
