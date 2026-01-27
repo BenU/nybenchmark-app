@@ -102,5 +102,8 @@ Rails.application.configure do
     Bullet.console = true        # Browser console warnings
     Bullet.rails_logger = true   # Rails log warnings
     Bullet.add_footer = true     # Add warnings to page footer
+
+    # False positive: parent IS used in index view, but not all entities have parents
+    Bullet.add_safelist type: :unused_eager_loading, class_name: "Entity", association: :parent
   end
 end
