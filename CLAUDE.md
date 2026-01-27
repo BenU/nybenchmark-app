@@ -110,13 +110,19 @@ Avoid inline `style=` attributes; use CSS classes.
 - [x] Deployed to production
 
 **TODO:**
+- [ ] Performance audit: apply subquery pattern to documents/observations/metrics index pages
+- [ ] Run `osc:import` in production (currently only local has 650K observations)
 - [ ] Import NYC data from Checkbook NYC (separate data source, all years)
-- [x] Add late filers to entity_mapping.yml "cities" section (Mount Vernon, Ithaca, Rensselaer, Fulton have historical data)
-- [ ] Update Entity index/show views for new attributes (`osc_municipal_code`)
-- [ ] Update Metric index/show views for OSC fields (`account_code`, `fund_code`, `function_code`, `object_code`, `data_source`)
-- [ ] Update Document index/show views for `source_type` display
-- [x] Update Entity `_form` to exclude `icma_recognition_year` (seeded data, not user-editable)
-- [x] Display ICMA recognition nicely on Entity show (e.g., "ICMA-recognized since 1932" or "—" if nil)
+
+**Completed (view updates):**
+- [x] Add late filers to entity_mapping.yml "cities" section (Mount Vernon, Ithaca, Rensselaer, Fulton)
+- [x] Entity show: display OSC municipal code when present
+- [x] Entity form: exclude `icma_recognition_year` and `osc_municipal_code` (seeded data)
+- [x] Entity show: display ICMA recognition nicely ("ICMA-recognized since 1932" or "—")
+- [x] Metric show/index: display data source and account code for OSC metrics
+- [x] Metric form: add data source dropdown and account code field
+- [x] Metric index: add data_source filter
+- [x] Document index: add Source column with badge styling
 
 **Key findings:**
 - NYC is **never** in OSC system (has own Comptroller, uses Checkbook NYC)
@@ -132,3 +138,17 @@ Avoid inline `style=` attributes; use CSS classes.
 - `osc:update_municipal_codes` - Populate entity OSC codes from mapping
 
 **Account code format:** `A31201` (no dots) - fund + function + object concatenated
+
+## Performance Notes
+
+**Entity index query optimization:** With 650K observations, avoid `left_joins` with `COUNT(DISTINCT)`. Use correlated subqueries instead:
+
+```ruby
+# SLOW (15s) - joins all observations then groups
+Entity.left_joins(:observations).select("COUNT(DISTINCT observations.id)").group("entities.id")
+
+# FAST (0.04s) - uses entity_id index efficiently
+Entity.select("(SELECT COUNT(*) FROM observations WHERE entity_id = entities.id) AS observations_count")
+```
+
+**Indexes in place:** `observations.entity_id`, `documents.entity_id` - critical for subquery performance.
