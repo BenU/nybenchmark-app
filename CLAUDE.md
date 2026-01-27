@@ -109,9 +109,26 @@ Avoid inline `style=` attributes; use CSS classes.
 - [x] Tested locally: 647,630 observations imported (31 years, 57 cities)
 - [x] Deployed to production
 
-**TODO:**
-- [ ] Import NYC data from Checkbook NYC (separate data source, all years)
-- [ ] Build per capita metrics (police cost per capita, fire, sanitation, etc.) for benchmarking comparisons
+**Completed (metric categories):**
+- [x] Added `level_1_category` and `level_2_category` columns to metrics
+- [x] Created `osc:backfill_categories` rake task to populate from CSV
+- [x] Updated OSC import to set categories for future imports
+- [x] Added Category column and filter to metrics index
+- [x] Added Category/Subcategory display to metrics show page
+
+**Completed (performance):**
+- [x] Fixed observations index filter performance (removed expensive JOINs)
+- [x] Fixed documents index filter performance
+- [x] Added Bullet safelist for Entity parent eager loading
+- [x] Auto-remove stale PID file on container start
+
+**TODO (prioritized):**
+1. [ ] Entity dashboard with trends (sparklines, "Total Debt Service over time")
+2. [ ] Derived/comparison metrics (FTEs per capita, police cost per capita)
+3. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool)
+4. [ ] Import NYC data from Checkbook NYC (separate data source, all years)
+5. [ ] Import towns, villages, counties from OSC
+6. [ ] Normalize metric labels (titleize casing inconsistencies)
 
 **Completed (view updates):**
 - [x] Add late filers to entity_mapping.yml "cities" section (Mount Vernon, Ithaca, Rensselaer, Fulton)
@@ -137,6 +154,28 @@ Avoid inline `style=` attributes; use CSS classes.
 - `osc:update_municipal_codes` - Populate entity OSC codes from mapping
 
 **Account code format:** `A31201` (no dots) - fund + function + object concatenated
+
+## Metric Categories (OSC)
+
+OSC provides a two-level category hierarchy for revenue and expenditure metrics:
+
+- `level_1_category`: Broad category (Public Safety, Debt Service, Employee Benefits, etc.)
+- `level_2_category`: Specific function (Police, Fire, Interest On Debt, etc.)
+
+**Note:** Balance sheet items (GL section) don't have categories - this is expected.
+
+**Example aggregation query:**
+```ruby
+# Total Debt Service for Yonkers in 2024
+Observation.joins(:metric)
+           .where(entity: yonkers, fiscal_year: 2024)
+           .where(metrics: { level_1_category: "Debt Service" })
+           .sum(:value_numeric)
+# => $4,522,187
+```
+
+**Rake tasks:**
+- `osc:backfill_categories` - Populate categories for existing metrics from CSV files
 
 ## Performance Notes
 
