@@ -46,10 +46,21 @@
           <% end %>
 
           <dt>ICMA Recognition</dt>
-          <dd><%= @entity.icma_recognition_year || content_tag(:em, "Not specified", class: "needs-research") %></dd>
+          <dd>
+            <% if @entity.icma_recognition_year.present? %>
+              ICMA-recognized since <%= @entity.icma_recognition_year %>
+            <% else %>
+              —
+            <% end %>
+          </dd>
 
           <dt>Notes</dt>
           <dd><%= @entity.organization_note.presence || content_tag(:em, "None", class: "muted") %></dd>
+
+          <% if @entity.osc_municipal_code.present? %>
+            <dt>OSC Code</dt>
+            <dd><code><%= @entity.osc_municipal_code %></code></dd>
+          <% end %>
         </dl>
         <% if @entity.government_structure.blank? && !@entity.school_district_kind? && user_signed_in? %>
           <p><%= link_to "Add details", edit_entity_path(@entity), class: "outline" %></p>

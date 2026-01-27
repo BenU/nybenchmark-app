@@ -41,6 +41,19 @@
       <% end %>
     </div>
 
+    <div class="grid">
+      <div>
+        <strong>Source:</strong> <%= @metric.data_source.humanize %>
+      </div>
+      <% if @metric.osc_data_source? && @metric.account_code.present? %>
+        <div>
+          <strong>Account Code:</strong> <code><%= @metric.account_code %></code>
+        </div>
+      <% else %>
+        <div></div>
+      <% end %>
+    </div>
+
     <% if @metric.formula.present? %>
       <div>
         <strong>Formula:</strong> <code><%= @metric.formula %></code>

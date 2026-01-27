@@ -44,10 +44,10 @@ class MetricsController < ApplicationController
   end
 
   def metric_params
-    params.expect(metric: %i[key label unit description value_type display_format formula])
+    params.expect(metric: %i[key label unit description value_type display_format formula data_source account_code])
   end
 
   def filter_params
-    params.permit(:value_type).compact_blank
+    params.permit(:value_type, :data_source).compact_blank
   end
 end

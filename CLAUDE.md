@@ -105,12 +105,18 @@ Avoid inline `style=` attributes; use CSS classes.
 - [x] Documented data quality issues (see `db/seeds/osc_data/DATA_QUALITY.md`)
 - [x] Filing status schema decision: **Option C** - derive from observations (no filing status table)
 - [x] Schema migrations: added `osc_municipal_code` to entities
+- [x] Built `osc:import` rake task
+- [x] Tested locally: 647,630 observations imported (31 years, 57 cities)
+- [x] Deployed to production
 
-**Next steps:**
-1. Build and test `osc:import` rake task locally
-2. Verify local database populated correctly
-3. Deploy schema migration to production
-4. Run import in production
+**TODO:**
+- [ ] Import NYC data from Checkbook NYC (separate data source, all years)
+- [x] Add late filers to entity_mapping.yml "cities" section (Mount Vernon, Ithaca, Rensselaer, Fulton have historical data)
+- [ ] Update Entity index/show views for new attributes (`osc_municipal_code`)
+- [ ] Update Metric index/show views for OSC fields (`account_code`, `fund_code`, `function_code`, `object_code`, `data_source`)
+- [ ] Update Document index/show views for `source_type` display
+- [x] Update Entity `_form` to exclude `icma_recognition_year` (seeded data, not user-editable)
+- [x] Display ICMA recognition nicely on Entity show (e.g., "ICMA-recognized since 1932" or "—" if nil)
 
 **Key findings:**
 - NYC is **never** in OSC system (has own Comptroller, uses Checkbook NYC)
@@ -121,5 +127,8 @@ Avoid inline `style=` attributes; use CSS classes.
 **Rake tasks available:**
 - `data:counts` - Check current stats (non-destructive)
 - `data:reset_for_osc` - Clear metrics/observations before import
+- `osc:import` - Import all OSC data (1995-2024)
+- `osc:import_year[YEAR]` - Import single year
+- `osc:update_municipal_codes` - Populate entity OSC codes from mapping
 
 **Account code format:** `A31201` (no dots) - fund + function + object concatenated

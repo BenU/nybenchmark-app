@@ -63,12 +63,6 @@
   </div>
 
   <div>
-    <%= form.label :icma_recognition_year, "ICMA Recognition Year", style: "display: block" %>
-    <%= form.number_field :icma_recognition_year, min: 1900, max: Date.current.year %>
-    <small>Year the entity was recognized by ICMA (International City/County Management Association)</small>
-  </div>
-
-  <div>
     <%= form.label :organization_note, style: "display: block" %>
     <%= form.text_area :organization_note, rows: 3, placeholder: "Additional governance notes..." %>
   </div>

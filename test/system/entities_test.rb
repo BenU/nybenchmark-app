@@ -165,30 +165,30 @@ class EntitiesTest < ApplicationSystemTestCase
     assert_selector "label", text: "Organization note"
   end
 
-  test "entity form includes icma_recognition_year field" do
+  test "entity form does NOT include icma_recognition_year field (seeded data)" do
     visit entities_url
     click_on "New Entity"
 
-    assert_selector "input[name='entity[icma_recognition_year]']"
-    assert_selector "label", text: "ICMA Recognition Year"
+    # ICMA recognition is seeded data, not user-editable
+    assert_no_selector "input[name='entity[icma_recognition_year]']"
+    assert_no_selector "label", text: "ICMA Recognition Year"
   end
 
-  test "creating an entity with organization_note and icma_recognition_year" do
+  test "creating an entity with organization_note" do
     visit entities_url
     click_on "New Entity"
 
-    fill_in "Name", with: "Test ICMA City"
-    fill_in "Slug", with: "test-icma-city"
+    fill_in "Name", with: "Test CM City"
+    fill_in "Slug", with: "test-cm-city"
     select "City", from: "Kind"
     select "NY", from: "State"
     select "Council Manager", from: "Government structure"
-    fill_in "ICMA Recognition Year", with: "1950"
-    fill_in "Organization note", with: "Council-manager form since 1950"
+    fill_in "Organization note", with: "Council-manager form"
 
     click_on "Create Entity"
 
     assert_text "Entity was successfully created"
-    assert_text "Test ICMA City"
+    assert_text "Test CM City"
   end
 
   test "entity show displays organization_note when present" do
@@ -200,15 +200,52 @@ class EntitiesTest < ApplicationSystemTestCase
     assert_text "Council President + 6 District Representatives"
   end
 
-  test "entity show displays icma_recognition_year when present" do
+  test "entity show displays ICMA recognition nicely when present" do
     # Update New Rochelle to have ICMA recognition year
     nr = entities(:new_rochelle)
     nr.update!(icma_recognition_year: 1932)
 
     visit entity_url(nr)
 
-    assert_text "ICMA Recognition"
-    assert_text "1932"
+    # Should show formatted ICMA recognition, not just the year
+    assert_text "ICMA-recognized since 1932"
+  end
+
+  test "entity show displays dash for ICMA recognition when nil" do
+    # Albany has no ICMA recognition year
+    albany = entities(:albany)
+    visit entity_url(albany)
+
+    # Should show "—" not "Not specified" (since it's not missing data, just not applicable)
+    within("dl") do
+      assert_text "—"
+    end
+  end
+
+  test "entity show displays OSC municipal code when present" do
+    yonkers = entities(:yonkers)
+    visit entity_url(yonkers)
+
+    # Yonkers fixture has osc_municipal_code set
+    assert_text "OSC Code"
+    assert_text "550262000000"
+  end
+
+  test "entity show does not display OSC code section when nil" do
+    # Create an entity without OSC code
+    entity = Entity.create!(name: "Test Entity", kind: "city", state: "NY", slug: "test-entity")
+    visit entity_url(entity)
+
+    assert_no_text "OSC Code"
+  end
+
+  test "entity form does NOT include osc_municipal_code field (seeded data)" do
+    visit entities_url
+    click_on "New Entity"
+
+    # OSC municipal code is seeded data, not user-editable
+    assert_no_selector "input[name='entity[osc_municipal_code]']"
+    assert_no_selector "label", text: "Osc municipal code"
   end
 
   # ==========================================
