@@ -115,8 +115,8 @@ Avoid inline `style=` attributes; use CSS classes.
 - [ ] Update Entity index/show views for new attributes (`osc_municipal_code`)
 - [ ] Update Metric index/show views for OSC fields (`account_code`, `fund_code`, `function_code`, `object_code`, `data_source`)
 - [ ] Update Document index/show views for `source_type` display
-- [ ] Update Entity `_form` to exclude `icma_recognition_year` (seeded data, not user-editable)
-- [ ] Display ICMA recognition nicely on Entity show (e.g., "ICMA-recognized since 1932" or "—" if nil)
+- [x] Update Entity `_form` to exclude `icma_recognition_year` (seeded data, not user-editable)
+- [x] Display ICMA recognition nicely on Entity show (e.g., "ICMA-recognized since 1932" or "—" if nil)
 
 **Key findings:**
 - NYC is **never** in OSC system (has own Comptroller, uses Checkbook NYC)

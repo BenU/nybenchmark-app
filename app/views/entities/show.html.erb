@@ -46,7 +46,13 @@
           <% end %>
 
           <dt>ICMA Recognition</dt>
-          <dd><%= @entity.icma_recognition_year || content_tag(:em, "Not specified", class: "needs-research") %></dd>
+          <dd>
+            <% if @entity.icma_recognition_year.present? %>
+              ICMA-recognized since <%= @entity.icma_recognition_year %>
+            <% else %>
+              —
+            <% end %>
+          </dd>
 
           <dt>Notes</dt>
           <dd><%= @entity.organization_note.presence || content_tag(:em, "None", class: "muted") %></dd>
