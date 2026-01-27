@@ -345,4 +345,53 @@ class MetricTest < ActiveSupport::TestCase
     assert_equal "2", equipment.object_code
     assert_equal personal_services.function_code, equipment.function_code # Same function (3120)
   end
+
+  # ==========================================
+  # OSC CATEGORY FIELDS TESTS
+  # ==========================================
+
+  test "OSC metric has level_1_category set" do
+    metric = metrics(:police_personal_services)
+    assert_equal "Public Safety", metric.level_1_category
+  end
+
+  test "OSC metric has level_2_category set" do
+    metric = metrics(:police_personal_services)
+    assert_equal "Police", metric.level_2_category
+  end
+
+  test "category fields are optional" do
+    # Manual metrics don't have categories
+    metric = metrics(:one)
+    assert_nil metric.level_1_category
+    assert_nil metric.level_2_category
+    assert metric.valid?
+  end
+
+  test "can query metrics by level_1_category" do
+    public_safety_metrics = Metric.where(level_1_category: "Public Safety")
+
+    assert public_safety_metrics.any?, "Should have metrics with Public Safety category"
+    assert_includes public_safety_metrics, metrics(:police_personal_services)
+    assert_includes public_safety_metrics, metrics(:police_equipment)
+    assert_not_includes public_safety_metrics, metrics(:sanitation_personal_services)
+  end
+
+  test "can query metrics by level_2_category" do
+    police_metrics = Metric.where(level_2_category: "Police")
+
+    assert_includes police_metrics, metrics(:police_personal_services)
+    assert_includes police_metrics, metrics(:police_equipment)
+    assert_not_includes police_metrics, metrics(:sanitation_personal_services)
+  end
+
+  test "same level_1_category groups different expense types" do
+    # Both police metrics share level_1_category but have different object codes
+    personal_services = metrics(:police_personal_services)
+    equipment = metrics(:police_equipment)
+
+    assert_equal personal_services.level_1_category, equipment.level_1_category
+    assert_equal personal_services.level_2_category, equipment.level_2_category
+    assert_not_equal personal_services.object_code, equipment.object_code
+  end
 end
