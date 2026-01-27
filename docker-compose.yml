@@ -37,7 +37,7 @@ services:
     volumes:
       - .:/rails
       - bundle_cache:/usr/local/bundle
-    command: sh -c "bundle check || bundle install && bin/rails server -b 0.0.0.0 -p 3000"
+    command: sh -c "rm -f tmp/pids/server.pid && bundle check || bundle install && bin/rails server -b 0.0.0.0 -p 3000"
     env_file:
       - .env
 
