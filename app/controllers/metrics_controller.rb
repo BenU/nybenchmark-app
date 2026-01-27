@@ -9,6 +9,7 @@ class MetricsController < ApplicationController
   def index
     scope = Metric.where(filter_params).sorted_by(params[:sort], params[:direction])
     @pagy, @metrics = pagy(:offset, scope, limit: 25)
+    @categories_for_filter = Metric.where.not(level_1_category: nil).distinct.pluck(:level_1_category).sort
   end
 
   def show; end
@@ -48,6 +49,6 @@ class MetricsController < ApplicationController
   end
 
   def filter_params
-    params.permit(:value_type, :data_source).compact_blank
+    params.permit(:value_type, :data_source, :level_1_category).compact_blank
   end
 end

@@ -54,6 +54,21 @@
       <% end %>
     </div>
 
+    <% if @metric.level_1_category.present? %>
+      <div class="grid">
+        <div>
+          <strong>Category:</strong> <%= @metric.level_1_category %>
+        </div>
+        <% if @metric.level_2_category.present? %>
+          <div>
+            <strong>Subcategory:</strong> <%= @metric.level_2_category %>
+          </div>
+        <% else %>
+          <div></div>
+        <% end %>
+      </div>
+    <% end %>
+
     <% if @metric.formula.present? %>
       <div>
         <strong>Formula:</strong> <code><%= @metric.formula %></code>

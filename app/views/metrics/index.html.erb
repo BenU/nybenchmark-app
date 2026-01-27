@@ -27,6 +27,13 @@
                 prompt: "All Sources" %>
         </label>
 
+        <label>
+          Category
+          <%= select_tag :level_1_category,
+                options_for_select(@categories_for_filter, params[:level_1_category]),
+                prompt: "All Categories" %>
+        </label>
+
         <div class="button-group">
           <%= link_to "Clear", metrics_path, role: "button", class: "secondary outline" %>
           <%= submit_tag "Apply", name: nil %>
@@ -59,6 +66,7 @@
           </th>
           <th scope="col">Unit</th>
           <th scope="col">Source</th>
+          <th scope="col">Category</th>
           <th scope="col">Description</th>
         </tr>
       </thead>
@@ -71,6 +79,7 @@
             <td><%= metric.value_type.humanize %></td>
             <td><%= metric.unit %></td>
             <td><%= metric.data_source.humanize %></td>
+            <td><%= metric.level_1_category || "—" %></td>
             <td><%= metric.description %></td>
           </tr>
         <% end %>
