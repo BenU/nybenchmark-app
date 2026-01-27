@@ -97,6 +97,45 @@
         </ul>
       </article>
     <% end %>
+
+  <% if @category_trends.present? %>
+    <hr />
+    <section id="financial-trends">
+      <hgroup>
+        <h2>Financial Trends</h2>
+        <p>Revenue and expenditures by category<% if @fiscal_year_range&.first %> (<%= @fiscal_year_range.first %>-<%= @fiscal_year_range.last %>)<% end %></p>
+      </hgroup>
+
+      <div class="trends-grid">
+        <% @category_trends.each do |category, info| %>
+          <%
+            # Color based on account_type: green=revenue, red=expenditure, blue=balance_sheet
+            chart_color = case info[:account_type]
+                          when "revenue" then "#16a34a"  # green
+                          when "expenditure" then "#dc2626"  # red
+                          else "#2563eb"  # balance_sheet or unknown - blue
+                          end
+            card_class = case info[:account_type]
+                         when "revenue" then "trend-card trend-card--revenue"
+                         when "expenditure" then "trend-card trend-card--expenditure"
+                         else "trend-card"
+                         end
+          %>
+          <article class="<%= card_class %>">
+            <header>
+              <strong><%= category %></strong>
+              <span class="trend-latest"><%= number_to_currency(info[:data].values.last, precision: 0) if info[:data].values.last %></span>
+            </header>
+            <%= area_chart info[:data],
+                           library: { scales: { x: { display: false }, y: { display: false } },
+                                     plugins: { legend: { display: false } },
+                                     elements: { point: { radius: 0 } } },
+                           height: "80px", colors: [chart_color] %>
+          </article>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
   <hr />
 
   <div class="grid">

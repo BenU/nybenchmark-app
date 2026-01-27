@@ -394,4 +394,64 @@ class MetricTest < ActiveSupport::TestCase
     assert_equal personal_services.level_2_category, equipment.level_2_category
     assert_not_equal personal_services.object_code, equipment.object_code
   end
+
+  # ==========================================
+  # ACCOUNT_TYPE ENUM TESTS
+  # ==========================================
+
+  test "account_type can be nil" do
+    # Manual metrics don't have account_type
+    metric = metrics(:one)
+    assert_nil metric.account_type
+    assert metric.valid?
+  end
+
+  test "account_type can be set to revenue" do
+    @metric.account_type = :revenue
+    assert @metric.revenue_account?
+    assert_equal "revenue", @metric.account_type
+    assert @metric.valid?
+  end
+
+  test "account_type can be set to expenditure" do
+    @metric.account_type = :expenditure
+    assert @metric.expenditure_account?
+    assert_equal "expenditure", @metric.account_type
+    assert @metric.valid?
+  end
+
+  test "account_type can be set to balance_sheet" do
+    @metric.account_type = :balance_sheet
+    assert @metric.balance_sheet_account?
+    assert_equal "balance_sheet", @metric.account_type
+    assert @metric.valid?
+  end
+
+  test "account_type rejects invalid values" do
+    @metric.account_type = "invalid_type"
+    assert_not @metric.valid?
+    assert_includes @metric.errors[:account_type], "is not included in the list"
+  end
+
+  test "account_type scopes return correct metrics" do
+    # Create test metrics with different account types
+    revenue_metric = Metric.create!(
+      key: "test_revenue",
+      label: "Test Revenue",
+      account_type: :revenue,
+      display_format: "currency"
+    )
+    expenditure_metric = Metric.create!(
+      key: "test_expenditure",
+      label: "Test Expenditure",
+      account_type: :expenditure,
+      display_format: "currency"
+    )
+
+    assert_includes Metric.revenue_account, revenue_metric
+    assert_not_includes Metric.expenditure_account, revenue_metric
+
+    assert_includes Metric.expenditure_account, expenditure_metric
+    assert_not_includes Metric.revenue_account, expenditure_metric
+  end
 end

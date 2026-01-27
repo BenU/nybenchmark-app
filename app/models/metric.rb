@@ -17,6 +17,13 @@ class Metric < ApplicationRecord
     nyc_checkbook: 6    # NYC Checkbook data (NYC 2011+)
   }, default: :manual, validate: true, suffix: :data_source
 
+  # Account type from OSC ACCOUNT_CODE_SECTION (which financial statement section)
+  enum :account_type, {
+    revenue: 0,         # Income sources (taxes, fees, aid)
+    expenditure: 1,     # Spending (salaries, equipment, services)
+    balance_sheet: 2    # Assets, liabilities, fund balance
+  }, validate: { allow_nil: true }, suffix: :account
+
   # -- Constants --
   VALID_DISPLAY_FORMATS = %w[currency currency_rounded percentage integer decimal fte rate].freeze
 

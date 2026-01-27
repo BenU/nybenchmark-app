@@ -58,3 +58,22 @@ new_rochelle_osc_afr_fy2023:
   source_type: 2  # bulk_data
   source_url: https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm
   notes: "Bulk imported from NYS Comptroller"
+
+# Multi-year documents for trend testing
+yonkers_osc_afr_fy2022:
+  entity: yonkers
+  title: "OSC Annual Financial Report 2022"
+  doc_type: osc_afr
+  fiscal_year: 2022
+  source_type: 2  # bulk_data
+  source_url: https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm
+  notes: "Bulk imported from NYS Comptroller"
+
+yonkers_osc_afr_fy2021:
+  entity: yonkers
+  title: "OSC Annual Financial Report 2021"
+  doc_type: osc_afr
+  fiscal_year: 2021
+  source_type: 2  # bulk_data
+  source_url: https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm
+  notes: "Bulk imported from NYS Comptroller"

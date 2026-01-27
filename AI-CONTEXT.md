@@ -296,6 +296,38 @@ When in doubt, ask.
 - Fiscal parent relationships (`parent_id`) reflect reporting/budget roll-up only
 - Documents can be inherited by dependent entities from their fiscal parent
 
+### Metric Model (OSC Data Structure)
+
+Metrics represent financial line items from government reports. For OSC-sourced data:
+
+| Attribute | Purpose | Example |
+|-----------|---------|---------|
+| `account_code` | OSC account identifier | `A31201` (Police - Personal Services) |
+| `account_type` | Which financial statement section | `revenue`, `expenditure`, `balance_sheet` |
+| `level_1_category` | Broad classification | "Public Safety", "Debt Service", "State Aid" |
+| `level_2_category` | Specific function/subcategory | "Police", "Fire", "Interest On Debt" |
+| `data_source` | Origin of the metric definition | `osc`, `census`, `manual`, etc. |
+
+**Category hierarchy example:**
+```
+account_type: expenditure
+  level_1_category: Public Safety
+    level_2_category: Police
+      → Police - Personal Services (A31201)
+      → Police - Equipment (A31202)
+      → Police - Contractual (A31204)
+    level_2_category: Fire
+      → Fire - Personal Services (A34101)
+      ...
+```
+
+**account_type values:**
+- `revenue` - Income sources (taxes, fees, state/federal aid)
+- `expenditure` - Spending (salaries, equipment, services, debt payments)
+- `balance_sheet` - Assets, liabilities, fund balance (GL items)
+
+**Data normalization:** Categories are stored in Title Case (e.g., "Public Safety" not "PUBLIC SAFETY"). The `osc:normalize_metrics` rake task handles backfill; the OSC import titleizes on ingest.
+
 ### UI Features
 - All index pages have Pagy pagination (25 items/page)
 - Sortable column headers via `sortable_column_header` helper

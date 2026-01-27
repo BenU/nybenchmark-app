@@ -24,6 +24,116 @@ namespace :osc do
     importer.import(year: args[:year]&.to_i)
   end
 
+  desc "Backfill account_type and normalize category casing from CSV files"
+  task normalize_metrics: :environment do
+    # Helper to normalize section names from different CSV formats
+    normalize_section = lambda do |raw_section|
+      return nil if raw_section.blank?
+
+      case raw_section.upcase
+      when "REVENUE", "STATEMENT OF REVENUES AND OTHER SOURCES"
+        "revenue"
+      when "EXPENDITURE", "STATEMENT OF EXPENDITURES AND OTHER USES"
+        "expenditure"
+      when "GL", "FBNP", "BALANCE SHEET", "CHANGE IN EQUITY"
+        "balance_sheet"
+      end
+    end
+
+    puts "=" * 60
+    puts "Normalizing OSC Metrics"
+    puts "=" * 60
+    puts ""
+
+    csv_dir = Rails.root.join("db/seeds/osc_data/city_all_years")
+    abort "ERROR: CSV directory not found: #{csv_dir}" unless Dir.exist?(csv_dir)
+
+    # Build lookup from account_code -> {section, level_1, level_2}
+    # Process newest files first (they have better column names)
+    puts "Reading CSV files to build account code lookup..."
+    lookup = {}
+    csv_files = Dir.glob(csv_dir.join("*_City.csv")).reverse
+
+    csv_files.each do |file|
+      CSV.foreach(file, headers: true) do |row|
+        account_code = row["ACCOUNT_CODE"]
+        next if account_code.blank?
+        next if lookup.key?(account_code) # Already have this one
+
+        # New files use ACCOUNT_CODE_SECTION, old files use FINANCIAL_STATEMENT
+        raw_section = row["ACCOUNT_CODE_SECTION"] || row["FINANCIAL_STATEMENT"]
+        section = normalize_section.call(raw_section)
+
+        lookup[account_code] = {
+          section: section,
+          cat_one: row["LEVEL_1_CATEGORY"]&.titleize,
+          cat_two: row["LEVEL_2_CATEGORY"]&.titleize
+        }
+      end
+    end
+
+    puts "Found #{lookup.size} unique account codes in CSV files"
+    puts ""
+
+    # Update metrics
+    puts "Updating metrics..."
+    updated = 0
+    not_found = 0
+    already_set = 0
+
+    Metric.where(data_source: :osc).find_each do |metric|
+      data = lookup[metric.account_code]
+
+      unless data
+        puts "  WARNING: No CSV data for account_code: #{metric.account_code}"
+        not_found += 1
+        next
+      end
+
+      changes = {}
+
+      # Set account_type from section (already normalized by lookup)
+      if data[:section].present?
+        section_to_type = { "revenue" => :revenue, "expenditure" => :expenditure, "balance_sheet" => :balance_sheet }
+        account_type = section_to_type[data[:section]]
+        changes[:account_type] = account_type if account_type && metric.account_type != account_type
+      end
+
+      # Normalize level_1_category casing
+      if data[:cat_one].present? && metric.level_1_category != data[:cat_one]
+        changes[:level_1_category] = data[:cat_one]
+      end
+
+      # Normalize level_2_category casing
+      if data[:cat_two].present? && metric.level_2_category != data[:cat_two]
+        changes[:level_2_category] = data[:cat_two]
+      end
+
+      if changes.any?
+        metric.update!(changes)
+        updated += 1
+        puts "  Updated: #{metric.account_code} -> #{changes.keys.join(', ')}"
+      else
+        already_set += 1
+      end
+    end
+
+    puts ""
+    puts "=" * 60
+    puts "SUMMARY"
+    puts "=" * 60
+    puts "Metrics updated:    #{updated}"
+    puts "Already correct:    #{already_set}"
+    puts "Not found in CSV:   #{not_found}"
+    puts ""
+
+    # Show current distribution
+    puts "Account type distribution:"
+    Metric.where(data_source: :osc).group(:account_type).count.each do |type, count|
+      puts "  #{type || 'nil'}: #{count}"
+    end
+  end
+
   desc "Update osc_municipal_code on entities from mapping file"
   task update_municipal_codes: :environment do
     mapping_file = Rails.root.join("db/seeds/osc_data/entity_mapping.yml")
@@ -190,8 +300,9 @@ class OscImporter
       m.value_type = :numeric
       m.display_format = "currency_rounded"
       m.description = build_metric_description(row)
-      m.level_1_category = row["LEVEL_1_CATEGORY"].presence
-      m.level_2_category = row["LEVEL_2_CATEGORY"].presence
+      m.account_type = parse_account_type(row)
+      m.level_1_category = row["LEVEL_1_CATEGORY"]&.titleize
+      m.level_2_category = row["LEVEL_2_CATEGORY"]&.titleize
     end
 
     stats[:metrics_created] += 1 if metric.previously_new_record?
@@ -199,16 +310,31 @@ class OscImporter
     metric
   end
 
+  def parse_account_type(row)
+    # New files use ACCOUNT_CODE_SECTION, old files use FINANCIAL_STATEMENT
+    raw_section = row["ACCOUNT_CODE_SECTION"] || row["FINANCIAL_STATEMENT"]
+    return nil if raw_section.blank?
+
+    case raw_section.upcase
+    when "REVENUE", "STATEMENT OF REVENUES AND OTHER SOURCES"
+      :revenue
+    when "EXPENDITURE", "STATEMENT OF EXPENDITURES AND OTHER USES"
+      :expenditure
+    when "GL", "FBNP", "BALANCE SHEET", "CHANGE IN EQUITY"
+      :balance_sheet
+    end
+  end
+
   def build_metric_label(row)
     # Build label from OSC data: "Level 2 Category - Object"
     # e.g., "Police - Personal Services"
-    level2 = row["LEVEL_2_CATEGORY"]
-    object = row["OBJECT_OF_EXPENDITURE"]
+    level2 = row["LEVEL_2_CATEGORY"]&.titleize
+    object = row["OBJECT_OF_EXPENDITURE"]&.titleize
 
     if object.present? && object != level2
       "#{level2} - #{object}"
     else
-      level2 || row["ACCOUNT_CODE_NARRATIVE"] || row["ACCOUNT_CODE"]
+      level2 || row["ACCOUNT_CODE_NARRATIVE"]&.titleize || row["ACCOUNT_CODE"]
     end
   end
 

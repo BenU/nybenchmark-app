@@ -83,3 +83,53 @@ new_rochelle_sanitation_osc:
   notes: "Bulk imported from OSC"
   verification_status: verified
   pdf_page: ~
+
+# Multi-year observations for trend testing (Public Safety category via police_personal_services)
+yonkers_police_2022:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2022
+  metric: police_personal_services
+  fiscal_year: 2022
+  value_numeric: 118000000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Trend test data"
+  verification_status: verified
+  pdf_page: ~
+
+yonkers_police_2021:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2021
+  metric: police_personal_services
+  fiscal_year: 2021
+  value_numeric: 112000000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Trend test data"
+  verification_status: verified
+  pdf_page: ~
+
+# Multi-year observations for trend testing (Sanitation category)
+yonkers_sanitation_2023:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2023
+  metric: sanitation_personal_services
+  fiscal_year: 2023
+  value_numeric: 15000000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Trend test data"
+  verification_status: verified
+  pdf_page: ~
+
+yonkers_sanitation_2022:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2022
+  metric: sanitation_personal_services
+  fiscal_year: 2022
+  value_numeric: 14000000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Trend test data"
+  verification_status: verified
+  pdf_page: ~
