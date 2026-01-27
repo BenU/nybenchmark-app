@@ -16,6 +16,9 @@ gem "devise", ">= 5.0.0.rc"
 # Add pagination with:
 gem "pagy", "~> 43.2"
 
+# Charts for dashboard visualizations
+gem "chartkick"
+
 # Data Integrity & Auditing
 gem "paper_trail"
 

@@ -68,4 +68,56 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match(/Clear.*Apply/m, response.body)
   end
+
+  # ==========================================
+  # CATEGORY TREND DATA TESTS
+  # ==========================================
+
+  test "show displays financial trends section for entity with categorized observations" do
+    # Yonkers has police_personal_services observations with level_1_category: "Public Safety"
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Should render trends section with category names
+    assert_select "section#financial-trends"
+    assert_select "section#financial-trends" do
+      assert_select "h2", "Financial Trends"
+    end
+  end
+
+  test "show displays Public Safety trend for Yonkers" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Should show Public Safety category (from police_personal_services metric)
+    assert_select "section#financial-trends" do
+      assert_select "strong", text: /Public Safety/
+    end
+  end
+
+  test "show displays fiscal year range in trends header" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Should show year range in subheading
+    assert_select "section#financial-trends p", text: /\d{4}-\d{4}/
+  end
+
+  test "show does not display trends section for entity without categorized observations" do
+    albany = entities(:albany)
+    get entity_url(albany.slug)
+    assert_response :success
+
+    # Albany has no observations with categories
+    assert_select "section#financial-trends", count: 0
+  end
+
+  test "show displays expenditure trends with correct CSS class" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Public Safety is an expenditure category (account_type: 1)
+    # Should have the expenditure CSS class
+    assert_select "article.trend-card--expenditure"
+  end
 end

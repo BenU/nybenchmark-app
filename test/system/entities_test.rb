@@ -530,6 +530,59 @@ class EntitiesTest < ApplicationSystemTestCase
     assert_current_path(/government_structure=council_manager/)
   end
 
+  # ==========================================
+  # FINANCIAL TREND CHARTS
+  # ==========================================
+
+  test "entity show displays financial trends section when data exists" do
+    yonkers = entities(:yonkers)
+    visit entity_url(yonkers)
+
+    # Should show the trends section
+    assert_selector "section#financial-trends"
+    assert_selector "h2", text: "Financial Trends"
+  end
+
+  test "entity show displays trend cards with category names" do
+    yonkers = entities(:yonkers)
+    visit entity_url(yonkers)
+
+    # Should show trend cards for categories with data
+    within "section#financial-trends" do
+      assert_text "Public Safety"
+      assert_text "Sanitation"
+    end
+  end
+
+  test "entity show displays latest value on trend cards" do
+    yonkers = entities(:yonkers)
+    visit entity_url(yonkers)
+
+    # Trend cards should show the latest value formatted as currency
+    within "section#financial-trends" do
+      # Public Safety latest value is 2023: $125,000,000 from police_personal_services
+      assert_selector ".trend-latest"
+    end
+  end
+
+  test "entity show does not display trends section for entities without categorized data" do
+    albany = entities(:albany)
+    visit entity_url(albany)
+
+    # Should NOT show trends section (no observations with categories)
+    assert_no_selector "section#financial-trends"
+  end
+
+  test "entity show displays fiscal year range in trends header" do
+    yonkers = entities(:yonkers)
+    visit entity_url(yonkers)
+
+    within "section#financial-trends" do
+      # Should show year range like "(2021-2024)"
+      assert_selector "p", text: /\d{4}-\d{4}/
+    end
+  end
+
   test "clear button removes filters" do
     visit entities_url(kind: "city", government_structure: "council_manager")
 

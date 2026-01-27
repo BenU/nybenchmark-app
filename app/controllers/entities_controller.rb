@@ -14,6 +14,10 @@ class EntitiesController < ApplicationController
     # Pre-fetch related data for the Hub sections
     @documents = @entity.documents.order(fiscal_year: :desc)
     @observations = @entity.observations.includes(:metric).order(fiscal_year: :desc).limit(10)
+
+    # Load trend data for financial charts
+    @category_trends = load_category_trends
+    @fiscal_year_range = @entity.observations.pluck(:fiscal_year).minmax if @category_trends.present?
   end
 
   def new
@@ -68,5 +72,17 @@ class EntitiesController < ApplicationController
               "(SELECT COUNT(*) FROM observations WHERE observations.entity_id = entities.id) AS observations_count")
       .where(filter_params)
       .sorted_by(params[:sort], params[:direction])
+  end
+
+  def load_category_trends
+    base_scope = Observation.joins(:metric).where(entity: @entity)
+    # Get categories with their account_type (revenue/expenditure/balance_sheet)
+    categories = base_scope.where.not(metrics: { level_1_category: nil })
+                           .distinct.pluck("metrics.level_1_category", "metrics.account_type")
+    categories.to_h do |category, account_type|
+      data = base_scope.where(metrics: { level_1_category: category })
+                       .group(:fiscal_year).sum(:value_numeric).sort.to_h
+      [category, { data: data, account_type: account_type }]
+    end
   end
 end

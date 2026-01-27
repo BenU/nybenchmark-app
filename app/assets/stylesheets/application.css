@@ -250,3 +250,48 @@
 .link-plain:hover {
   text-decoration: underline;
 }
+
+/*
+ * FINANCIAL TREND CHARTS
+ * Sparkline-style area charts for entity dashboard
+ */
+.trends-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.trend-card {
+  padding: 0.75rem;
+  margin: 0;
+}
+
+.trend-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.trend-card header strong {
+  font-size: 0.875rem;
+}
+
+.trend-latest {
+  font-size: 0.875rem;
+  color: var(--pico-muted-color);
+}
+
+.trend-card--revenue {
+  background-color: rgba(22, 163, 74, 0.08);
+  border-left: 3px solid #16a34a;
+}
+
+.trend-card--expenditure {
+  background-color: rgba(220, 38, 38, 0.08);
+  border-left: 3px solid #dc2626;
+}

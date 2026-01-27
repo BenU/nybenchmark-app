@@ -58,6 +58,7 @@ police_personal_services:
   fund_code: A
   function_code: "3120"
   object_code: "1"
+  account_type: 1  # expenditure
   level_1_category: Public Safety
   level_2_category: Police
 
@@ -73,6 +74,7 @@ police_equipment:
   fund_code: A
   function_code: "3120"
   object_code: "2"
+  account_type: 1  # expenditure
   level_1_category: Public Safety
   level_2_category: Police
 
@@ -88,6 +90,7 @@ sanitation_personal_services:
   fund_code: A
   function_code: "8160"
   object_code: "1"
+  account_type: 1  # expenditure
   level_1_category: Sanitation
   level_2_category: Refuse And Garbage
 

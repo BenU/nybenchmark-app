@@ -123,12 +123,19 @@ Avoid inline `style=` attributes; use CSS classes.
 - [x] Auto-remove stale PID file on container start
 
 **TODO (prioritized):**
-1. [ ] Entity dashboard with trends (sparklines, "Total Debt Service over time")
+1. [x] Entity dashboard with trends (sparklines by level_1_category)
 2. [ ] Derived/comparison metrics (FTEs per capita, police cost per capita)
 3. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool)
 4. [ ] Import NYC data from Checkbook NYC (separate data source, all years)
 5. [ ] Import towns, villages, counties from OSC
-6. [ ] Normalize metric labels (titleize casing inconsistencies)
+6. [x] Normalize metric labels (titleize casing via `osc:normalize_metrics`)
+7. [x] Color-code trend charts by account_type (green=revenue, red=expenditure)
+8. [ ] Level 2 category drill-down (see options below)
+
+**Level 2 Category Drill-Down Options:**
+- **Option A:** Expandable cards - Click level_1 card to expand and show level_2 sub-charts inline
+- **Option B:** Dedicated drill-down page - `/entities/:slug/trends/:category` with larger chart, year-by-year values, level_2 breakdown
+- **Option C:** Query/filter interface - Add category filters to observations index for ad-hoc exploration
 
 **Completed (view updates):**
 - [x] Add late filers to entity_mapping.yml "cities" section (Mount Vernon, Ithaca, Rensselaer, Fulton)
@@ -152,30 +159,55 @@ Avoid inline `style=` attributes; use CSS classes.
 - `osc:import` - Import all OSC data (1995-2024)
 - `osc:import_year[YEAR]` - Import single year
 - `osc:update_municipal_codes` - Populate entity OSC codes from mapping
+- `osc:normalize_metrics` - Backfill account_type and normalize casing (requires CSV files)
 
 **Account code format:** `A31201` (no dots) - fund + function + object concatenated
 
 ## Metric Categories (OSC)
 
-OSC provides a two-level category hierarchy for revenue and expenditure metrics:
+OSC provides classification for metrics via three attributes:
 
+- `account_type`: Financial statement section - `revenue`, `expenditure`, or `balance_sheet`
 - `level_1_category`: Broad category (Public Safety, Debt Service, Employee Benefits, etc.)
 - `level_2_category`: Specific function (Police, Fire, Interest On Debt, etc.)
 
-**Note:** Balance sheet items (GL section) don't have categories - this is expected.
+**Category hierarchy:**
+```
+account_type: expenditure
+  level_1_category: Public Safety
+    level_2_category: Police → A31201, A31202, A31204...
+    level_2_category: Fire → A34101, A34102...
+  level_1_category: Debt Service
+    level_2_category: Interest On Debt
+    level_2_category: Debt Principal
+```
 
-**Example aggregation query:**
+**Note:** Balance sheet items (GL section) have `account_type: balance_sheet` but typically no level_1/level_2 categories.
+
+**Example aggregation queries:**
 ```ruby
 # Total Debt Service for Yonkers in 2024
 Observation.joins(:metric)
            .where(entity: yonkers, fiscal_year: 2024)
            .where(metrics: { level_1_category: "Debt Service" })
            .sum(:value_numeric)
-# => $4,522,187
+
+# All revenue for Yonkers in 2024
+Observation.joins(:metric)
+           .where(entity: yonkers, fiscal_year: 2024)
+           .where(metrics: { account_type: :revenue })
+           .sum(:value_numeric)
+
+# Police expenses (level_2) across all years
+Observation.joins(:metric)
+           .where(entity: yonkers)
+           .where(metrics: { level_2_category: "Police" })
+           .group(:fiscal_year).sum(:value_numeric)
 ```
 
 **Rake tasks:**
-- `osc:backfill_categories` - Populate categories for existing metrics from CSV files
+- `osc:normalize_metrics` - Backfill account_type and normalize category casing to Title Case
+- `osc:backfill_categories` - (Legacy) Populate categories for existing metrics from CSV files
 
 ## Performance Notes
 

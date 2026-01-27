@@ -27,8 +27,8 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
   test "index filters by entity_id" do
     get observations_url(entity_id: @entity.id)
     assert_response :success
-    # Yonkers has 2 verified observations: yonkers_expenditures_numeric and yonkers_police_salaries_osc
-    assert_select "tbody tr", count: 2
+    # Yonkers has 6 verified observations from fixtures
+    assert_select "tbody tr", count: 6
   end
 
   # ==========================================
