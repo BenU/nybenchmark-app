@@ -265,7 +265,7 @@ class MetricTest < ActiveSupport::TestCase
 
   test "OSC metric has account_code set" do
     metric = metrics(:police_personal_services)
-    assert_equal "A3120.1", metric.account_code
+    assert_equal "A31201", metric.account_code
   end
 
   test "OSC metric has fund_code set" do
@@ -295,10 +295,10 @@ class MetricTest < ActiveSupport::TestCase
 
   test "can create OSC metric with full account code breakdown" do
     metric = Metric.new(
-      key: "A5110.1",
+      key: "street_maintenance_personal_services",
       label: "Street Maintenance - Personal Services",
       data_source: :osc,
-      account_code: "A5110.1",
+      account_code: "A51101",
       fund_code: "A",
       function_code: "5110",
       object_code: "1",
@@ -309,7 +309,7 @@ class MetricTest < ActiveSupport::TestCase
 
     assert metric.valid?
     assert metric.osc_data_source?
-    assert_equal "A5110.1", metric.account_code
+    assert_equal "A51101", metric.account_code
     assert_equal "A", metric.fund_code
     assert_equal "5110", metric.function_code
     assert_equal "1", metric.object_code

@@ -103,17 +103,14 @@ Avoid inline `style=` attributes; use CSS classes.
 - [x] Analyzed CSV structure (see `db/seeds/osc_data/README.md`)
 - [x] Created entity name mapping (see `db/seeds/osc_data/entity_mapping.yml`)
 - [x] Documented data quality issues (see `db/seeds/osc_data/DATA_QUALITY.md`)
-
-**Decision needed:**
-- Filing status schema design - how to track which years each entity has/hasn't filed
-- See `db/seeds/osc_data/DATA_QUALITY.md` for options
+- [x] Filing status schema decision: **Option C** - derive from observations (no filing status table)
+- [x] Schema migrations: added `osc_municipal_code` to entities
 
 **Next steps:**
-1. Decide on filing status schema
-2. Create schema migrations
-3. Build and test `osc:import` rake task locally
-4. Verify local database populated correctly
-5. Replicate in production
+1. Build and test `osc:import` rake task locally
+2. Verify local database populated correctly
+3. Deploy schema migration to production
+4. Run import in production
 
 **Key findings:**
 - NYC is **never** in OSC system (has own Comptroller, uses Checkbook NYC)

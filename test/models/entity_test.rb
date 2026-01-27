@@ -129,4 +129,32 @@ class EntityTest < ActiveSupport::TestCase
     assert_nil entity.icma_recognition_year
     assert entity.valid?
   end
+
+  # ==========================================
+  # OSC MUNICIPAL CODE TESTS
+  # ==========================================
+
+  test "entity can have osc_municipal_code" do
+    entity = entities(:yonkers)
+    assert_equal "550262000000", entity.osc_municipal_code
+  end
+
+  test "osc_municipal_code is optional" do
+    # NYC and other special cases won't have OSC codes
+    entity = Entity.new(
+      name: "Test City",
+      kind: :city,
+      state: "NY",
+      slug: "test_city"
+      # osc_municipal_code intentionally omitted
+    )
+    assert_nil entity.osc_municipal_code
+    assert entity.valid?
+  end
+
+  test "fixture cities have osc_municipal_code from entity_mapping" do
+    # Verify fixtures match the OSC entity mapping
+    assert_equal "550262000000", entities(:yonkers).osc_municipal_code
+    assert_equal "550233000000", entities(:new_rochelle).osc_municipal_code
+  end
 end

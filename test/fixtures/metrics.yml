@@ -44,54 +44,56 @@ bond_rating:
   data_source: 4  # rating_agency
 
 # OSC Comptroller metrics with account codes
+# account_code matches OSC format exactly (no dots): A31201
+# key is human-readable for internal use
 police_personal_services:
-  key: A3120.1
+  key: police_personal_services
   label: Police - Personal Services
   unit: USD
   description: Police department salaries and wages
   value_type: 0  # numeric
   display_format: currency
   data_source: 1  # osc
-  account_code: A3120.1
+  account_code: A31201
   fund_code: A
   function_code: "3120"
   object_code: "1"
 
 police_equipment:
-  key: A3120.2
+  key: police_equipment
   label: Police - Equipment
   unit: USD
   description: Police department equipment and capital purchases
   value_type: 0  # numeric
   display_format: currency
   data_source: 1  # osc
-  account_code: A3120.2
+  account_code: A31202
   fund_code: A
   function_code: "3120"
   object_code: "2"
 
 sanitation_personal_services:
-  key: A8160.1
+  key: sanitation_personal_services
   label: Refuse & Garbage - Personal Services
   unit: USD
   description: Sanitation department salaries and wages
   value_type: 0  # numeric
   display_format: currency
   data_source: 1  # osc
-  account_code: A8160.1
+  account_code: A81601
   fund_code: A
   function_code: "8160"
   object_code: "1"
 
 pfrs_pension:
-  key: A9015.8
+  key: pfrs_pension
   label: Police & Fire Retirement (PFRS)
   unit: USD
   description: Employer contributions to Police and Fire Retirement System
   value_type: 0  # numeric
   display_format: currency
   data_source: 1  # osc
-  account_code: A9015.8
+  account_code: A90158
   fund_code: A
   function_code: "9015"
   object_code: "8"

@@ -8,6 +8,7 @@ yonkers:
   government_structure: strong_mayor
   fiscal_autonomy: independent
   organization_note: "Council President + 6 District Representatives"
+  osc_municipal_code: "550262000000"
 
 yonkers_schools:
   name: Yonkers Public Schools
@@ -29,6 +30,7 @@ new_rochelle:
   government_structure: council_manager
   fiscal_autonomy: independent
   organization_note: "Council + City Manager"
+  osc_municipal_code: "550233000000"
 
 new_rochelle_schools:
   name: New Rochelle City School District
@@ -48,3 +50,4 @@ albany:
   state: NY
   slug: albany
   organization_note: "State capital - governance structure needs research"
+  osc_municipal_code: "010201000000"

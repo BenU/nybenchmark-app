@@ -297,6 +297,6 @@ class ObservationTest < ActiveSupport::TestCase
   test "OSC observations link to OSC metrics" do
     obs = observations(:yonkers_police_salaries_osc)
     assert obs.metric.osc_data_source?
-    assert_equal "A3120.1", obs.metric.account_code
+    assert_equal "A31201", obs.metric.account_code
   end
 end
