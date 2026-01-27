@@ -84,11 +84,17 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  # N+1 query detection - raises errors in test for CI
+  gem "bullet"
 end
 
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+
+  # Performance monitoring - shows badge with query times on each page
+  gem "rack-mini-profiler"
 end
 
 group :test do

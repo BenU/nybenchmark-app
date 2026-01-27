@@ -50,4 +50,13 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Bullet N+1 query detection - raises errors in tests for CI
+  config.after_initialize do
+    Bullet.enable = true
+    Bullet.raise = true  # Raise exceptions on N+1 queries
+
+    # Ignore ActiveStorage internal eager loading (we don't control it)
+    Bullet.add_safelist type: :unused_eager_loading, class_name: "ActiveStorage::Attachment", association: :record
+  end
 end
