@@ -62,11 +62,9 @@ class EntitiesController < ApplicationController
 
   def entities_scope
     Entity
-      .left_joins(:documents, :observations)
       .select("entities.*",
-              "COUNT(DISTINCT documents.id) AS documents_count",
-              "COUNT(DISTINCT observations.id) AS observations_count")
-      .group("entities.id")
+              "(SELECT COUNT(*) FROM documents WHERE documents.entity_id = entities.id) AS documents_count",
+              "(SELECT COUNT(*) FROM observations WHERE observations.entity_id = entities.id) AS observations_count")
       .where(filter_params)
       .sorted_by(params[:sort], params[:direction])
   end
