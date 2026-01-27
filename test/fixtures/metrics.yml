@@ -58,6 +58,8 @@ police_personal_services:
   fund_code: A
   function_code: "3120"
   object_code: "1"
+  level_1_category: Public Safety
+  level_2_category: Police
 
 police_equipment:
   key: police_equipment
@@ -71,6 +73,8 @@ police_equipment:
   fund_code: A
   function_code: "3120"
   object_code: "2"
+  level_1_category: Public Safety
+  level_2_category: Police
 
 sanitation_personal_services:
   key: sanitation_personal_services
@@ -84,6 +88,8 @@ sanitation_personal_services:
   fund_code: A
   function_code: "8160"
   object_code: "1"
+  level_1_category: Sanitation
+  level_2_category: Refuse And Garbage
 
 pfrs_pension:
   key: pfrs_pension
@@ -97,6 +103,8 @@ pfrs_pension:
   fund_code: A
   function_code: "9015"
   object_code: "8"
+  level_1_category: Employee Benefits
+  level_2_category: Retirement - Police & Fire
 
 # Census data metric
 population:

@@ -190,6 +190,8 @@ class OscImporter
       m.value_type = :numeric
       m.display_format = "currency_rounded"
       m.description = build_metric_description(row)
+      m.level_1_category = row["LEVEL_1_CATEGORY"].presence
+      m.level_2_category = row["LEVEL_2_CATEGORY"].presence
     end
 
     stats[:metrics_created] += 1 if metric.previously_new_record?

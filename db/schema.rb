@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_27_010203) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_27_151235) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -95,6 +95,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_27_010203) do
     t.string "fund_code"
     t.string "key", null: false
     t.string "label", null: false
+    t.string "level_1_category"
+    t.string "level_2_category"
     t.string "object_code"
     t.string "unit"
     t.datetime "updated_at", null: false
@@ -103,6 +105,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_27_010203) do
     t.index ["data_source"], name: "index_metrics_on_data_source"
     t.index ["fund_code"], name: "index_metrics_on_fund_code"
     t.index ["key"], name: "index_metrics_on_key", unique: true
+    t.index ["level_1_category"], name: "index_metrics_on_level_1_category"
+    t.index ["level_2_category"], name: "index_metrics_on_level_2_category"
   end
 
   create_table "observations", force: :cascade do |t|

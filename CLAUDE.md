@@ -110,9 +110,8 @@ Avoid inline `style=` attributes; use CSS classes.
 - [x] Deployed to production
 
 **TODO:**
-- [ ] Performance audit: apply subquery pattern to documents/observations/metrics index pages
-- [ ] Run `osc:import` in production (currently only local has 650K observations)
 - [ ] Import NYC data from Checkbook NYC (separate data source, all years)
+- [ ] Build per capita metrics (police cost per capita, fire, sanitation, etc.) for benchmarking comparisons
 
 **Completed (view updates):**
 - [x] Add late filers to entity_mapping.yml "cities" section (Mount Vernon, Ithaca, Rensselaer, Fulton)
