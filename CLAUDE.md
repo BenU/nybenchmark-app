@@ -58,12 +58,12 @@ This file provides essential context for Claude Code sessions. For detailed hist
 
 **Metric data sources:**
 - `manual` (default) - Manually entered data
-- `osc` - NYS Comptroller AFR data (account codes like A3120.1)
+- `osc` - NYS Comptroller AFR data (account codes like A31201, no dots)
 - `census` - US Census Bureau (population, income, poverty)
 - `dcjs` - NYS Division of Criminal Justice Services (crime stats)
 - `rating_agency` - Bond ratings (Moody's, S&P)
 - `derived` - Calculated from other metrics (per capita, ratios)
-- `nyc_checkbook` - NYC Checkbook data (NYC 2011+, separate from OSC)
+- `nyc_checkbook` - NYC Checkbook data (NYC is never in OSC - has own Comptroller)
 
 **Observation validation:**
 - `page_reference` required for PDF documents, optional for web
@@ -96,17 +96,30 @@ Avoid inline `style=` attributes; use CSS classes.
 
 ## In Progress
 
-**OSC Data Import** - Schema ready for NYS Comptroller bulk data import. See `PLAN.md` for full roadmap.
+**OSC Data Import** - See `PLAN.md` for full roadmap, `db/seeds/osc_data/` for data files and analysis.
+
+**Completed:**
+- [x] Downloaded OSC CSV files (1995-2024, 57 cities)
+- [x] Analyzed CSV structure (see `db/seeds/osc_data/README.md`)
+- [x] Created entity name mapping (see `db/seeds/osc_data/entity_mapping.yml`)
+- [x] Documented data quality issues (see `db/seeds/osc_data/DATA_QUALITY.md`)
+- [x] Filing status schema decision: **Option C** - derive from observations (no filing status table)
+- [x] Schema migrations: added `osc_municipal_code` to entities
 
 **Next steps:**
-1. Download OSC CSV files to local dev environment
-2. Analyze CSV structure, confirm data integrity
-3. Build and test `osc:import` rake task locally
-4. Verify local database populated correctly
-5. Replicate in production: download CSVs to server, run rake task
+1. Build and test `osc:import` rake task locally
+2. Verify local database populated correctly
+3. Deploy schema migration to production
+4. Run import in production
+
+**Key findings:**
+- NYC is **never** in OSC system (has own Comptroller, uses Checkbook NYC)
+- 4 cities are late filers: Mount Vernon (2020), Ithaca (2021), Rensselaer (2021), Fulton (2022)
+- Mount Vernon lost credit rating due to non-filing (per OSC audit)
+- ~20% of NY local governments fail to file on time
 
 **Rake tasks available:**
 - `data:counts` - Check current stats (non-destructive)
 - `data:reset_for_osc` - Clear metrics/observations before import
 
-**Account code fields on Metric:** `account_code`, `fund_code`, `function_code`, `object_code`
+**Account code format:** `A31201` (no dots) - fund + function + object concatenated

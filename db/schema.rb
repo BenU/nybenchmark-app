@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_26_195838) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_27_010203) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -67,6 +67,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_195838) do
     t.string "kind", default: "city", null: false
     t.string "name"
     t.text "organization_note"
+    t.string "osc_municipal_code"
     t.bigint "parent_id"
     t.string "school_legal_type"
     t.string "slug", null: false
@@ -77,6 +78,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_195838) do
     t.index ["fiscal_autonomy"], name: "index_entities_on_fiscal_autonomy"
     t.index ["government_structure"], name: "index_entities_on_government_structure"
     t.index ["name", "state", "kind"], name: "index_entities_on_name_and_state_and_kind", unique: true
+    t.index ["osc_municipal_code"], name: "index_entities_on_osc_municipal_code"
     t.index ["parent_id"], name: "index_entities_on_parent_id"
     t.index ["school_legal_type"], name: "index_entities_on_school_legal_type"
     t.index ["slug"], name: "index_entities_on_slug", unique: true
