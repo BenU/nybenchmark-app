@@ -100,7 +100,7 @@ class ObservationsController < ApplicationController
   end
 
   def set_observation
-    @observation = Observation.includes(:entity, :metric, :document).find(params[:id])
+    @observation = Observation.find(params[:id])
   end
 
   def set_collections
