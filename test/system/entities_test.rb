@@ -222,6 +222,32 @@ class EntitiesTest < ApplicationSystemTestCase
     end
   end
 
+  test "entity show displays OSC municipal code when present" do
+    yonkers = entities(:yonkers)
+    visit entity_url(yonkers)
+
+    # Yonkers fixture has osc_municipal_code set
+    assert_text "OSC Code"
+    assert_text "550262000000"
+  end
+
+  test "entity show does not display OSC code section when nil" do
+    # Create an entity without OSC code
+    entity = Entity.create!(name: "Test Entity", kind: "city", state: "NY", slug: "test-entity")
+    visit entity_url(entity)
+
+    assert_no_text "OSC Code"
+  end
+
+  test "entity form does NOT include osc_municipal_code field (seeded data)" do
+    visit entities_url
+    click_on "New Entity"
+
+    # OSC municipal code is seeded data, not user-editable
+    assert_no_selector "input[name='entity[osc_municipal_code]']"
+    assert_no_selector "label", text: "Osc municipal code"
+  end
+
   # ==========================================
   # PARENT ENTITY SELECTOR (Fiscal Dependency)
   # ==========================================

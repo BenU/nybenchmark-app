@@ -45,6 +45,21 @@
     <%= form.text_area :description %>
   </div>
 
+  <hr>
+
+  <h3>Data Source</h3>
+
+  <div>
+    <%= form.label :data_source, style: "display: block" %>
+    <%= form.select :data_source, Metric.data_sources.keys.map { |s| [s.humanize, s] } %>
+  </div>
+
+  <div>
+    <%= form.label :account_code, style: "display: block" %>
+    <%= form.text_field :account_code, placeholder: "e.g., A31201" %>
+    <small>OSC account code format (no dots)</small>
+  </div>
+
   <br>
 
   <div>

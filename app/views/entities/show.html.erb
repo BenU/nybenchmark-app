@@ -56,6 +56,11 @@
 
           <dt>Notes</dt>
           <dd><%= @entity.organization_note.presence || content_tag(:em, "None", class: "muted") %></dd>
+
+          <% if @entity.osc_municipal_code.present? %>
+            <dt>OSC Code</dt>
+            <dd><code><%= @entity.osc_municipal_code %></code></dd>
+          <% end %>
         </dl>
         <% if @entity.government_structure.blank? && !@entity.school_district_kind? && user_signed_in? %>
           <p><%= link_to "Add details", edit_entity_path(@entity), class: "outline" %></p>

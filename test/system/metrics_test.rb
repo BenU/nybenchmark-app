@@ -211,4 +211,135 @@ class MetricsTest < ApplicationSystemTestCase
     # Should show pagination controls
     assert_selector "nav[aria-label='Metric pages']"
   end
+
+  # ==========================================
+  # DATA SOURCE DISPLAY
+  # ==========================================
+
+  test "metric index displays data source column" do
+    visit metrics_path
+
+    # Should have Source column header
+    within("thead") do
+      assert_text "Source"
+    end
+
+    # Should show source values in table body
+    within("tbody") do
+      assert_text "Manual" # Most fixtures are manual
+    end
+  end
+
+  test "metric index shows OSC for osc-sourced metrics" do
+    visit metrics_path
+
+    # police_personal_services fixture has data_source: osc
+    within("tbody") do
+      assert_text "Osc"
+    end
+  end
+
+  test "metric show displays data source" do
+    visit metric_path(@metric)
+
+    assert_text "Source:"
+    assert_text "Manual"
+  end
+
+  test "metric show displays data source for OSC metric" do
+    osc_metric = metrics(:police_personal_services)
+    visit metric_path(osc_metric)
+
+    assert_text "Source:"
+    assert_text "Osc"
+  end
+
+  test "metric show displays account code for OSC metrics" do
+    osc_metric = metrics(:police_personal_services)
+    visit metric_path(osc_metric)
+
+    assert_text "Account Code:"
+    assert_text "A31201"
+  end
+
+  test "metric show does not display account code section for non-OSC metrics" do
+    visit metric_path(@metric)
+
+    assert_no_text "Account Code:"
+  end
+
+  # ==========================================
+  # DATA SOURCE FILTERING
+  # ==========================================
+
+  test "metric index has data source filter dropdown" do
+    visit metrics_path
+
+    assert_selector "select[name='data_source']"
+  end
+
+  test "filtering by data source shows only matching metrics" do
+    visit metrics_path
+
+    # Filter by OSC
+    select "Osc", from: "data_source"
+    click_on "Apply"
+
+    # Should only show OSC metrics
+    within("tbody") do
+      assert_text "Police - Personal Services"
+      assert_no_text "Total General Fund Revenue" # Manual metric
+    end
+  end
+
+  test "filtering by data source preserves sort params" do
+    visit metrics_url(sort: "label", direction: "desc")
+
+    # Apply a filter
+    select "Osc", from: "data_source"
+    click_on "Apply"
+
+    # Should preserve sort params
+    assert_current_path(/sort=label/)
+    assert_current_path(/direction=desc/)
+    assert_current_path(/data_source=osc/)
+  end
+
+  # ==========================================
+  # FORM DATA SOURCE FIELDS
+  # ==========================================
+
+  test "metric form includes data source dropdown" do
+    visit new_metric_path
+
+    assert_selector "select[name='metric[data_source]']"
+    assert_selector "label", text: "Data source"
+  end
+
+  test "metric form includes account code field" do
+    visit new_metric_path
+
+    assert_selector "input[name='metric[account_code]']"
+    assert_selector "label", text: "Account code"
+  end
+
+  test "creating an OSC metric with account code" do
+    visit new_metric_path
+
+    fill_in "Label", with: "Fire - Personal Services"
+    fill_in "Key", with: "fire_personal_services"
+    fill_in "Unit", with: "USD"
+    select "Numeric", from: "Value type"
+    select "Currency", from: "Display format"
+    select "Osc", from: "Data source"
+    fill_in "Account code", with: "A34101"
+    fill_in "Description", with: "Fire department salaries"
+
+    click_on "Create Metric"
+
+    assert_text "Metric was successfully created"
+    assert_text "Fire - Personal Services"
+    assert_text "A34101"
+    assert_text "Osc"
+  end
 end
