@@ -1,0 +1,163 @@
+# Census Bureau ACS 5-Year Estimate Metric Definitions
+# Source: American Community Survey (ACS) 5-Year Estimates
+# API documentation: https://api.census.gov/data.html
+#
+# Format:
+#   variable_code:
+#     label: Display name for the metric
+#     description: Longer description (used for metric.description)
+#     display_format: How to format the value (integer, decimal, currency_rounded)
+#     category: Grouping category for organization
+#
+# Note: Census returns -666666666 for suppressed/unavailable data - skip these
+
+metrics:
+  # Population & Age
+  B01003_001E:
+    label: Total Population
+    description: "Total population count from ACS 5-year estimates"
+    display_format: integer
+    category: Population & Age
+
+  B01002_001E:
+    label: Median Age
+    description: "Median age of the population"
+    display_format: decimal
+    category: Population & Age
+
+  # Income & Poverty
+  B19013_001E:
+    label: Median Household Income
+    description: "Median household income in the past 12 months (inflation-adjusted)"
+    display_format: currency_rounded
+    category: Income & Poverty
+
+  B19301_001E:
+    label: Per Capita Income
+    description: "Per capita income in the past 12 months (inflation-adjusted)"
+    display_format: currency_rounded
+    category: Income & Poverty
+
+  B17001_001E:
+    label: Population for Poverty Status
+    description: "Total population for whom poverty status is determined (excludes institutionalized, military quarters, college dorms)"
+    display_format: integer
+    category: Income & Poverty
+
+  B17001_002E:
+    label: Population Below Poverty Level
+    description: "Population living below the federal poverty level"
+    display_format: integer
+    category: Income & Poverty
+
+  # Education (Population 25+)
+  B15003_001E:
+    label: Population 25 Years and Over
+    description: "Total population 25 years and over (educational attainment universe)"
+    display_format: integer
+    category: Education
+
+  B15003_022E:
+    label: "Bachelor's Degree Holders"
+    description: "Population 25+ with a bachelor's degree as highest attainment"
+    display_format: integer
+    category: Education
+
+  B15003_023E:
+    label: "Master's Degree Holders"
+    description: "Population 25+ with a master's degree as highest attainment"
+    display_format: integer
+    category: Education
+
+  B15003_024E:
+    label: Professional Degree Holders
+    description: "Population 25+ with a professional school degree (e.g., MD, JD)"
+    display_format: integer
+    category: Education
+
+  B15003_025E:
+    label: Doctorate Degree Holders
+    description: "Population 25+ with a doctorate degree"
+    display_format: integer
+    category: Education
+
+  # Race & Ethnicity
+  B02001_001E:
+    label: Total Population (Race)
+    description: "Total population for race tabulation"
+    display_format: integer
+    category: Race & Ethnicity
+
+  B02001_002E:
+    label: White Alone
+    description: "Population identifying as White alone"
+    display_format: integer
+    category: Race & Ethnicity
+
+  B02001_003E:
+    label: Black or African American Alone
+    description: "Population identifying as Black or African American alone"
+    display_format: integer
+    category: Race & Ethnicity
+
+  B02001_005E:
+    label: Asian Alone
+    description: "Population identifying as Asian alone"
+    display_format: integer
+    category: Race & Ethnicity
+
+  B03003_003E:
+    label: Hispanic or Latino
+    description: "Population of Hispanic or Latino origin (any race)"
+    display_format: integer
+    category: Race & Ethnicity
+
+  B03003_002E:
+    label: Not Hispanic or Latino
+    description: "Population not of Hispanic or Latino origin"
+    display_format: integer
+    category: Race & Ethnicity
+
+  # Housing
+  B25077_001E:
+    label: Median Home Value
+    description: "Median value of owner-occupied housing units"
+    display_format: currency_rounded
+    category: Housing
+
+  B25003_001E:
+    label: Total Occupied Housing Units
+    description: "Total occupied housing units (owner + renter)"
+    display_format: integer
+    category: Housing
+
+  B25003_002E:
+    label: Owner-Occupied Housing Units
+    description: "Number of owner-occupied housing units"
+    display_format: integer
+    category: Housing
+
+  B25001_001E:
+    label: Total Housing Units
+    description: "Total housing units (occupied + vacant)"
+    display_format: integer
+    category: Housing
+
+# Available ACS 5-year vintage years: 2010-2023
+# Note: 2020 ACS was not released due to COVID data collection issues
+# The 2021 ACS 5-year data covers 2017-2021 (skipping standard methodology)
+available_years:
+  - 2010
+  - 2011
+  - 2012
+  - 2013
+  - 2014
+  - 2015
+  - 2016
+  - 2017
+  - 2018
+  - 2019
+  # 2020 skipped - no standard ACS release due to COVID
+  - 2021
+  - 2022
+  - 2023

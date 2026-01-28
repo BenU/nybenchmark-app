@@ -55,6 +55,7 @@ env:
     - ADMIN_EMAIL
     - BREVO_SMTP_USERNAME 
     - BREVO_SMTP_PASSWORD 
+    - CENSUS_API_KEY
   clear:
     DB_HOST: nybenchmark_app-db
     POSTGRES_USER: nybenchmark_app

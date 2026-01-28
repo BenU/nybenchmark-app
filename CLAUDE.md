@@ -133,16 +133,26 @@ Avoid inline `style=` attributes; use CSS classes.
 - [x] Extracted trend logic into `EntityTrends` concern (`app/controllers/concerns/entity_trends.rb`)
 - [x] Balance sheet card styling (blue), placeholder card styling (muted, dashed border)
 
+**Completed (Census data import):**
+- [x] Created FIPS place code mapping (`db/seeds/census_data/entity_fips_mapping.yml`)
+- [x] Created Census metric definitions (`db/seeds/census_data/metric_definitions.yml`)
+- [x] Built `census:import` rake task with CensusImporter class
+- [x] Added test coverage (`test/tasks/census_import_test.rb`)
+- [x] Imported 14,322 observations (2012-2023, 62 cities, 21 metrics)
+
 **TODO (prioritized):**
 1. [x] Entity dashboard with trends (sparklines by level_1_category)
-2. [ ] Derived/comparison metrics (FTEs per capita, police cost per capita, Fund Balance %)
-3. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool)
-4. [ ] Import NYC data from Checkbook NYC (separate data source, all years)
-5. [ ] Import towns, villages, counties from OSC
-6. [x] Normalize metric labels (titleize casing via `osc:normalize_metrics`)
-7. [x] Color-code trend charts by account_type (green=revenue, red=expenditure)
-8. [x] Curated entity dashboard with fiscal health metrics
-9. [ ] Level 2 category drill-down (see options below)
+2. [x] Normalize metric labels (titleize casing via `osc:normalize_metrics`)
+3. [x] Color-code trend charts by account_type (green=revenue, red=expenditure)
+4. [x] Curated entity dashboard with fiscal health metrics
+5. [x] Import population and demographic data (Census Bureau) — see `census:import` rake task
+6. [ ] Derived/comparison metrics (FTEs per capita, police cost per capita, Fund Balance %)
+7. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool)
+8. [ ] Import NYC data from Checkbook NYC (separate data source, all years)
+9. [ ] Import towns, villages, counties from OSC
+10. [ ] Level 2 category drill-down (see options below)
+11. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
+12. [ ] Import demographic data for counties, towns, villages, and school districts from Census
 
 **Level 2 Category Drill-Down Options:**
 - **Option A:** Expandable cards - Click level_1 card to expand and show level_2 sub-charts inline
@@ -172,6 +182,9 @@ Avoid inline `style=` attributes; use CSS classes.
 - `osc:import_year[YEAR]` - Import single year
 - `osc:update_municipal_codes` - Populate entity OSC codes from mapping
 - `osc:normalize_metrics` - Backfill account_type and normalize casing (requires CSV files)
+- `census:import` - Import Census ACS 5-year data (2010-2023, requires CENSUS_API_KEY)
+- `census:import_year[YEAR]` - Import Census data for single year
+- `census:preview` - Dry run Census import (verifies API key and entity matching)
 
 **Account code format:** `A31201` (no dots) - fund + function + object concatenated
 
