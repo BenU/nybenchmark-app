@@ -1,21 +1,30 @@
 <%
-  # Color based on account_type: green=revenue, red=expenditure, blue=balance_sheet
+  # Color based on account_type: green=revenue, red=expenditure, blue=balance_sheet, purple=derived
   chart_color = case account_type
                 when "revenue" then "#16a34a"  # green
                 when "expenditure" then "#dc2626"  # red
+                when "derived" then "#8b5cf6"  # purple
                 else "#2563eb"  # balance_sheet - blue
                 end
   card_class = case account_type
                when "revenue" then "trend-card trend-card--revenue"
                when "expenditure" then "trend-card trend-card--expenditure"
                when "balance_sheet" then "trend-card trend-card--balance-sheet"
+               when "derived" then "trend-card trend-card--derived"
                else "trend-card"
                end
+
+  latest_value = info[:data].values.compact.last
+  formatted_latest = if account_type == "derived"
+                       latest_value ? "#{latest_value}%" : "—"
+                     else
+                       latest_value ? number_to_currency(latest_value, precision: 0) : "—"
+                     end
 %>
 <article class="<%= card_class %>">
   <header>
     <strong><%= label %></strong>
-    <span class="trend-latest"><%= number_to_currency(info[:data].values.last, precision: 0) if info[:data].values.last %></span>
+    <span class="trend-latest"><%= formatted_latest %></span>
   </header>
   <%= area_chart info[:data],
                  library: { scales: { x: { display: false }, y: { display: false } },

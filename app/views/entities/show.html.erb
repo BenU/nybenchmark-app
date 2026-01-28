@@ -120,23 +120,11 @@
             <%= render "trend_card", label: category, info: info, account_type: "expenditure" %>
           <% end %>
 
-          <%# Placeholder: Fund Balance as % of Expenditures %>
-          <article class="trend-card trend-card--placeholder">
-            <header>
-              <strong>Fund Balance %</strong>
-              <span class="trend-latest">Coming Soon</span>
-            </header>
-            <div class="placeholder-chart">Derived metric</div>
-          </article>
-
-          <%# Placeholder: Debt Service as % of Expenditures %>
-          <article class="trend-card trend-card--placeholder">
-            <header>
-              <strong>Debt Service %</strong>
-              <span class="trend-latest">Coming Soon</span>
-            </header>
-            <div class="placeholder-chart">Derived metric</div>
-          </article>
+          <%# Derived metrics: Fund Balance % and Debt Service % %>
+          <% @derived_trends&.each do |_key, info| %>
+            <% next unless info.present? && info[:data].present? %>
+            <%= render "trend_card", label: info[:label], info: info, account_type: "derived" %>
+          <% end %>
         </div>
       <% end %>
 
