@@ -1,0 +1,83 @@
+# Census Bureau FIPS Place Code Mapping
+# Maps entity db_name to 5-digit Census FIPS place code
+#
+# FIPS codes sourced from Census Bureau API query:
+# https://api.census.gov/data/2023/acs/acs5?get=NAME&for=place:*&in=state:36
+#
+# Format: db_name -> fips_place_code (5 digits)
+# Verified against 2023 ACS 5-year data on 2026-01-28
+
+cities:
+  Albany: "01000"
+  Amsterdam: "02066"
+  Auburn: "03078"
+  Batavia: "04715"
+  Beacon: "05100"
+  Binghamton: "06607"
+  Buffalo: "11000"
+  Canandaigua: "12144"
+  Cohoes: "16749"
+  Corning: "18256"
+  Cortland: "18388"
+  Dunkirk: "21105"
+  Elmira: "24229"
+  Fulton: "27815"
+  Geneva: "28640"
+  Glen Cove: "29113"
+  Glens Falls: "29333"
+  Gloversville: "29443"
+  Hornell: "35672"
+  Hudson: "35969"
+  Ithaca: "38077"
+  Jamestown: "38264"
+  Johnstown: "38781"
+  Kingston: "39727"
+  Lackawanna: "40189"
+  Little Falls: "42741"
+  Lockport: "43082"
+  Long Beach: "43335"
+  Mechanicville: "46360"
+  Middletown: "47042"
+  Mount Vernon: "49121"
+  New Rochelle: "50617"
+  Newburgh: "50034"
+  Niagara Falls: "51055"
+  North Tonawanda: "53682"
+  Norwich: "53979"
+  Ogdensburg: "54485"
+  Olean: "54716"
+  Oneida: "54837"
+  Oneonta: "54881"
+  Oswego: "55574"
+  Peekskill: "56979"
+  Plattsburgh: "58574"
+  Port Jervis: "59388"
+  Poughkeepsie: "59641"
+  Rensselaer: "61148"
+  Rochester: "63000"
+  Rome: "63418"
+  Rye: "64309"
+  Salamanca: "64749"
+  Saratoga Springs: "65255"
+  Schenectady: "65508"
+  Sherrill: "66993"
+  Syracuse: "73000"
+  Tonawanda: "74166"
+  Troy: "75484"
+  Utica: "76540"
+  Watertown: "78608"
+  Watervliet: "78674"
+  White Plains: "81677"
+  Yonkers: "84000"
+
+# NYC has its own FIPS code (not in OSC system)
+nyc:
+  New York City: "51000"
+
+# Import logic for CensusImporter:
+#
+# def find_entity_by_fips(fips_code)
+#   db_name = @fips_to_entity[fips_code]
+#   return nil unless db_name
+#   Entity.find_by(name: db_name, state: "NY")
+# end
