@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Handles loading curated financial trends for entity dashboard
-module EntityTrends
+module EntityTrends # rubocop:disable Metrics/ModuleLength
   extend ActiveSupport::Concern
 
   BALANCE_SHEET_ACCOUNTS = {
@@ -107,6 +107,32 @@ module EntityTrends
       denom = denominator_data[year]
       hash[year] = (numerator_data[year].to_f / denom * 100).round(1) if denom&.nonzero?
     end
+  end
+
+  def load_hero_stats # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
+    @hero_stats = {}
+    pop = latest_population
+    @hero_stats[:population] = pop if pop
+
+    if @derived_trends.dig(:fund_balance_pct, :data).present?
+      @hero_stats[:fund_balance_pct] = @derived_trends[:fund_balance_pct][:data].values.last
+    end
+    if @derived_trends.dig(:debt_service_pct, :data).present?
+      @hero_stats[:debt_service_pct] = @derived_trends[:debt_service_pct][:data].values.last
+    end
+
+    total_exp = load_total_expenditures_by_year
+    return unless pop && total_exp.present?
+
+    latest_year = total_exp.keys.max
+    @hero_stats[:per_capita_spending] = (total_exp[latest_year].to_f / pop).round(0)
+  end
+
+  def latest_population
+    Observation.joins(:metric)
+               .where(entity: @entity, metrics: { key: "census_b01003_001e" })
+               .order(fiscal_year: :desc).limit(1)
+               .pick(:value_numeric)
   end
 
   def any_trends?

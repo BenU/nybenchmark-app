@@ -18,6 +18,7 @@ class EntitiesController < ApplicationController
 
     # Load curated trend data for financial dashboard
     load_curated_trends
+    load_hero_stats
     @fiscal_year_range = @entity.observations.pluck(:fiscal_year).minmax if any_trends?
   end
 

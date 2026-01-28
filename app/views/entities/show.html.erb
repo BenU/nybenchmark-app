@@ -22,7 +22,133 @@
     </article>
   <% end %>
 
+  <%# Hero stats bar %>
+  <% if @hero_stats.present? %>
+    <div class="hero-stats">
+      <% if @hero_stats[:population] %>
+        <div class="hero-stat">
+          <span class="hero-stat-value"><%= number_with_delimiter(@hero_stats[:population].to_i) %></span>
+          <span class="hero-stat-label">Population</span>
+        </div>
+      <% end %>
+      <% if @hero_stats[:fund_balance_pct] %>
+        <div class="hero-stat">
+          <span class="hero-stat-value"><%= @hero_stats[:fund_balance_pct] %>%</span>
+          <span class="hero-stat-label">Fund Balance</span>
+        </div>
+      <% end %>
+      <% if @hero_stats[:per_capita_spending] %>
+        <div class="hero-stat">
+          <span class="hero-stat-value"><%= number_to_currency(@hero_stats[:per_capita_spending], precision: 0) %></span>
+          <span class="hero-stat-label">Per-Capita Spending</span>
+        </div>
+      <% end %>
+      <% if @hero_stats[:debt_service_pct] %>
+        <div class="hero-stat">
+          <span class="hero-stat-value"><%= @hero_stats[:debt_service_pct] %>%</span>
+          <span class="hero-stat-label">Debt Service</span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Financial Trends FIRST %>
+  <% if any_trends? %>
+    <section id="financial-trends">
+      <hgroup>
+        <h2>Financial Trends</h2>
+        <p>Curated financial dashboard<% if @fiscal_year_range&.first %> (<%= @fiscal_year_range.first %>-<%= @fiscal_year_range.last %>)<% end %></p>
+      </hgroup>
+
+      <%# Fiscal Health Section %>
+      <% if @balance_sheet_trends.present? || @debt_service_trends.present? %>
+        <h3>Fiscal Health</h3>
+        <div class="trends-grid">
+          <%# Balance sheet items (Unassigned Fund Balance, Cash Position) %>
+          <% @balance_sheet_trends.each do |key, info| %>
+            <%= render "trend_card", label: info[:label], info: info, account_type: "balance_sheet" %>
+          <% end %>
+
+          <%# Debt Service %>
+          <% @debt_service_trends.each do |category, info| %>
+            <%= render "trend_card", label: category, info: info, account_type: "expenditure" %>
+          <% end %>
+
+          <%# Derived metrics: Fund Balance % and Debt Service % %>
+          <% @derived_trends&.each do |_key, info| %>
+            <% next unless info.present? && info[:data].present? %>
+            <%= render "trend_card", label: info[:label], info: info, account_type: "derived" %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Top Revenue Sources Section %>
+      <% if @revenue_trends.present? %>
+        <h3>Top Revenue Sources</h3>
+        <div class="trends-grid">
+          <% @revenue_trends.each do |category, info| %>
+            <%= render "trend_card", label: category, info: info, account_type: "revenue" %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Top Expenditures Section (excludes Debt Service) %>
+      <% if @expenditure_trends.present? %>
+        <h3>Top Expenditures</h3>
+        <div class="trends-grid">
+          <% @expenditure_trends.each do |category, info| %>
+            <%= render "trend_card", label: category, info: info, account_type: "expenditure" %>
+          <% end %>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+
   <hr />
+
+  <%# Documents %>
+  <section id="documents">
+    <hgroup>
+      <h2>Financial Documents</h2>
+      <p>Official sources ingested.</p>
+    </hgroup>
+
+    <% if @documents.any? %>
+      <figure>
+        <table>
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Title</th>
+              <th>Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @documents.each do |doc| %>
+              <tr>
+                <td><%= doc.fiscal_year %></td>
+                <td><%= link_to doc.title, document_path(doc) %></td>
+                <td><small><%= doc.doc_type.upcase %></small></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </figure>
+    <% else %>
+      <article class="text-center">
+        <p>No financial documents yet for <%= @entity.name %>.</p>
+        <% if user_signed_in? %>
+          <p><%= link_to "Add a document", new_document_path(entity_id: @entity.id), role: "button", class: "outline" %></p>
+        <% else %>
+          <p class="muted"><%= link_to "Sign in", new_user_session_path %> to contribute data.</p>
+        <% end %>
+      </article>
+    <% end %>
+  </section>
+
+  <%# Governance details (collapsed below fold) %>
+  <details id="governance">
+    <summary><strong>Governance & Structure</strong></summary>
 
     <div class="grid">
       <article>
@@ -97,144 +223,52 @@
         </ul>
       </article>
     <% end %>
+  </details>
 
-  <% if any_trends? %>
-    <hr />
-    <section id="financial-trends">
-      <hgroup>
-        <h2>Financial Trends</h2>
-        <p>Curated financial dashboard<% if @fiscal_year_range&.first %> (<%= @fiscal_year_range.first %>-<%= @fiscal_year_range.last %>)<% end %></p>
-      </hgroup>
+  <%# Recent Data (de-emphasized) %>
+  <section id="observations">
+    <hgroup>
+      <h2>Recent Data</h2>
+      <p>Latest extracted metrics.</p>
+    </hgroup>
 
-      <%# Fiscal Health Section %>
-      <% if @balance_sheet_trends.present? || @debt_service_trends.present? %>
-        <h3>Fiscal Health</h3>
-        <div class="trends-grid">
-          <%# Balance sheet items (Unassigned Fund Balance, Cash Position) %>
-          <% @balance_sheet_trends.each do |key, info| %>
-            <%= render "trend_card", label: info[:label], info: info, account_type: "balance_sheet" %>
-          <% end %>
-
-          <%# Debt Service %>
-          <% @debt_service_trends.each do |category, info| %>
-            <%= render "trend_card", label: category, info: info, account_type: "expenditure" %>
-          <% end %>
-
-          <%# Derived metrics: Fund Balance % and Debt Service % %>
-          <% @derived_trends&.each do |_key, info| %>
-            <% next unless info.present? && info[:data].present? %>
-            <%= render "trend_card", label: info[:label], info: info, account_type: "derived" %>
-          <% end %>
-        </div>
-      <% end %>
-
-      <%# Top Revenue Sources Section %>
-      <% if @revenue_trends.present? %>
-        <h3>Top Revenue Sources</h3>
-        <div class="trends-grid">
-          <% @revenue_trends.each do |category, info| %>
-            <%= render "trend_card", label: category, info: info, account_type: "revenue" %>
-          <% end %>
-        </div>
-      <% end %>
-
-      <%# Top Expenditures Section (excludes Debt Service) %>
-      <% if @expenditure_trends.present? %>
-        <h3>Top Expenditures</h3>
-        <div class="trends-grid">
-          <% @expenditure_trends.each do |category, info| %>
-            <%= render "trend_card", label: category, info: info, account_type: "expenditure" %>
-          <% end %>
-        </div>
-      <% end %>
-    </section>
-  <% end %>
-  <hr />
-
-  <div class="grid">
-    <section id="documents">
-      <hgroup>
-        <h2>Financial Documents</h2>
-        <p>Official sources ingested.</p>
-      </hgroup>
-      
-      <% if @documents.any? %>
-        <figure>
-          <table>
-            <thead>
+    <% if @observations.any? %>
+      <figure>
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Value</th>
+              <th>Year</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @observations.each do |obs| %>
               <tr>
-                <th>Year</th>
-                <th>Title</th>
-                <th>Type</th>
+                <td><%= obs.metric.label %></td>
+                <td>
+                  <%= obs.value_numeric ? number_with_delimiter(obs.value_numeric) : obs.value_text %>
+                  <% if obs.metric.unit && obs.value_numeric %>
+                    <small><%= obs.metric.unit %></small>
+                  <% end %>
+                </td>
+                <td><%= obs.fiscal_year %></td>
               </tr>
-            </thead>
-            <tbody>
-              <% @documents.each do |doc| %>
-                <tr>
-                  <td><%= doc.fiscal_year %></td>
-                  <td><%= link_to doc.title, document_path(doc) %></td>
-                  <td><small><%= doc.doc_type.upcase %></small></td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
-        </figure>
-      <% else %>
-        <article class="text-center">
-          <p>No financial documents yet for <%= @entity.name %>.</p>
-          <% if user_signed_in? %>
-            <p><%= link_to "Add a document", new_document_path(entity_id: @entity.id), role: "button", class: "outline" %></p>
-          <% else %>
-            <p class="muted"><%= link_to "Sign in", new_user_session_path %> to contribute data.</p>
-          <% end %>
-        </article>
-      <% end %>
-    </section>
-
-    <section id="observations">
-      <hgroup>
-        <h2>Recent Data</h2>
-        <p>Latest extracted metrics.</p>
-      </hgroup>
-
-      <% if @observations.any? %>
-        <figure>
-          <table>
-            <thead>
-              <tr>
-                <th>Metric</th>
-                <th>Value</th>
-                <th>Year</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% @observations.each do |obs| %>
-                <tr>
-                  <td><%= obs.metric.label %></td>
-                  <td>
-                    <%= obs.value_numeric ? number_with_delimiter(obs.value_numeric) : obs.value_text %>
-                    <% if obs.metric.unit && obs.value_numeric %>
-                      <small><%= obs.metric.unit %></small>
-                    <% end %>
-                  </td>
-                  <td><%= obs.fiscal_year %></td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
-        </figure>
-      <% else %>
-        <article class="text-center">
-          <p>No data points extracted yet for <%= @entity.name %>.</p>
-          <% if user_signed_in? %>
-            <p><%= link_to "Add an observation", new_observation_path(entity_id: @entity.id), role: "button", class: "outline" %></p>
-          <% else %>
-            <p class="muted"><%= link_to "Sign in", new_user_session_path %> to contribute data.</p>
-          <% end %>
-        </article>
-      <% end %>
-    </section>
-  </div>
+            <% end %>
+          </tbody>
+        </table>
+      </figure>
+    <% else %>
+      <article class="text-center">
+        <p>No data points extracted yet for <%= @entity.name %>.</p>
+        <% if user_signed_in? %>
+          <p><%= link_to "Add an observation", new_observation_path(entity_id: @entity.id), role: "button", class: "outline" %></p>
+        <% else %>
+          <p class="muted"><%= link_to "Sign in", new_user_session_path %> to contribute data.</p>
+        <% end %>
+      </article>
+    <% end %>
+  </section>
 
   <style>
     .needs-research-banner {
@@ -250,9 +284,6 @@
     }
     .needs-research {
       color: #856404;
-    }
-    .muted {
-      color: #6c757d;
     }
     .text-center {
       text-align: center;
