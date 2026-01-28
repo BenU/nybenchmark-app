@@ -91,6 +91,8 @@ Centralized styles in `app/assets/stylesheets/application.css`:
 - `.page-header` - Title + action button layouts
 - `.button-group` - Horizontal button arrangements
 - `.sortable-header` - Clickable table column headers
+- `.trend-card`, `.trend-card--revenue` (green), `.trend-card--expenditure` (red), `.trend-card--balance-sheet` (blue) - Financial trend charts
+- `.trend-card--placeholder` - Coming soon cards (muted, dashed border)
 
 Avoid inline `style=` attributes; use CSS classes.
 
@@ -122,15 +124,25 @@ Avoid inline `style=` attributes; use CSS classes.
 - [x] Added Bullet safelist for Entity parent eager loading
 - [x] Auto-remove stale PID file on container start
 
+**Completed (curated entity dashboard):**
+- [x] Replaced "show all categories" with curated financial dashboard
+- [x] Fiscal Health section: Unassigned Fund Balance (A917), Cash Position (A200+A201), Debt Service
+- [x] Placeholder cards for derived metrics (Fund Balance %, Debt Service %) with "Coming Soon" styling
+- [x] Top Revenue Sources: top 5 revenue categories by most recent year value
+- [x] Top Expenditures: top 5 expenditure categories (excludes Debt Service)
+- [x] Extracted trend logic into `EntityTrends` concern (`app/controllers/concerns/entity_trends.rb`)
+- [x] Balance sheet card styling (blue), placeholder card styling (muted, dashed border)
+
 **TODO (prioritized):**
 1. [x] Entity dashboard with trends (sparklines by level_1_category)
-2. [ ] Derived/comparison metrics (FTEs per capita, police cost per capita)
+2. [ ] Derived/comparison metrics (FTEs per capita, police cost per capita, Fund Balance %)
 3. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool)
 4. [ ] Import NYC data from Checkbook NYC (separate data source, all years)
 5. [ ] Import towns, villages, counties from OSC
 6. [x] Normalize metric labels (titleize casing via `osc:normalize_metrics`)
 7. [x] Color-code trend charts by account_type (green=revenue, red=expenditure)
-8. [ ] Level 2 category drill-down (see options below)
+8. [x] Curated entity dashboard with fiscal health metrics
+9. [ ] Level 2 category drill-down (see options below)
 
 **Level 2 Category Drill-Down Options:**
 - **Option A:** Expandable cards - Click level_1 card to expand and show level_2 sub-charts inline
@@ -183,6 +195,13 @@ account_type: expenditure
 ```
 
 **Note:** Balance sheet items (GL section) have `account_type: balance_sheet` but typically no level_1/level_2 categories.
+
+**Key balance sheet account codes (used in Fiscal Health dashboard):**
+- `A917` - Unassigned Fund Balance
+- `A200` - Cash
+- `A201` - Cash In Time Deposits
+
+These are queried directly by account_code in `EntityTrends` concern.
 
 **Example aggregation queries:**
 ```ruby
