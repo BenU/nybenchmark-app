@@ -30,6 +30,7 @@ class EntitiesTest < ApplicationSystemTestCase
 
     assert_text "Entity was successfully created"
     assert_text "Test City"
+    find("summary", text: "Governance & Structure").click
     assert_text "Strong mayor"
   end
 
@@ -54,6 +55,7 @@ class EntitiesTest < ApplicationSystemTestCase
 
     assert_text "Entity was successfully created"
     assert_text "Test Schools"
+    find("summary", text: "Governance & Structure").click
     assert_text "Big five"
   end
 
@@ -134,6 +136,8 @@ class EntitiesTest < ApplicationSystemTestCase
     albany = entities(:albany)
     visit entity_url(albany)
 
+    find("summary", text: "Governance & Structure").click
+
     # All governance fields should show, with "Not specified" for empty ones
     assert_text "Structure"
     assert_text "Fiscal Autonomy"
@@ -149,6 +153,7 @@ class EntitiesTest < ApplicationSystemTestCase
     yonkers = entities(:yonkers)
     visit entity_url(yonkers)
 
+    find("summary", text: "Governance & Structure").click
     assert_text "Strong mayor"
     assert_text "Independent" # fiscal_autonomy
   end
@@ -195,6 +200,7 @@ class EntitiesTest < ApplicationSystemTestCase
     yonkers = entities(:yonkers)
     visit entity_url(yonkers)
 
+    find("summary", text: "Governance & Structure").click
     # Yonkers fixture has organization_note: "Council President + 6 District Representatives"
     assert_text "Notes"
     assert_text "Council President + 6 District Representatives"
@@ -207,6 +213,7 @@ class EntitiesTest < ApplicationSystemTestCase
 
     visit entity_url(nr)
 
+    find("summary", text: "Governance & Structure").click
     # Should show formatted ICMA recognition, not just the year
     assert_text "ICMA-recognized since 1932"
   end
@@ -216,6 +223,7 @@ class EntitiesTest < ApplicationSystemTestCase
     albany = entities(:albany)
     visit entity_url(albany)
 
+    find("summary", text: "Governance & Structure").click
     # Should show "—" not "Not specified" (since it's not missing data, just not applicable)
     within("dl") do
       assert_text "—"
@@ -226,6 +234,7 @@ class EntitiesTest < ApplicationSystemTestCase
     yonkers = entities(:yonkers)
     visit entity_url(yonkers)
 
+    find("summary", text: "Governance & Structure").click
     # Yonkers fixture has osc_municipal_code set
     assert_text "OSC Code"
     assert_text "550262000000"
@@ -236,6 +245,7 @@ class EntitiesTest < ApplicationSystemTestCase
     entity = Entity.create!(name: "Test Entity", kind: "city", state: "NY", slug: "test-entity")
     visit entity_url(entity)
 
+    find("summary", text: "Governance & Structure").click
     assert_no_text "OSC Code"
   end
 
@@ -319,6 +329,7 @@ class EntitiesTest < ApplicationSystemTestCase
     yonkers_schools = entities(:yonkers_schools)
     visit entity_url(yonkers_schools)
 
+    find("summary", text: "Governance & Structure").click
     assert_text "Parent Entity"
     assert_text "Yonkers"
   end
@@ -340,6 +351,7 @@ class EntitiesTest < ApplicationSystemTestCase
     yonkers = entities(:yonkers)
     visit entity_url(yonkers)
 
+    find("summary", text: "Governance & Structure").click
     assert_text "Dependent Entities"
     assert_link "Yonkers Public Schools"
   end

@@ -249,6 +249,54 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==========================================
+  # HERO STATS TESTS
+  # ==========================================
+
+  test "show displays hero stats for entity with financial data" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Yonkers has balance sheet + expenditure data, so derived stats should appear
+    assert_select ".hero-stats"
+    assert_select ".hero-stat", minimum: 1
+    assert_select ".hero-stat-label"
+  end
+
+  test "show does not display hero stats for entity without data" do
+    albany = entities(:albany)
+    get entity_url(albany.slug)
+    assert_response :success
+
+    assert_select ".hero-stats", count: 0
+  end
+
+  # ==========================================
+  # PAGE LAYOUT TESTS
+  # ==========================================
+
+  test "show renders governance in collapsible details element" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    assert_select "details#governance" do
+      assert_select "summary", text: /Governance & Structure/
+    end
+  end
+
+  test "show renders financial trends before governance section" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    body = response.body
+    trends_pos = body.index('id="financial-trends"')
+    governance_pos = body.index('id="governance"')
+
+    assert trends_pos, "Financial trends section should exist"
+    assert governance_pos, "Governance section should exist"
+    assert trends_pos < governance_pos, "Financial trends should appear before governance"
+  end
+
+  # ==========================================
   # CSS CLASS TESTS
   # ==========================================
 

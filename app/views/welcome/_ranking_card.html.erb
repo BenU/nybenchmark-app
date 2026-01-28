@@ -1,0 +1,45 @@
+<%
+  # ranking: array of {entity:, value:} sorted descending
+  # title: card heading
+  # description: explanatory text
+  # format: :percentage or :currency
+  top = ranking.first(10)
+  bottom = ranking.last(10).reverse
+%>
+<article class="ranking-card" data-controller="ranking-toggle">
+  <header>
+    <strong><%= title %></strong>
+    <div class="ranking-toggle-group">
+      <button class="ranking-toggle" data-ranking-toggle-target="topButton" data-action="ranking-toggle#showTop">Top 10</button>
+      <button class="ranking-toggle" data-ranking-toggle-target="bottomButton" data-action="ranking-toggle#showBottom">Bottom 10</button>
+    </div>
+  </header>
+  <p class="ranking-description"><%= description %></p>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>City</th>
+        <th>Value</th>
+      </tr>
+    </thead>
+    <tbody data-ranking-toggle-target="topBody">
+      <% top.each_with_index do |r, i| %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td><%= link_to r[:entity].name, entity_path(r[:entity]) %></td>
+          <td><%= format == :currency ? number_to_currency(r[:value], precision: 0) : "#{r[:value]}%" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+    <tbody class="hidden" data-ranking-toggle-target="bottomBody">
+      <% bottom.each_with_index do |r, i| %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td><%= link_to r[:entity].name, entity_path(r[:entity]) %></td>
+          <td><%= format == :currency ? number_to_currency(r[:value], precision: 0) : "#{r[:value]}%" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</article>

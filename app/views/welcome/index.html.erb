@@ -1,41 +1,68 @@
-<hgroup>
-  <h1>New York Benchmarking App</h1>
-  <p>Data collection, validation, and analysis engine.</p>
-</hgroup>
+<section class="landing-hero">
+  <h1>NY Benchmark</h1>
+  <p>Comparing financial health across New York's 62 cities</p>
 
-<section>
-  <p>
-    <strong>Status:</strong> <span class="status-indicator status-indicator--live">Live & Operational</span>
-  </p>
+  <div class="landing-stats">
+    <div class="landing-stat">
+      <span class="landing-stat-value"><%= Entity.where(kind: :city).count %></span>
+      <span class="landing-stat-label">Cities</span>
+    </div>
+    <div class="landing-stat">
+      <span class="landing-stat-value">30</span>
+      <span class="landing-stat-label">Years of Data</span>
+    </div>
+    <div class="landing-stat">
+      <span class="landing-stat-value"><%= number_with_delimiter(Observation.count / 1000) %>K+</span>
+      <span class="landing-stat-label">Data Points</span>
+    </div>
+  </div>
 
-  <p>
-    This is the backend application for the
-    <a href="https://nybenchmark.org"><strong>New York Benchmarking Project</strong></a>.
-    It serves as the rigorous data engine designed to ingest financial documents (ACFRs, Budgets),
-    extract standardized metrics, and provide a rigid audit trail for data integrity.
-  </p>
+  <p><%= link_to "Explore Cities", entities_path, role: "button" %></p>
 </section>
 
-<article>
-  <header>
-    <h3>Project Mission</h3>
-  </header>
-  <p>
-    Comparing governance and financial data across New York State's 62 cities to improve efficiency,
-    transparency, and outcomes. Our methodology emphasizes:
-  </p>
-  <ul>
-    <li>Nonpartisan and evidence-based analysis</li>
-    <li>Primary source verification</li>
-    <li>Transparency in methods and assumptions</li>
-  </ul>
-</article>
+<% if @fund_balance_ranking.present? || @debt_service_ranking.present? || @per_capita_ranking.present? %>
+  <section>
+    <hgroup>
+      <h2>City Rankings</h2>
+      <p>Based on FY <%= @rankings_year %> financial data</p>
+    </hgroup>
 
-<div class="grid">
-  <a href="https://nybenchmark.org">
-    &larr; Visit the Project Website (Blog)
-  </a>
-  <a href="https://github.com/BenU/nybenchmark-app">
-    View Application Source &rarr;
-  </a>
-</div>
+    <div class="rankings-grid">
+      <% if @fund_balance_ranking.present? %>
+        <%= render "ranking_card",
+              ranking: @fund_balance_ranking,
+              title: "Fund Balance %",
+              description: "Unassigned fund balance as a percentage of total expenditures. Higher is generally stronger.",
+              format: :percentage %>
+      <% end %>
+
+      <% if @debt_service_ranking.present? %>
+        <%= render "ranking_card",
+              ranking: @debt_service_ranking,
+              title: "Debt Service %",
+              description: "Debt service as a percentage of total expenditures. Lower typically indicates less debt burden.",
+              format: :percentage %>
+      <% end %>
+
+      <% if @per_capita_ranking.present? %>
+        <%= render "ranking_card",
+              ranking: @per_capita_ranking,
+              title: "Per-Capita Spending",
+              description: "Total expenditures divided by population.",
+              format: :currency %>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+
+<article>
+  <header><h3>About</h3></header>
+  <p>
+    Nonpartisan, evidence-based analysis of governance and financial data across New York State's 62 cities.
+    All data sourced from official filings and public records.
+  </p>
+  <div class="grid">
+    <a href="https://nybenchmark.org">&larr; Project Website</a>
+    <a href="https://github.com/BenU/nybenchmark-app">Source Code &rarr;</a>
+  </div>
+</article>
