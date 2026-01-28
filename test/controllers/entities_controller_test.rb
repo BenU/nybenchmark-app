@@ -70,28 +70,16 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==========================================
-  # CATEGORY TREND DATA TESTS
+  # CURATED FINANCIAL DASHBOARD TESTS
   # ==========================================
 
-  test "show displays financial trends section for entity with categorized observations" do
-    # Yonkers has police_personal_services observations with level_1_category: "Public Safety"
+  test "show displays financial trends section with curated layout" do
     get entity_url(@entity.slug)
     assert_response :success
 
-    # Should render trends section with category names
-    assert_select "section#financial-trends"
+    # Should render trends section
     assert_select "section#financial-trends" do
       assert_select "h2", "Financial Trends"
-    end
-  end
-
-  test "show displays Public Safety trend for Yonkers" do
-    get entity_url(@entity.slug)
-    assert_response :success
-
-    # Should show Public Safety category (from police_personal_services metric)
-    assert_select "section#financial-trends" do
-      assert_select "strong", text: /Public Safety/
     end
   end
 
@@ -103,21 +91,167 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
     assert_select "section#financial-trends p", text: /\d{4}-\d{4}/
   end
 
-  test "show does not display trends section for entity without categorized observations" do
+  test "show does not display trends section for entity without observations" do
     albany = entities(:albany)
     get entity_url(albany.slug)
     assert_response :success
 
-    # Albany has no observations with categories
+    # Albany has no observations
     assert_select "section#financial-trends", count: 0
   end
 
-  test "show displays expenditure trends with correct CSS class" do
+  # ==========================================
+  # FISCAL HEALTH SECTION TESTS
+  # ==========================================
+
+  test "show displays fiscal health section with balance sheet items" do
     get entity_url(@entity.slug)
     assert_response :success
 
-    # Public Safety is an expenditure category (account_type: 1)
-    # Should have the expenditure CSS class
-    assert_select "article.trend-card--expenditure"
+    # Should have Fiscal Health subsection
+    assert_select "section#financial-trends h3", text: /Fiscal Health/
+
+    # Should show Unassigned Fund Balance card (from A917)
+    assert_select "article.trend-card--balance-sheet", text: /Unassigned Fund Balance/
+
+    # Should show Cash Position card (A200 + A201 combined)
+    assert_select "article.trend-card--balance-sheet", text: /Cash Position/
+
+    # Should show Debt Service card
+    assert_select "article.trend-card--expenditure", text: /Debt Service/
+  end
+
+  test "show displays correct value for unassigned fund balance" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Fixture has $75M for 2023 - should appear in card
+    assert_select "article.trend-card", text: /Unassigned Fund Balance.*\$75,000,000/m
+  end
+
+  test "show displays combined cash position from A200 and A201" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # A200 ($25M) + A201 ($10M) = $35M
+    assert_select "article.trend-card", text: /Cash Position.*\$35,000,000/m
+  end
+
+  test "show displays placeholder cards for derived metrics" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Should have placeholder cards with coming soon styling
+    assert_select "article.trend-card--placeholder"
+
+    # Should show placeholder text
+    assert_select "article.trend-card--placeholder", text: /Coming Soon/
+  end
+
+  # ==========================================
+  # TOP REVENUE SOURCES TESTS
+  # ==========================================
+
+  test "show displays top revenue sources section" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Should have Top Revenue Sources subsection
+    assert_select "section#financial-trends h3", text: /Top Revenue Sources/
+
+    # Should show property taxes (largest revenue category)
+    assert_select "article.trend-card--revenue", text: /Real Property Taxes/
+  end
+
+  test "show displays revenue categories sorted by value descending" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Get all revenue category names in order
+    response_body = response.body
+    property_pos = response_body.index("Real Property Taxes")
+    sales_pos = response_body.index("Non-property Taxes")
+    state_pos = response_body.index("State Aid")
+
+    # Property taxes (350M) should appear before Sales tax (85M), which should appear before State aid (45M)
+    assert property_pos < sales_pos, "Property taxes should appear before sales tax"
+    assert sales_pos < state_pos, "Sales tax should appear before state aid"
+  end
+
+  # ==========================================
+  # TOP EXPENDITURES TESTS
+  # ==========================================
+
+  test "show displays top expenditures section" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Should have Top Expenditures subsection
+    assert_select "section#financial-trends h3", text: /Top Expenditures/
+
+    # Should show Public Safety (expenditure category)
+    assert_select "article.trend-card--expenditure", text: /Public Safety/
+  end
+
+  test "show excludes Debt Service from top expenditures section" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Find the Top Expenditures section and verify Debt Service is not there
+    # (it should be in Fiscal Health instead)
+    response_body = response.body
+
+    # Find where Top Expenditures section starts
+    expenditures_section_start = response_body.index("Top Expenditures")
+    assert expenditures_section_start, "Top Expenditures section should exist"
+
+    # Debt Service should appear BEFORE Top Expenditures (in Fiscal Health section)
+    debt_service_pos = response_body.index("Debt Service")
+    assert debt_service_pos < expenditures_section_start,
+           "Debt Service should be in Fiscal Health, not Top Expenditures"
+  end
+
+  # ==========================================
+  # EMPTY DATA HANDLING TESTS
+  # ==========================================
+
+  test "show handles entity with no observations gracefully" do
+    albany = entities(:albany)
+    get entity_url(albany.slug)
+    assert_response :success
+
+    # Should not display trends section at all
+    assert_select "section#financial-trends", count: 0
+
+    # Page should still render without errors
+    assert_select "h1", "Albany"
+  end
+
+  # ==========================================
+  # CSS CLASS TESTS
+  # ==========================================
+
+  test "show displays balance sheet cards with correct CSS class" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Balance sheet items should have blue styling
+    assert_select "article.trend-card--balance-sheet", minimum: 2
+  end
+
+  test "show displays revenue cards with correct CSS class" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Revenue items should have green styling
+    assert_select "article.trend-card--revenue", minimum: 1
+  end
+
+  test "show displays expenditure cards with correct CSS class" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Expenditure items should have red styling
+    assert_select "article.trend-card--expenditure", minimum: 1
   end
 end

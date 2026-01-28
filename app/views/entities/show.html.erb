@@ -98,42 +98,67 @@
       </article>
     <% end %>
 
-  <% if @category_trends.present? %>
+  <% if any_trends? %>
     <hr />
     <section id="financial-trends">
       <hgroup>
         <h2>Financial Trends</h2>
-        <p>Revenue and expenditures by category<% if @fiscal_year_range&.first %> (<%= @fiscal_year_range.first %>-<%= @fiscal_year_range.last %>)<% end %></p>
+        <p>Curated financial dashboard<% if @fiscal_year_range&.first %> (<%= @fiscal_year_range.first %>-<%= @fiscal_year_range.last %>)<% end %></p>
       </hgroup>
 
-      <div class="trends-grid">
-        <% @category_trends.each do |category, info| %>
-          <%
-            # Color based on account_type: green=revenue, red=expenditure, blue=balance_sheet
-            chart_color = case info[:account_type]
-                          when "revenue" then "#16a34a"  # green
-                          when "expenditure" then "#dc2626"  # red
-                          else "#2563eb"  # balance_sheet or unknown - blue
-                          end
-            card_class = case info[:account_type]
-                         when "revenue" then "trend-card trend-card--revenue"
-                         when "expenditure" then "trend-card trend-card--expenditure"
-                         else "trend-card"
-                         end
-          %>
-          <article class="<%= card_class %>">
+      <%# Fiscal Health Section %>
+      <% if @balance_sheet_trends.present? || @debt_service_trends.present? %>
+        <h3>Fiscal Health</h3>
+        <div class="trends-grid">
+          <%# Balance sheet items (Unassigned Fund Balance, Cash Position) %>
+          <% @balance_sheet_trends.each do |key, info| %>
+            <%= render "trend_card", label: info[:label], info: info, account_type: "balance_sheet" %>
+          <% end %>
+
+          <%# Debt Service %>
+          <% @debt_service_trends.each do |category, info| %>
+            <%= render "trend_card", label: category, info: info, account_type: "expenditure" %>
+          <% end %>
+
+          <%# Placeholder: Fund Balance as % of Expenditures %>
+          <article class="trend-card trend-card--placeholder">
             <header>
-              <strong><%= category %></strong>
-              <span class="trend-latest"><%= number_to_currency(info[:data].values.last, precision: 0) if info[:data].values.last %></span>
+              <strong>Fund Balance %</strong>
+              <span class="trend-latest">Coming Soon</span>
             </header>
-            <%= area_chart info[:data],
-                           library: { scales: { x: { display: false }, y: { display: false } },
-                                     plugins: { legend: { display: false } },
-                                     elements: { point: { radius: 0 } } },
-                           height: "80px", colors: [chart_color] %>
+            <div class="placeholder-chart">Derived metric</div>
           </article>
-        <% end %>
-      </div>
+
+          <%# Placeholder: Debt Service as % of Expenditures %>
+          <article class="trend-card trend-card--placeholder">
+            <header>
+              <strong>Debt Service %</strong>
+              <span class="trend-latest">Coming Soon</span>
+            </header>
+            <div class="placeholder-chart">Derived metric</div>
+          </article>
+        </div>
+      <% end %>
+
+      <%# Top Revenue Sources Section %>
+      <% if @revenue_trends.present? %>
+        <h3>Top Revenue Sources</h3>
+        <div class="trends-grid">
+          <% @revenue_trends.each do |category, info| %>
+            <%= render "trend_card", label: category, info: info, account_type: "revenue" %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Top Expenditures Section (excludes Debt Service) %>
+      <% if @expenditure_trends.present? %>
+        <h3>Top Expenditures</h3>
+        <div class="trends-grid">
+          <% @expenditure_trends.each do |category, info| %>
+            <%= render "trend_card", label: category, info: info, account_type: "expenditure" %>
+          <% end %>
+        </div>
+      <% end %>
     </section>
   <% end %>
   <hr />
