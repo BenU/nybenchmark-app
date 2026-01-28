@@ -11,17 +11,6 @@
     </div>
   </div>
 
-  <% if @entity.government_structure.blank? && !@entity.school_district_kind? %>
-    <article class="needs-research-banner">
-      <strong>Help wanted:</strong> Government structure information is missing for <%= @entity.name %>.
-      <% if user_signed_in? %>
-        <%= link_to "Add governance details", edit_entity_path(@entity) %>
-      <% else %>
-        <%= link_to "Sign in", new_user_session_path %> to contribute.
-      <% end %>
-    </article>
-  <% end %>
-
   <%# Hero stats bar %>
   <% if @hero_stats.present? %>
     <div class="hero-stats">
@@ -188,9 +177,6 @@
             <dd><code><%= @entity.osc_municipal_code %></code></dd>
           <% end %>
         </dl>
-        <% if @entity.government_structure.blank? && !@entity.school_district_kind? && user_signed_in? %>
-          <p><%= link_to "Add details", edit_entity_path(@entity), class: "outline" %></p>
-        <% end %>
       </article>
 
       <article>
@@ -271,20 +257,6 @@
   </section>
 
   <style>
-    .needs-research-banner {
-      background-color: #fff3cd;
-      border: 1px solid #ffc107;
-      color: #856404;
-      padding: 0.75rem 1rem;
-      margin-bottom: 1rem;
-    }
-    .needs-research-banner a {
-      color: #856404;
-      font-weight: bold;
-    }
-    .needs-research {
-      color: #856404;
-    }
     .text-center {
       text-align: center;
     }

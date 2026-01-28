@@ -113,21 +113,10 @@ class EntitiesTest < ApplicationSystemTestCase
     assert_selector "th", text: "Gov. Structure"
   end
 
-  test "entity show displays banner when government structure is missing" do
+  test "entity show does not display needs-research banner" do
     albany = entities(:albany)
     visit entity_url(albany)
 
-    # Should show the "Help wanted" banner
-    assert_text "Help wanted"
-    assert_text "Government structure information is missing"
-    assert_link "Add governance details"
-  end
-
-  test "entity show does not display banner when government structure is present" do
-    yonkers = entities(:yonkers)
-    visit entity_url(yonkers)
-
-    # Should NOT show the "Help wanted" banner
     assert_no_text "Help wanted"
     assert_no_text "Government structure information is missing"
   end
@@ -146,7 +135,6 @@ class EntitiesTest < ApplicationSystemTestCase
 
     # Albany has no government_structure or fiscal_autonomy
     assert_text "Not specified"
-    assert_link "Add details"
   end
 
   test "entity show displays humanized government structure when present" do
