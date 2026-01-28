@@ -157,21 +157,25 @@ Avoid inline `style=` attributes; use CSS classes.
 - [x] Added test coverage (`test/tasks/census_import_test.rb`)
 - [x] Imported 14,322 observations (2012-2023, 62 cities, 21 metrics)
 
+**Completed (landing page & entity redesign):**
+- [x] Landing page with city rankings (Fund Balance %, Debt Service %, Per-Capita Spending)
+- [x] Top 10 / Bottom 10 toggle via Stimulus controller
+- [x] Year selection uses most recent year with >= 50% city coverage (avoids sparse early-filer data)
+- [x] Entity hero stats bar (Population, Fund Balance %, Per-Capita Spending, Debt Service %)
+- [x] Entity page reordered: hero stats → trends → docs → governance (collapsible) → recent data
+- [x] Observations moved from main nav to footer
+- [x] Removed needs-research banner (relic from manual data entry era)
+
 **TODO (prioritized):**
-1. [x] Entity dashboard with trends (sparklines by level_1_category)
-2. [x] Normalize metric labels (titleize casing via `osc:normalize_metrics`)
-3. [x] Color-code trend charts by account_type (green=revenue, red=expenditure)
-4. [x] Curated entity dashboard with fiscal health metrics
-5. [x] Import population and demographic data (Census Bureau) — see `census:import` rake task
-6. [x] Fix landing page extra carriage return (removed duplicate footer and nested main tags)
-7. [x] Add data source attributions to footer: US Census Bureau (ACS), NY State Comptroller
-8. [x] Derived/comparison metrics (Fund Balance %, Debt Service % — query-time calculation in EntityTrends)
-9. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool)
-10. [ ] Import NYC data from Checkbook NYC (separate data source, all years)
-11. [ ] Import towns, villages, counties from OSC
-12. [ ] Level 2 category drill-down (see options below)
-13. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
-14. [ ] Import demographic data for counties, towns, villages, and school districts from Census
+1. [ ] **Exclude custodial pass-throughs from expenditure totals** — TC-prefixed fund metrics (especially TC19354 "Other Custodial Activities") inflate expenditures for Westchester/Nassau cities. White Plains shows $8,687 per-capita but $4,433 without pass-throughs. Must exclude TC fund from rankings and entity dashboard expenditure totals. See "Data Quality: Custodial Pass-Throughs" section below.
+2. [ ] **Highlight non-filing entities** — Show which cities haven't submitted data for the current year, with a dedicated page listing late/non-filers and visual indicators on entity trend charts for missing years (Mount Vernon lost credit rating due to non-filing)
+3. [ ] **Data methodology page** — Public-facing page documenting data sources, known comparability issues (custodial pass-throughs, late filers), and metric definitions. Website equivalent of footnotes so users understand the data.
+4. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool)
+5. [ ] Import NYC data from Checkbook NYC (separate data source, all years)
+6. [ ] Import towns, villages, counties from OSC
+7. [ ] Level 2 category drill-down (see options below)
+8. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
+9. [ ] Import demographic data for counties, towns, villages, and school districts from Census
 
 **Level 2 Category Drill-Down Options:**
 - **Option A:** Expandable cards - Click level_1 card to expand and show level_2 sub-charts inline
@@ -273,3 +277,30 @@ Entity.select("(SELECT COUNT(*) FROM observations WHERE entity_id = entities.id)
 ```
 
 **Indexes in place:** `observations.entity_id`, `documents.entity_id` - critical for subquery performance.
+
+## Data Quality: Custodial Pass-Throughs
+
+**Problem:** Cities in Westchester and Nassau counties act as tax collectors for county, school district, and special district taxes. These pass-through amounts are reported in the Trust & Custodial (TC) fund under account code `TC19354` ("Other Custodial Activities"). This inflates their apparent expenditures by 40-50%.
+
+**Affected cities and FY 2024 impact:**
+
+| City | TC19354 | % of Total Expenditures | Per-Capita With | Per-Capita Without |
+|------|---------|------------------------|-----------------|--------------------|
+| New Rochelle | $274M | 49% | $6,810 | $3,456 |
+| White Plains | $234M | 47% | $8,348 | $4,433 |
+| Glen Cove | $90M | 52% | $6,089 | $2,898 |
+| Peekskill | $54M | 42% | $5,099 | $2,971 |
+
+**Fix approach:** Exclude TC-prefixed fund metrics from expenditure totals in rankings and entity dashboard. The `fund_code` field on metrics distinguishes fund types — filter to `fund_code: 'A'` (General Fund) for expenditure aggregations used in cross-city comparisons.
+
+**Not affected:** Yonkers ($0 TC19354), Rochester ($19M, 2%), Buffalo, most upstate cities.
+
+## Data Quality: Late/Non-Filing Cities
+
+**4 cities are known late filers:**
+- Mount Vernon (last filed: 2020) — lost credit rating due to non-filing per OSC audit
+- Ithaca (last filed: 2021)
+- Rensselaer (last filed: 2021)
+- Fulton (last filed: 2022)
+
+~20% of NY local governments fail to file on time. Non-filing cities should be visually distinguished in rankings and trend charts.
