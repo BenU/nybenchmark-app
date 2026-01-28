@@ -137,15 +137,36 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
     assert_select "article.trend-card", text: /Cash Position.*\$35,000,000/m
   end
 
-  test "show displays placeholder cards for derived metrics" do
+  # ==========================================
+  # DERIVED METRICS TESTS
+  # ==========================================
+
+  test "show displays fund balance percentage when data available" do
     get entity_url(@entity.slug)
     assert_response :success
+    assert_select "article.trend-card--derived", minimum: 1
+    assert_select ".trend-card--derived", text: /Fund Balance %/
+  end
 
-    # Should have placeholder cards with coming soon styling
-    assert_select "article.trend-card--placeholder"
+  test "show displays debt service percentage when data available" do
+    get entity_url(@entity.slug)
+    assert_response :success
+    assert_select ".trend-card--derived", text: /Debt Service %/
+  end
 
-    # Should show placeholder text
-    assert_select "article.trend-card--placeholder", text: /Coming Soon/
+  test "derived metrics show percentage values" do
+    get entity_url(@entity.slug)
+    assert_response :success
+    # Percentage should appear with % symbol
+    assert_select ".trend-card--derived .trend-latest", text: /%/
+  end
+
+  test "derived metrics do not appear for entity without observations" do
+    albany = entities(:albany)
+    get entity_url(albany.slug)
+    assert_response :success
+    assert_select "article.trend-card--placeholder", count: 0
+    assert_select "article.trend-card--derived", count: 0
   end
 
   # ==========================================

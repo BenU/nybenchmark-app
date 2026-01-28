@@ -20,6 +20,7 @@ module EntityTrends
     @debt_service_trends = load_debt_service_trends
     @revenue_trends = load_top_categories(account_type: :revenue, limit: 5)
     @expenditure_trends = load_top_categories(account_type: :expenditure, limit: 5, exclude: ["Debt Service"])
+    @derived_trends = load_derived_trends
   end
 
   def load_balance_sheet_trends
@@ -70,8 +71,47 @@ module EntityTrends
     end
   end
 
+  def load_derived_trends
+    total_expenditures = load_total_expenditures_by_year
+    return {} if total_expenditures.blank?
+
+    derived_metric_configs.each_with_object({}) do |(key, numerator, label), result|
+      trend = calculate_ratio_trend(numerator, total_expenditures, label)
+      result[key] = trend if trend
+    end
+  end
+
+  def derived_metric_configs
+    [
+      [:fund_balance_pct, @balance_sheet_trends.dig(:unassigned_fund_balance, :data), "Fund Balance %"],
+      [:debt_service_pct, @debt_service_trends.dig("Debt Service", :data), "Debt Service %"]
+    ]
+  end
+
+  def load_total_expenditures_by_year
+    Observation.joins(:metric)
+               .where(entity: @entity, metrics: { account_type: :expenditure })
+               .group(:fiscal_year)
+               .sum(:value_numeric)
+  end
+
+  def calculate_ratio_trend(numerator_data, denominator_data, label)
+    return nil if numerator_data.blank? || denominator_data.blank?
+
+    data = build_ratio_data(numerator_data, denominator_data)
+    data.present? ? { data: data, label: label, account_type: "derived" } : nil
+  end
+
+  def build_ratio_data(numerator_data, denominator_data)
+    (numerator_data.keys & denominator_data.keys).sort.each_with_object({}) do |year, hash|
+      denom = denominator_data[year]
+      hash[year] = (numerator_data[year].to_f / denom * 100).round(1) if denom&.nonzero?
+    end
+  end
+
   def any_trends?
     @balance_sheet_trends.present? || @debt_service_trends.present? ||
-      @revenue_trends.present? || @expenditure_trends.present?
+      @revenue_trends.present? || @expenditure_trends.present? ||
+      @derived_trends.present?
   end
 end

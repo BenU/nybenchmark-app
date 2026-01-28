@@ -165,7 +165,7 @@ Avoid inline `style=` attributes; use CSS classes.
 5. [x] Import population and demographic data (Census Bureau) — see `census:import` rake task
 6. [x] Fix landing page extra carriage return (removed duplicate footer and nested main tags)
 7. [x] Add data source attributions to footer: US Census Bureau (ACS), NY State Comptroller
-8. [ ] Derived/comparison metrics (FTEs per capita, police cost per capita, Fund Balance %)
+8. [x] Derived/comparison metrics (Fund Balance %, Debt Service % — query-time calculation in EntityTrends)
 9. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool)
 10. [ ] Import NYC data from Checkbook NYC (separate data source, all years)
 11. [ ] Import towns, villages, counties from OSC
