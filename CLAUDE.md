@@ -47,6 +47,23 @@ This file provides essential context for Claude Code sessions. For detailed hist
 
 **Safe patterns:** `find_or_create_by`, rake tasks that UPDATE not DELETE
 
+## Adding Environment Variables
+
+When adding a new environment variable, update these files:
+
+| File | Purpose |
+|------|---------|
+| `.env` | Local development (gitignored) |
+| `.kamal/secrets` | Production secrets (gitignored) - format: `VAR_NAME=$VAR_NAME` |
+| `config/deploy.yml` | Declare in `env.secret` array for Kamal to inject |
+
+**Current environment variables:**
+- `CENSUS_API_KEY` - US Census Bureau API key (register at api.census.gov)
+- `ADMIN_EMAIL` - Email for admin notifications
+- `BREVO_SMTP_USERNAME` / `BREVO_SMTP_PASSWORD` - Transactional email
+
+After updating secrets: `kamal env push` then `kd` to deploy.
+
 ## Key Domain Rules
 
 **Document uniqueness:** One document per `(entity, doc_type, fiscal_year)`. Use distinct doc_types for different sources (e.g., `us_census_quickfacts` vs `us_census_population`).
@@ -146,13 +163,15 @@ Avoid inline `style=` attributes; use CSS classes.
 3. [x] Color-code trend charts by account_type (green=revenue, red=expenditure)
 4. [x] Curated entity dashboard with fiscal health metrics
 5. [x] Import population and demographic data (Census Bureau) — see `census:import` rake task
-6. [ ] Derived/comparison metrics (FTEs per capita, police cost per capita, Fund Balance %)
-7. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool)
-8. [ ] Import NYC data from Checkbook NYC (separate data source, all years)
-9. [ ] Import towns, villages, counties from OSC
-10. [ ] Level 2 category drill-down (see options below)
-11. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
-12. [ ] Import demographic data for counties, towns, villages, and school districts from Census
+6. [x] Fix landing page extra carriage return (removed duplicate footer and nested main tags)
+7. [x] Add data source attributions to footer: US Census Bureau (ACS), NY State Comptroller
+8. [ ] Derived/comparison metrics (FTEs per capita, police cost per capita, Fund Balance %)
+9. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool)
+10. [ ] Import NYC data from Checkbook NYC (separate data source, all years)
+11. [ ] Import towns, villages, counties from OSC
+12. [ ] Level 2 category drill-down (see options below)
+13. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
+14. [ ] Import demographic data for counties, towns, villages, and school districts from Census
 
 **Level 2 Category Drill-Down Options:**
 - **Option A:** Expandable cards - Click level_1 card to expand and show level_2 sub-charts inline
