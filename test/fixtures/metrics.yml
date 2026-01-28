@@ -129,3 +129,98 @@ police_cost_per_capita:
   display_format: currency
   data_source: 5  # derived
   formula: "(A3120.1 + A3120.2 + A9015.8) / population_2020"
+
+# Balance sheet metrics for fiscal health dashboard
+unassigned_fund_balance:
+  key: unassigned_fund_balance
+  label: Unassigned Fund Balance
+  unit: USD
+  description: General fund balance unassigned to specific purposes
+  value_type: 0  # numeric
+  display_format: currency
+  data_source: 1  # osc
+  account_code: A917
+  fund_code: A
+  account_type: 2  # balance_sheet
+
+cash:
+  key: cash
+  label: Cash
+  unit: USD
+  description: Cash on hand
+  value_type: 0  # numeric
+  display_format: currency
+  data_source: 1  # osc
+  account_code: A200
+  fund_code: A
+  account_type: 2  # balance_sheet
+
+cash_in_time_deposits:
+  key: cash_in_time_deposits
+  label: Cash In Time Deposits
+  unit: USD
+  description: Cash in time deposit accounts
+  value_type: 0  # numeric
+  display_format: currency
+  data_source: 1  # osc
+  account_code: A201
+  fund_code: A
+  account_type: 2  # balance_sheet
+
+# Debt service metric
+debt_service_interest:
+  key: debt_service_interest
+  label: Interest On Debt
+  unit: USD
+  description: Interest payments on debt
+  value_type: 0  # numeric
+  display_format: currency
+  data_source: 1  # osc
+  account_code: A97107
+  fund_code: A
+  account_type: 1  # expenditure
+  level_1_category: Debt Service
+  level_2_category: Interest On Debt
+
+# Additional revenue metrics for top categories test
+real_property_taxes:
+  key: real_property_taxes
+  label: Real Property Taxes
+  unit: USD
+  description: Property tax revenue
+  value_type: 0  # numeric
+  display_format: currency
+  data_source: 1  # osc
+  account_code: A1001
+  fund_code: A
+  account_type: 0  # revenue
+  level_1_category: Real Property Taxes
+  level_2_category: Real Property Tax Items
+
+sales_tax:
+  key: sales_tax
+  label: Sales Tax
+  unit: USD
+  description: Sales and use tax revenue
+  value_type: 0  # numeric
+  display_format: currency
+  data_source: 1  # osc
+  account_code: A1040
+  fund_code: A
+  account_type: 0  # revenue
+  level_1_category: Non-property Taxes
+  level_2_category: Sales And Use Tax
+
+state_aid:
+  key: state_aid
+  label: State Aid
+  unit: USD
+  description: State aid revenue
+  value_type: 0  # numeric
+  display_format: currency
+  data_source: 1  # osc
+  account_code: A3001
+  fund_code: A
+  account_type: 0  # revenue
+  level_1_category: State Aid
+  level_2_category: Revenue Sharing

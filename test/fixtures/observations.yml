@@ -133,3 +133,114 @@ yonkers_sanitation_2022:
   notes: "Trend test data"
   verification_status: verified
   pdf_page: ~
+
+# Balance sheet observations for fiscal health section
+yonkers_fund_balance_2023:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2023
+  metric: unassigned_fund_balance
+  fiscal_year: 2023
+  value_numeric: 75000000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Balance sheet test data"
+  verification_status: verified
+  pdf_page: ~
+
+yonkers_fund_balance_2022:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2022
+  metric: unassigned_fund_balance
+  fiscal_year: 2022
+  value_numeric: 68000000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Balance sheet test data"
+  verification_status: verified
+  pdf_page: ~
+
+yonkers_cash_2023:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2023
+  metric: cash
+  fiscal_year: 2023
+  value_numeric: 25000000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Balance sheet test data"
+  verification_status: verified
+  pdf_page: ~
+
+yonkers_cash_time_deposits_2023:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2023
+  metric: cash_in_time_deposits
+  fiscal_year: 2023
+  value_numeric: 10000000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Balance sheet test data"
+  verification_status: verified
+  pdf_page: ~
+
+# Debt service observations
+yonkers_debt_interest_2023:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2023
+  metric: debt_service_interest
+  fiscal_year: 2023
+  value_numeric: 8000000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Debt service test data"
+  verification_status: verified
+  pdf_page: ~
+
+yonkers_debt_interest_2022:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2022
+  metric: debt_service_interest
+  fiscal_year: 2022
+  value_numeric: 7500000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Debt service test data"
+  verification_status: verified
+  pdf_page: ~
+
+# Revenue observations for top categories
+yonkers_property_taxes_2023:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2023
+  metric: real_property_taxes
+  fiscal_year: 2023
+  value_numeric: 350000000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Revenue test data"
+  verification_status: verified
+  pdf_page: ~
+
+yonkers_sales_tax_2023:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2023
+  metric: sales_tax
+  fiscal_year: 2023
+  value_numeric: 85000000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Revenue test data"
+  verification_status: verified
+  pdf_page: ~
+
+yonkers_state_aid_2023:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2023
+  metric: state_aid
+  fiscal_year: 2023
+  value_numeric: 45000000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Revenue test data"
+  verification_status: verified
+  pdf_page: ~

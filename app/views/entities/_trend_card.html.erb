@@ -1,0 +1,25 @@
+<%
+  # Color based on account_type: green=revenue, red=expenditure, blue=balance_sheet
+  chart_color = case account_type
+                when "revenue" then "#16a34a"  # green
+                when "expenditure" then "#dc2626"  # red
+                else "#2563eb"  # balance_sheet - blue
+                end
+  card_class = case account_type
+               when "revenue" then "trend-card trend-card--revenue"
+               when "expenditure" then "trend-card trend-card--expenditure"
+               when "balance_sheet" then "trend-card trend-card--balance-sheet"
+               else "trend-card"
+               end
+%>
+<article class="<%= card_class %>">
+  <header>
+    <strong><%= label %></strong>
+    <span class="trend-latest"><%= number_to_currency(info[:data].values.last, precision: 0) if info[:data].values.last %></span>
+  </header>
+  <%= area_chart info[:data],
+                 library: { scales: { x: { display: false }, y: { display: false } },
+                           plugins: { legend: { display: false } },
+                           elements: { point: { radius: 0 } } },
+                 height: "80px", colors: [chart_color] %>
+</article>
