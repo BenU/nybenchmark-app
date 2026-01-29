@@ -6,6 +6,7 @@ This file provides essential context for Claude Code sessions. For detailed hist
 
 - **AI-CONTEXT.md** - Domain invariants and non-negotiable rules
 - **README.md** - Project overview and core concepts
+- **AUDIT.md** - Data quality audit checklist (pending ACFR cross-check)
 
 ## Development Environment
 
@@ -291,9 +292,23 @@ Entity.select("(SELECT COUNT(*) FROM observations WHERE entity_id = entities.id)
 | Glen Cove | $90M | 52% | $6,089 | $2,898 |
 | Peekskill | $54M | 42% | $5,099 | $2,971 |
 
-**Fix approach:** Exclude TC-prefixed fund metrics from expenditure totals in rankings and entity dashboard. The `fund_code` field on metrics distinguishes fund types — filter to `fund_code: 'A'` (General Fund) for expenditure aggregations used in cross-city comparisons.
+**Fix approach (implemented):** Exclude T-fund (`fund_code: 'T'`) from expenditure totals AND exclude interfund transfers (`level_1_category: 'Other Uses'` for expenditures, `'Other Sources'` for revenue). This uses all legitimate fund data while removing pass-throughs and double-counted transfers. See AUDIT.md for verification checklist.
 
-**Not affected:** Yonkers ($0 TC19354), Rochester ($19M, 2%), Buffalo, most upstate cities.
+**Note:** Yonkers uses TC19352 ($90.6M), not TC19354. Rome ($43.1M) was also not in the original analysis.
+
+## Data Quality: Interfund Transfer Double-Counting
+
+**Problem:** OSC reports fund-level data where interfund transfers appear as expenditures ("Other Uses") and revenues ("Other Sources"). Cities' own ACFRs eliminate these in government-wide statements. We must do the same.
+
+**Scale:** $10.5B in transfer expenditures (A99019, A99509, etc.) across all cities/years.
+
+**Fix approach (implemented):** Exclude `level_1_category: 'Other Uses'` from expenditure aggregations and `'Other Sources'` from revenue aggregations.
+
+**Plattsburgh debt service fix:** The old A-fund-only filter gave Plattsburgh 155.6% debt service (all debt in H/V/E funds, denominator only counted A-fund). The new all-fund-minus-exclusions approach gives 38.7%. 8 cities have debt only in non-A funds: Buffalo, Corning, Glen Cove, Niagara Falls, Norwich, Plattsburgh, Troy, White Plains.
+
+## Data Quality: Fund Structure Variation
+
+Cities organize their funds differently. Some run water/sewer through the General Fund (A), others use Enterprise (E), Water (F), and Sewer (G) funds. Debt service may be in A, V, H, C, or E. The all-fund approach (minus T-fund and transfers) handles this correctly by including all legitimate spending regardless of fund structure.
 
 ## Data Quality: Late/Non-Filing Cities
 
