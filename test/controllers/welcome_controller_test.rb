@@ -264,6 +264,49 @@ class WelcomeControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # ==========================================
+  # CUSTODIAL PASS-THROUGH EXCLUSION TESTS
+  # ==========================================
+
+  test "rankings exclude TC-fund expenditures from per-capita spending" do
+    expenditure_metric = metrics(:police_personal_services) # fund_code: A
+    tc_metric = metrics(:custodial_pass_through)            # fund_code: TC
+    fund_balance_metric = metrics(:unassigned_fund_balance)
+    population_metric = metrics(:census_population)
+
+    year = 2024
+    base_expenditures = 100_000_000
+    tc_amount = 50_000_000
+
+    30.times do |i|
+      entity = Entity.create!(name: "TC City #{i}", kind: :city, state: "NY", slug: "tc-city-#{i}")
+      doc = Document.create!(
+        entity: entity, title: "OSC #{entity.name} #{year}", doc_type: "osc_afr",
+        fiscal_year: year, source_type: :bulk_data, source_url: "https://example.com/tc/#{i}"
+      )
+
+      # General fund expenditure
+      Observation.create!(entity: entity, document: doc, metric: expenditure_metric,
+                          fiscal_year: year, value_numeric: base_expenditures)
+      # TC fund expenditure (should be excluded)
+      Observation.create!(entity: entity, document: doc, metric: tc_metric,
+                          fiscal_year: year, value_numeric: tc_amount)
+      # Fund balance
+      Observation.create!(entity: entity, document: doc, metric: fund_balance_metric,
+                          fiscal_year: year, value_numeric: (i + 1) * 1_000_000)
+      # Population
+      Observation.create!(entity: entity, document: doc, metric: population_metric,
+                          fiscal_year: year, value_numeric: 50_000)
+    end
+
+    get root_url
+    assert_response :success
+
+    # Per-capita should be $100M / 50K = $2,000, NOT $150M / 50K = $3,000
+    assert_select "tbody td", text: /2,000/
+    assert_select "tbody td", text: /3,000/, count: 0
+  end
+
   private
 
   # Create N cities each with expenditure, fund balance, and debt service data.

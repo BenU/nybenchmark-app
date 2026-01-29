@@ -224,3 +224,29 @@ state_aid:
   account_type: 0  # revenue
   level_1_category: State Aid
   level_2_category: Revenue Sharing
+
+# Trust & Custodial fund metric (TC pass-through)
+custodial_pass_through:
+  key: custodial_other_activities
+  label: Other Custodial Activities
+  unit: USD
+  description: Pass-through tax collections for county/school districts
+  value_type: 0  # numeric
+  display_format: currency
+  data_source: 1  # osc
+  account_code: TC19354
+  fund_code: TC
+  account_type: 1  # expenditure
+  level_1_category: Custodial Activities
+  level_2_category: Other Custodial Activities
+
+# Census population metric (for rankings tests)
+# Uses the same key as CensusImporter creates for B01003_001E
+census_population:
+  key: census_b01003_001e
+  label: Total Population
+  unit: Count
+  description: Total population from Census ACS 5-year estimates
+  value_type: 0  # numeric
+  display_format: integer
+  data_source: 2  # census

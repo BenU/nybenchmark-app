@@ -4,6 +4,8 @@
 module EntityTrends # rubocop:disable Metrics/ModuleLength
   extend ActiveSupport::Concern
 
+  GENERAL_FUND_CODE = "A"
+
   BALANCE_SHEET_ACCOUNTS = {
     unassigned_fund_balance: { codes: %w[A917], label: "Unassigned Fund Balance" },
     cash_position: { codes: %w[A200 A201], label: "Cash Position" }
@@ -46,6 +48,7 @@ module EntityTrends # rubocop:disable Metrics/ModuleLength
     base_scope = Observation.joins(:metric).where(entity: @entity)
     type_scope = base_scope.where(metrics: { account_type: account_type })
                            .where.not(metrics: { level_1_category: [nil, ""] + exclude })
+    type_scope = type_scope.where(metrics: { fund_code: GENERAL_FUND_CODE }) if account_type == :expenditure
 
     most_recent_year = type_scope.maximum(:fiscal_year)
     return {} if most_recent_year.nil?
@@ -90,7 +93,8 @@ module EntityTrends # rubocop:disable Metrics/ModuleLength
 
   def load_total_expenditures_by_year
     Observation.joins(:metric)
-               .where(entity: @entity, metrics: { account_type: :expenditure })
+               .where(entity: @entity,
+                      metrics: { account_type: :expenditure, fund_code: GENERAL_FUND_CODE })
                .group(:fiscal_year)
                .sum(:value_numeric)
   end

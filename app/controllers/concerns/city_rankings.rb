@@ -5,6 +5,8 @@
 module CityRankings
   extend ActiveSupport::Concern
 
+  GENERAL_FUND_CODE = "A"
+
   private
 
   def load_city_rankings # rubocop:disable Metrics/MethodLength
@@ -37,7 +39,8 @@ module CityRankings
     min_cities = city_ids.size / 2
 
     year_counts = Observation.joins(:metric)
-                             .where(entity_id: city_ids, metrics: { account_type: :expenditure })
+                             .where(entity_id: city_ids,
+                                    metrics: { account_type: :expenditure, fund_code: GENERAL_FUND_CODE })
                              .group(:fiscal_year)
                              .select("fiscal_year, COUNT(DISTINCT entity_id) AS city_count")
 
@@ -48,7 +51,8 @@ module CityRankings
 
   def total_expenditures_by_entity(city_ids, year)
     Observation.joins(:metric)
-               .where(entity_id: city_ids, fiscal_year: year, metrics: { account_type: :expenditure })
+               .where(entity_id: city_ids, fiscal_year: year,
+                      metrics: { account_type: :expenditure, fund_code: GENERAL_FUND_CODE })
                .group(:entity_id)
                .sum(:value_numeric)
   end
