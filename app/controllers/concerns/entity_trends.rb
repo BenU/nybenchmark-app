@@ -4,7 +4,11 @@
 module EntityTrends # rubocop:disable Metrics/ModuleLength
   extend ActiveSupport::Concern
 
-  GENERAL_FUND_CODE = "A"
+  # Trust & Custodial fund contains pass-through tax collections, not real spending.
+  CUSTODIAL_FUND_CODE = "T"
+  # Interfund transfers are internal bookkeeping — excluded to avoid double-counting.
+  EXPENDITURE_TRANSFER_CATEGORY = "Other Uses"
+  REVENUE_TRANSFER_CATEGORY = "Other Sources"
 
   BALANCE_SHEET_ACCOUNTS = {
     unassigned_fund_balance: { codes: %w[A917], label: "Unassigned Fund Balance" },
@@ -44,11 +48,16 @@ module EntityTrends # rubocop:disable Metrics/ModuleLength
     { "Debt Service" => { data: data, account_type: "expenditure" } }
   end
 
-  def load_top_categories(account_type:, limit:, exclude: [])
+  def load_top_categories(account_type:, limit:, exclude: []) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
     base_scope = Observation.joins(:metric).where(entity: @entity)
     type_scope = base_scope.where(metrics: { account_type: account_type })
+                           .where.not(metrics: { fund_code: CUSTODIAL_FUND_CODE })
                            .where.not(metrics: { level_1_category: [nil, ""] + exclude })
-    type_scope = type_scope.where(metrics: { fund_code: GENERAL_FUND_CODE }) if account_type == :expenditure
+    if account_type == :expenditure
+      type_scope = type_scope.where.not(metrics: { level_1_category: EXPENDITURE_TRANSFER_CATEGORY })
+    elsif account_type == :revenue
+      type_scope = type_scope.where.not(metrics: { level_1_category: REVENUE_TRANSFER_CATEGORY })
+    end
 
     most_recent_year = type_scope.maximum(:fiscal_year)
     return {} if most_recent_year.nil?
@@ -93,8 +102,9 @@ module EntityTrends # rubocop:disable Metrics/ModuleLength
 
   def load_total_expenditures_by_year
     Observation.joins(:metric)
-               .where(entity: @entity,
-                      metrics: { account_type: :expenditure, fund_code: GENERAL_FUND_CODE })
+               .where(entity: @entity, metrics: { account_type: :expenditure })
+               .where.not(metrics: { fund_code: CUSTODIAL_FUND_CODE })
+               .where.not(metrics: { level_1_category: EXPENDITURE_TRANSFER_CATEGORY })
                .group(:fiscal_year)
                .sum(:value_numeric)
   end

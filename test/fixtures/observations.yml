@@ -245,6 +245,19 @@ yonkers_state_aid_2023:
   verification_status: verified
   pdf_page: ~
 
+# Interfund transfer observation (should be excluded from expenditure totals)
+yonkers_transfer_out_2023:
+  entity: yonkers
+  document: yonkers_osc_afr_fy2023
+  metric: interfund_transfer_out
+  fiscal_year: 2023
+  value_numeric: 30000000.00
+  value_text: ~
+  page_reference: ~
+  notes: "Interfund transfer - should be excluded from expenditure totals"
+  verification_status: verified
+  pdf_page: ~
+
 # Custodial pass-through observation (should be excluded from expenditure totals)
 yonkers_custodial_2023:
   entity: yonkers

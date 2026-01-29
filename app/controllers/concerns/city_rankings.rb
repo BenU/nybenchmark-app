@@ -5,7 +5,12 @@
 module CityRankings
   extend ActiveSupport::Concern
 
-  GENERAL_FUND_CODE = "A"
+  # Trust & Custodial fund contains pass-through tax collections that inflate
+  # expenditure totals for Westchester/Nassau cities.
+  CUSTODIAL_FUND_CODE = "T"
+  # Interfund transfers ("Other Uses") are internal bookkeeping, not real spending.
+  # OSC reports fund-level data so these must be excluded to avoid double-counting.
+  INTERFUND_TRANSFER_CATEGORY = "Other Uses"
 
   private
 
@@ -39,8 +44,9 @@ module CityRankings
     min_cities = city_ids.size / 2
 
     year_counts = Observation.joins(:metric)
-                             .where(entity_id: city_ids,
-                                    metrics: { account_type: :expenditure, fund_code: GENERAL_FUND_CODE })
+                             .where(entity_id: city_ids, metrics: { account_type: :expenditure })
+                             .where.not(metrics: { fund_code: CUSTODIAL_FUND_CODE })
+                             .where.not(metrics: { level_1_category: INTERFUND_TRANSFER_CATEGORY })
                              .group(:fiscal_year)
                              .select("fiscal_year, COUNT(DISTINCT entity_id) AS city_count")
 
@@ -51,8 +57,9 @@ module CityRankings
 
   def total_expenditures_by_entity(city_ids, year)
     Observation.joins(:metric)
-               .where(entity_id: city_ids, fiscal_year: year,
-                      metrics: { account_type: :expenditure, fund_code: GENERAL_FUND_CODE })
+               .where(entity_id: city_ids, fiscal_year: year, metrics: { account_type: :expenditure })
+               .where.not(metrics: { fund_code: CUSTODIAL_FUND_CODE })
+               .where.not(metrics: { level_1_category: INTERFUND_TRANSFER_CATEGORY })
                .group(:entity_id)
                .sum(:value_numeric)
   end

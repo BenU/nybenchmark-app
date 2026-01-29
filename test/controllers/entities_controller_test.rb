@@ -300,14 +300,15 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
   # CUSTODIAL PASS-THROUGH EXCLUSION TESTS
   # ==========================================
 
-  test "hero stats per-capita spending excludes TC-fund expenditures" do
-    # Yonkers already has fixture data:
-    # - police_personal_services (A fund) 2023: $125M, 2022: $118M, 2021: $112M
-    # - sanitation (A fund) 2023: $15M, 2022: $14M
-    # - debt_service_interest (A fund) 2023: $8M, 2022: $7.5M
-    # - custodial_pass_through (TC fund) 2023: $50M (added fixture)
-    # Total A-fund expenditures for 2023: $125M + $15M + $8M = $148M
-    # With TC it would be $198M — we verify TC is excluded
+  test "hero stats per-capita spending excludes TC-fund and interfund transfers" do
+    # Yonkers fixture expenditure data for 2023:
+    # - police_personal_services (A fund): $125M — real spending, included
+    # - sanitation (A fund): $15M — real spending, included
+    # - debt_service_interest (A fund): $8M — real spending, included
+    # - custodial_pass_through (T fund): $50M — pass-through, EXCLUDED
+    # - interfund_transfer_out (A fund, "Other Uses"): $30M — transfer, EXCLUDED
+    # Included total: $148M
+    # With pass-throughs + transfers: $228M
 
     # Add population data so hero stats compute per-capita
     pop_metric = metrics(:census_population)
@@ -318,11 +319,10 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
     get entity_url(@entity.slug)
     assert_response :success
 
-    # Per capita with A-fund only: $148M / 211,569 ~ $700
-    # Per capita with TC included: $198M / 211,569 ~ $936
-    # Verify we see a value in the $700 range, not $936
+    # Per capita with real spending: $148M / 211,569 ~ $700
+    # Per capita with everything: $228M / 211,569 ~ $1,078
     assert_select ".hero-stat-value", text: /\$7\d\d/
-    assert_select ".hero-stat-value", text: /\$9\d\d/, count: 0
+    assert_select ".hero-stat-value", text: /\$1,0\d\d/, count: 0
   end
 
   test "top expenditures exclude TC-fund metrics" do
@@ -331,6 +331,14 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
 
     # Custodial Activities should not appear in Top Expenditures
     assert_select ".trend-card--expenditure", text: /Custodial/, count: 0
+  end
+
+  test "top expenditures exclude interfund transfers" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # "Other Uses" (interfund transfers) should not appear in Top Expenditures
+    assert_select ".trend-card--expenditure", text: /Other Uses/, count: 0
   end
 
   # ==========================================
