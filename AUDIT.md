@@ -102,11 +102,26 @@ For each city below, find the ACFR and compare our numbers to:
 - [ ] Fund Balance (A917): **$61.0M (8.3%)**
 - Notes: Uses TC19352 (not TC19354) for custodial pass-throughs
 
-#### Albany FY 2024
-- [ ] Our corrected expenditures: **$277.4M** (raw $279.7M — no T-fund, only $2.3M transfers)
-- [ ] Debt Service: **$16.0M (5.8%)** — all in Fund A
-- [ ] Fund Balance (A917): **$9.1M (3.3%)**
-- Notes: Minimal corrections needed. All debt in General Fund. Simplest comparison
+#### Albany FY 2024 — ✅ VERIFIED
+- [x] Our corrected expenditures: **$277.4M** (raw $279.7M — no T-fund, $2.3M transfers excluded)
+- [x] Debt Service: **$16.0M (5.8%)** — all in Fund A
+- [x] Fund Balance (A917): **$9.1M (3.3%)**
+- Notes: Minimal corrections needed. All debt in General Fund. Simplest comparison.
+
+**Source:** [Albany 2024 Annual Financial Report](https://www.albanyny.gov/DocumentCenter/View/12979/2024-Annual-Financial-Report?bidId=)
+
+| Fund | PDF page (printed/file) | Line item | Amount | DB match |
+|------|------------------------|-----------|--------|----------|
+| A – General | p.22 / p.25 | Total for Expenditures and Other Uses | $220,292,694 | ✅ exact |
+| A – General | p.21 / p.24 | Debt Service total | $15,976,343 | ✅ exact |
+| A – General | p.6 / p.9 | Unassigned Fund Balance | $9,109,582 | ✅ exact |
+| CD – Special Grant | p.30 / p.33 | Total for Expenditures and Other Uses | $3,308,735 | ✅ exact |
+| H – Capital Projects | p.40 / p.43 | Total for Expenditures and Other Uses | $56,097,418 | ✅ exact |
+| **All funds** | | **Sum** | **$279,698,847** | ✅ exact |
+
+Albany has no T-fund (no custodial pass-throughs). $2,348,294 in interfund transfers ("Other Uses") excluded per GASB 34 → corrected total $277,350,553.
+
+Non-A fund unassigned balances are negative (CD: -$889K, H: -$37.7M) — normal for grant (reimbursement timing) and capital (Bond Anticipation Notes) funds. Not included in fiscal health metrics.
 
 #### Rochester FY 2025
 - [ ] Our corrected expenditures: **$935.3M** (raw $1,014.8M — $19.2M T-fund, $60.4M transfers)
