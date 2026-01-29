@@ -33,6 +33,10 @@ class SiteNavigationTest < ActionDispatch::IntegrationTest
           assert_select "a[href=?]", metrics_path, text: "Metrics"
         end
 
+        assert_select "li" do
+          assert_select "a[href='https://nybenchmark.org'][target='_blank'][rel='noopener']", text: "Blog"
+        end
+
         # Auth links (signed out)
         assert_select "a[href=?]", new_user_session_path, text: "Sign in"
         assert_select "a[href=?]", new_user_registration_path, text: "Sign up"
