@@ -264,6 +264,55 @@ class WelcomeControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # ==========================================
+  # DATA QUALITY EXCLUSION TESTS
+  # ==========================================
+
+  test "rankings exclude TC-fund and interfund transfers from per-capita spending" do
+    expenditure_metric = metrics(:police_personal_services) # fund_code: A, real spending
+    tc_metric = metrics(:custodial_pass_through)            # fund_code: T, pass-through
+    transfer_metric = metrics(:interfund_transfer_out)      # fund_code: A, "Other Uses"
+    fund_balance_metric = metrics(:unassigned_fund_balance)
+    population_metric = metrics(:census_population)
+
+    year = 2024
+    base_expenditures = 100_000_000
+    tc_amount = 50_000_000
+    transfer_amount = 20_000_000
+
+    30.times do |i|
+      entity = Entity.create!(name: "TC City #{i}", kind: :city, state: "NY", slug: "tc-city-#{i}")
+      doc = Document.create!(
+        entity: entity, title: "OSC #{entity.name} #{year}", doc_type: "osc_afr",
+        fiscal_year: year, source_type: :bulk_data, source_url: "https://example.com/tc/#{i}"
+      )
+
+      # Real expenditure (included)
+      Observation.create!(entity: entity, document: doc, metric: expenditure_metric,
+                          fiscal_year: year, value_numeric: base_expenditures)
+      # TC fund pass-through (excluded)
+      Observation.create!(entity: entity, document: doc, metric: tc_metric,
+                          fiscal_year: year, value_numeric: tc_amount)
+      # Interfund transfer (excluded)
+      Observation.create!(entity: entity, document: doc, metric: transfer_metric,
+                          fiscal_year: year, value_numeric: transfer_amount)
+      # Fund balance
+      Observation.create!(entity: entity, document: doc, metric: fund_balance_metric,
+                          fiscal_year: year, value_numeric: (i + 1) * 1_000_000)
+      # Population
+      Observation.create!(entity: entity, document: doc, metric: population_metric,
+                          fiscal_year: year, value_numeric: 50_000)
+    end
+
+    get root_url
+    assert_response :success
+
+    # Per-capita should be $100M / 50K = $2,000
+    # NOT ($100M + $50M + $20M) / 50K = $3,400
+    assert_select "tbody td", text: /2,000/
+    assert_select "tbody td", text: /3,400/, count: 0
+  end
+
   private
 
   # Create N cities each with expenditure, fund balance, and debt service data.

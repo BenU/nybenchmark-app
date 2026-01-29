@@ -297,6 +297,51 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==========================================
+  # CUSTODIAL PASS-THROUGH EXCLUSION TESTS
+  # ==========================================
+
+  test "hero stats per-capita spending excludes TC-fund and interfund transfers" do
+    # Yonkers fixture expenditure data for 2023:
+    # - police_personal_services (A fund): $125M — real spending, included
+    # - sanitation (A fund): $15M — real spending, included
+    # - debt_service_interest (A fund): $8M — real spending, included
+    # - custodial_pass_through (T fund): $50M — pass-through, EXCLUDED
+    # - interfund_transfer_out (A fund, "Other Uses"): $30M — transfer, EXCLUDED
+    # Included total: $148M
+    # With pass-throughs + transfers: $228M
+
+    # Add population data so hero stats compute per-capita
+    pop_metric = metrics(:census_population)
+    doc = documents(:yonkers_osc_afr_fy2023)
+    Observation.create!(entity: @entity, document: doc, metric: pop_metric,
+                        fiscal_year: 2023, value_numeric: 211_569)
+
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Per capita with real spending: $148M / 211,569 ~ $700
+    # Per capita with everything: $228M / 211,569 ~ $1,078
+    assert_select ".hero-stat-value", text: /\$7\d\d/
+    assert_select ".hero-stat-value", text: /\$1,0\d\d/, count: 0
+  end
+
+  test "top expenditures exclude TC-fund metrics" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Custodial Activities should not appear in Top Expenditures
+    assert_select ".trend-card--expenditure", text: /Custodial/, count: 0
+  end
+
+  test "top expenditures exclude interfund transfers" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # "Other Uses" (interfund transfers) should not appear in Top Expenditures
+    assert_select ".trend-card--expenditure", text: /Other Uses/, count: 0
+  end
+
+  # ==========================================
   # CSS CLASS TESTS
   # ==========================================
 
