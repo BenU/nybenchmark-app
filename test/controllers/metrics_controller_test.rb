@@ -116,4 +116,20 @@ class MetricsControllerTest < ActionDispatch::IntegrationTest
     # Should not show category labels for metrics without categories
     assert_select "strong", text: "Category:", count: 0
   end
+
+  # ==========================================
+  # SEO: NOINDEX TESTS
+  # ==========================================
+
+  test "index page includes noindex meta tag" do
+    get metrics_url
+    assert_response :success
+    assert_select 'meta[name="robots"][content="noindex, nofollow"]', count: 1
+  end
+
+  test "show page includes noindex meta tag" do
+    get metric_url(@metric)
+    assert_response :success
+    assert_select 'meta[name="robots"][content="noindex, nofollow"]', count: 1
+  end
 end

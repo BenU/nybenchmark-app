@@ -7,6 +7,7 @@ class ObservationsController < ApplicationController
 
   # 1. Strict Security: Guests can ONLY see Index and Show
   before_action :authenticate_user!, except: %i[index show]
+  before_action :set_noindex
 
   before_action :set_observation, only: %i[show edit update destroy verify]
   before_action :set_collections, only: %i[new create edit update verify]

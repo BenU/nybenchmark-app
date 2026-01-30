@@ -601,4 +601,20 @@ class ObservationsControllerTest < ActionDispatch::IntegrationTest
     assert_nil @observation.pdf_page, "pdf_page should be cleared when switching to web document"
     assert_equal web_doc.id, @observation.document_id
   end
+
+  # ==========================================
+  # SEO: NOINDEX TESTS
+  # ==========================================
+
+  test "index page includes noindex meta tag" do
+    get observations_url
+    assert_response :success
+    assert_select 'meta[name="robots"][content="noindex, nofollow"]', count: 1
+  end
+
+  test "show page includes noindex meta tag" do
+    get observation_url(@observation)
+    assert_response :success
+    assert_select 'meta[name="robots"][content="noindex, nofollow"]', count: 1
+  end
 end

@@ -329,4 +329,20 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "button", text: /Delete/i, count: 0
   end
+
+  # ==========================================
+  # SEO: NOINDEX TESTS
+  # ==========================================
+
+  test "index page includes noindex meta tag" do
+    get documents_url
+    assert_response :success
+    assert_select 'meta[name="robots"][content="noindex, nofollow"]', count: 1
+  end
+
+  test "show page includes noindex meta tag" do
+    get document_url(@document)
+    assert_response :success
+    assert_select 'meta[name="robots"][content="noindex, nofollow"]', count: 1
+  end
 end

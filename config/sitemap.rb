@@ -25,25 +25,16 @@ SitemapGenerator::Sitemap.sitemaps_path = "sitemaps/"
 SitemapGenerator::Sitemap.sitemaps_host = "https://nybenchmark-production.nyc3.digitaloceanspaces.com/"
 
 SitemapGenerator::Sitemap.create do
-  # Root page is added automatically
+  # Root/landing page added automatically
 
-  # Entities - primary public pages (government bodies)
+  # Entity pages - the primary public content
   Entity.find_each do |entity|
     add entity_path(entity), lastmod: entity.updated_at, changefreq: "weekly", priority: 0.8
   end
 
-  # Documents - source financial/statistical documents
-  Document.find_each do |document|
-    add document_path(document), lastmod: document.updated_at, changefreq: "monthly", priority: 0.6
-  end
-
-  # Metrics - standardized datapoint definitions
-  Metric.find_each do |metric|
-    add metric_path(metric), lastmod: metric.updated_at, changefreq: "monthly", priority: 0.5
-  end
-
-  # Observations - individual extracted facts
-  Observation.find_each do |observation|
-    add observation_path(observation), lastmod: observation.updated_at, changefreq: "monthly", priority: 0.4
-  end
+  # NOTE: When adding new public-facing pages (benchmarks, comparisons, methodology, etc.),
+  # add them here. See CLAUDE.md "SEO & Sitemap" section.
+  #
+  # Documents, metrics, and observations are excluded intentionally — they are
+  # admin/audit pages marked noindex (see ApplicationController#set_noindex).
 end
