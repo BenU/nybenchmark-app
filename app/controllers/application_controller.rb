@@ -22,4 +22,10 @@ class ApplicationController < ActionController::Base
 
     true
   end
+
+  # Mark pages as noindex for search engines (admin/audit pages).
+  # Call via before_action in controllers whose pages should not be indexed.
+  def set_noindex
+    @noindex = true
+  end
 end

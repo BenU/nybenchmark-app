@@ -4,6 +4,7 @@ class DocumentsController < ApplicationController
   include Pagy::Method
 
   before_action :authenticate_user!, except: %i[index show]
+  before_action :set_noindex
   before_action :set_document, only: %i[show edit update destroy]
   before_action :load_doc_type_suggestions, only: %i[new edit create update]
 

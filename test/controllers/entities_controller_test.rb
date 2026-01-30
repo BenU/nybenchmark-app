@@ -368,4 +368,20 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
     # Expenditure items should have red styling
     assert_select "article.trend-card--expenditure", minimum: 1
   end
+
+  # ==========================================
+  # SEO: ENTITY PAGES SHOULD BE INDEXED
+  # ==========================================
+
+  test "index page does not include noindex meta tag" do
+    get entities_url
+    assert_response :success
+    assert_select 'meta[name="robots"][content="noindex, nofollow"]', count: 0
+  end
+
+  test "show page does not include noindex meta tag" do
+    get entity_url(@entity.slug)
+    assert_response :success
+    assert_select 'meta[name="robots"][content="noindex, nofollow"]', count: 0
+  end
 end
