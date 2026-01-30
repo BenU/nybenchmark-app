@@ -177,6 +177,7 @@ Avoid inline `style=` attributes; use CSS classes.
 7. [ ] Level 2 category drill-down (see options below)
 8. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
 9. [ ] Import demographic data for counties, towns, villages, and school districts from Census
+10. [ ] Import FTE staffing data by department (police, fire, public works, etc.) from ACFRs
 
 **Level 2 Category Drill-Down Options:**
 - **Option A:** Expandable cards - Click level_1 card to expand and show level_2 sub-charts inline
@@ -209,6 +210,7 @@ Avoid inline `style=` attributes; use CSS classes.
 - `census:import` - Import Census ACS 5-year data (2010-2023, requires CENSUS_API_KEY)
 - `census:import_year[YEAR]` - Import Census data for single year
 - `census:preview` - Dry run Census import (verifies API key and entity matching)
+- `data:cleanup_manual` - Remove manually-entered documents/observations (keeps OSC and Census)
 
 **Account code format:** `A31201` (no dots) - fund + function + object concatenated
 
