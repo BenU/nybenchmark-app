@@ -32,6 +32,8 @@ This file provides essential context for Claude Code sessions. For detailed hist
 5. **User merges PR on GitHub website** (not via CLI)
 6. **User handles deploy in separate terminal:** `git switch main && git pull && dci && kd`
 
+**Docs-only changes (CLAUDE.md, AUDIT.md, PLAN.md, README.md, etc.):** Commit locally on a branch but don't push or deploy — fold into the next feature PR unless otherwise specified. Skip `dci` and `kd` since nothing user-facing changed. Exception: push a standalone docs PR when significant planning or institutional knowledge is at stake and warrants off-machine backup.
+
 ## Testing Approach
 
 **Use TDD for behavior/logic changes:** Write failing tests first, then implement.
@@ -180,13 +182,14 @@ Avoid inline `style=` attributes; use CSS classes.
 2. [ ] **Complete ACFR audit** — Verify remaining cities in AUDIT.md (New Rochelle, Plattsburgh, White Plains, Syracuse, Buffalo, Yonkers, Rochester) against their ACFRs
 3. [ ] **Highlight non-filing entities** — Show which cities haven't submitted data for the current year, with a dedicated page listing late/non-filers and visual indicators on entity trend charts for missing years (Mount Vernon lost credit rating due to non-filing)
 4. [ ] **Data methodology page** — Public-facing page documenting data sources, known comparability issues (custodial pass-throughs, late filers), and metric definitions. Website equivalent of footnotes so users understand the data.
-5. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool)
+5. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool; add observation data links on entity show page so data remains accessible)
 6. [ ] Import NYC data from Checkbook NYC (separate data source, all years)
 7. [ ] Import towns, villages, counties, districts, and authorities from OSC
-8. [ ] Level 2 category drill-down (see options below)
-9. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
-10. [ ] Import demographic data for counties, towns, villages, and school districts from Census
-11. [ ] Import FTE staffing data by department (police, fire, public works, etc.) from ACFRs
+8. [ ] **State Aid as % of Revenue** — Derived metric benchmarking state aid dependency across cities. OSC revenue data already includes state aid line items; needs metric definition, derivation logic, hero stat / ranking placement. Exact denominator (revenue vs expenditures) TBD — research industry standard (GFOA/ICMA practice).
+9. [ ] Level 2 category drill-down (see options below)
+10. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
+11. [ ] Import demographic data for counties, towns, villages, and school districts from Census
+12. [ ] Import FTE staffing data by department (police, fire, public works, etc.) from ACFRs
 
 **Level 2 Category Drill-Down Options:**
 - **Option A:** Expandable cards - Click level_1 card to expand and show level_2 sub-charts inline

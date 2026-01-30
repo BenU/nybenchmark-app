@@ -130,6 +130,20 @@ Non-A fund unassigned balances are negative (CD: -$889K, H: -$37.7M) — normal 
 - [ ] Fund Balance (A917): **$3.8M (0.4%)** — very low, worth confirming
 - Notes: Moderate T-fund exclusion
 
+### Good Governance Award Candidates (Low Debt Service %)
+
+#### Lackawanna FY 2024
+- [ ] Our debt service %: **1.9%** — verify against ACFR
+- [ ] Corrected expenditures: verify against ACFR
+- [ ] Fund Balance (A917): verify
+- Notes: Tied for lowest debt service % among NY cities. Small city in Erie County (near Buffalo). Candidate for 1st NY Benchmark Good Governance Award.
+
+#### Batavia FY 2024
+- [ ] Our debt service %: **1.9%** — verify against ACFR
+- [ ] Corrected expenditures: verify against ACFR
+- [ ] Fund Balance (A917): verify
+- Notes: Tied for lowest debt service % among NY cities. Small city in Genesee County. Candidate for 1st NY Benchmark Good Governance Award.
+
 ---
 
 ## What to Look For
