@@ -57,10 +57,10 @@ namespace :data do
       puts "  Deleted #{doc_count} documents"
 
       puts "Checking for orphaned metrics..."
-      orphaned = Metric.where(data_source: [ :manual, :rating_agency ])
+      orphaned = Metric.where(data_source: %i[manual rating_agency])
                        .where.not(id: Observation.select(:metric_id).distinct)
       orphaned_count = orphaned.count
-      if orphaned_count > 0
+      if orphaned_count.positive?
         orphaned.each { |m| puts "  Removing: #{m.label} (#{m.data_source})" }
         orphaned.delete_all
       end
