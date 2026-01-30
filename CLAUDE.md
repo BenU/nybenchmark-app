@@ -167,17 +167,26 @@ Avoid inline `style=` attributes; use CSS classes.
 - [x] Observations moved from main nav to footer
 - [x] Removed needs-research banner (relic from manual data entry era)
 
+**Completed (manual data cleanup):**
+- [x] Created `data:cleanup_manual` rake task (PR #140)
+- [x] Ran locally: removed 12 documents, 78 observations, 69 orphaned metrics
+- [x] Deployed to production and ran: removed 9 documents, 69 observations, 63 orphaned metrics
+- [x] Fixes A917 double-counting (manual + OSC values coexisted for New Rochelle and Yonkers)
+- [x] Production counts after cleanup: 2,507 documents, 4,343 metrics, 661,883 observations
+- [x] Bumped brakeman 8.0.0 → 8.0.1
+
 **TODO (prioritized):**
-1. [ ] **Exclude custodial pass-throughs from expenditure totals** — TC-prefixed fund metrics (especially TC19354 "Other Custodial Activities") inflate expenditures for Westchester/Nassau cities. White Plains shows $8,687 per-capita but $4,433 without pass-throughs. Must exclude TC fund from rankings and entity dashboard expenditure totals. See "Data Quality: Custodial Pass-Throughs" section below.
-2. [ ] **Highlight non-filing entities** — Show which cities haven't submitted data for the current year, with a dedicated page listing late/non-filers and visual indicators on entity trend charts for missing years (Mount Vernon lost credit rating due to non-filing)
-3. [ ] **Data methodology page** — Public-facing page documenting data sources, known comparability issues (custodial pass-throughs, late filers), and metric definitions. Website equivalent of footnotes so users understand the data.
-4. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool)
-5. [ ] Import NYC data from Checkbook NYC (separate data source, all years)
-6. [ ] Import towns, villages, counties from OSC
-7. [ ] Level 2 category drill-down (see options below)
-8. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
-9. [ ] Import demographic data for counties, towns, villages, and school districts from Census
-10. [ ] Import FTE staffing data by department (police, fire, public works, etc.) from ACFRs
+1. [x] ~~Exclude custodial pass-throughs from expenditure totals~~ — Merged PR #137. ACFR cross-checks still pending (only Albany verified, see AUDIT.md)
+2. [ ] **Complete ACFR audit** — Verify remaining cities in AUDIT.md (New Rochelle, Plattsburgh, White Plains, Syracuse, Buffalo, Yonkers, Rochester) against their ACFRs
+3. [ ] **Highlight non-filing entities** — Show which cities haven't submitted data for the current year, with a dedicated page listing late/non-filers and visual indicators on entity trend charts for missing years (Mount Vernon lost credit rating due to non-filing)
+4. [ ] **Data methodology page** — Public-facing page documenting data sources, known comparability issues (custodial pass-throughs, late filers), and metric definitions. Website equivalent of footnotes so users understand the data.
+5. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool)
+6. [ ] Import NYC data from Checkbook NYC (separate data source, all years)
+7. [ ] Import towns, villages, counties, districts, and authorities from OSC
+8. [ ] Level 2 category drill-down (see options below)
+9. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
+10. [ ] Import demographic data for counties, towns, villages, and school districts from Census
+11. [ ] Import FTE staffing data by department (police, fire, public works, etc.) from ACFRs
 
 **Level 2 Category Drill-Down Options:**
 - **Option A:** Expandable cards - Click level_1 card to expand and show level_2 sub-charts inline

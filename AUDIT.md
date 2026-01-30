@@ -2,7 +2,8 @@
 
 **Created:** 2026-01-28 (late night session)
 **Branch:** `fix/exclude-custodial-pass-throughs`
-**Status:** Code changes committed, CI passing. Needs ACFR cross-check before pushing/PR.
+**Status:** Code changes merged (PR #137) and deployed. ACFR cross-checks still pending (only Albany verified so far).
+**Updated:** 2026-01-30 — Ran `data:cleanup_manual` on production (PR #140). Removed 9 manual documents, 69 observations, 63 orphaned metrics. Fixed A917 double-counting for New Rochelle (was $38.8M, now $10.5M). Yonkers A917 was already correct in production ($61.0M from OSC FY2025).
 
 ## What We Changed and Why
 
@@ -67,7 +68,7 @@ For each city below, find the ACFR and compare our numbers to:
 #### New Rochelle FY 2024
 - [ ] Our corrected expenditures: **$263.2M** (raw was $555.7M — excluded $273.7M T-fund, $18.8M transfers)
 - [ ] Debt Service: **$15.6M (5.9%)**
-- [ ] Fund Balance (A917): **$38.8M (14.8%)**
+- [ ] Fund Balance (A917): **$10.5M (4.0%)** — corrected 2026-01-30 after `data:cleanup_manual` removed duplicate manual observation ($28.3M manual + $10.5M OSC were both present)
 - Notes: Biggest proportional TC pass-through impact
 
 #### Plattsburgh FY 2024
