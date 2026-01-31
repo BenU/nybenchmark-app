@@ -35,6 +35,10 @@ module CityRankings
       population_by_entity(city_ids, @rankings_year),
       :currency
     )
+
+    # Count cities without expenditure data for the ranking year (non-filers)
+    cities_with_data = expenditures.keys.size
+    @non_filer_count = city_ids.size - cities_with_data
   end
 
   # Pick the most recent fiscal year where at least half of all cities have

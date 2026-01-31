@@ -40,6 +40,16 @@
                 prompt: "All Structures" %>
         </label>
 
+        <label>
+          Filing Status
+          <%= select_tag :filing_status,
+                options_for_select(
+                  [["Current Filers", "current"], ["Late / Non-Filers", "late"]],
+                  params[:filing_status]
+                ),
+                prompt: "All Statuses" %>
+        </label>
+
         <div class="button-group">
           <%= link_to "Clear", entities_path, role: "button", class: "secondary outline" %>
           <%= submit_tag "Apply", name: nil %>
@@ -106,7 +116,12 @@
       <tbody>
         <% @entities.each do |entity| %>
           <tr>
-            <td><%= link_to entity.name, entity_path(entity.slug) %></td>
+            <td>
+              <%= link_to entity.name, entity_path(entity.slug) %>
+              <% if @non_filer_ids&.include?(entity.id) %>
+                <span class="non-filer-badge">Late</span>
+              <% end %>
+            </td>
             <td><%= entity.kind.humanize %></td>
             <td>
               <% if entity.government_structure.present? %>

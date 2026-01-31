@@ -265,6 +265,19 @@ class WelcomeControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==========================================
+  # NON-FILER CALLOUT TESTS
+  # ==========================================
+
+  test "landing page shows non-filer callout when rankings are present" do
+    create_ranking_cities(15)
+    get root_url
+    assert_response :success
+
+    assert_select ".non-filer-callout"
+    assert_select ".non-filer-callout a[href=?]", non_filers_path
+  end
+
+  # ==========================================
   # DATA QUALITY EXCLUSION TESTS
   # ==========================================
 

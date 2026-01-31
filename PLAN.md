@@ -1,496 +1,138 @@
-# OSC Data Import Plan
+# EV Grant Sprint — Status
 
-## Overview
+Branch: `feat/ev-grant-sprint` (all changes uncommitted, no commits yet)
 
-Import bulk financial data from the NYS Office of the State Comptroller (OSC) into the nybenchmark app, starting with a clean slate for metrics and observations while preserving entities and documents.
-
-**Data Sources:**
-- **Primary:** https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm (61 cities, 1995-2024)
-- **NYC (all years):** https://checkbooknyc.com/ (NYC is never in OSC system - has own Comptroller)
-
-**Historical Range:** As far back as available (1995-2024 for most cities)
+Goal: Prepare app for Emergent Ventures grant application. Navbar cleanup, methodology page, non-filer highlights.
 
 ---
 
-## Phase 0: Data Reset
+## COMPLETED
 
-### 0.1 What We Keep
-- **Users** - Current user accounts
-- **Entities** - All 62 cities with governance data (ICMA council-manager designations, etc.)
-- **Documents** - Keep existing 6 documents (can coexist with new OSC documents)
+### 1. Navbar Cleanup
+- **`app/views/shared/_navbar.html.erb`** — Public nav: NY Benchmark | Cities | Methodology | Blog. Documents/Metrics behind auth only. Verify Queue removed from nav entirely.
+- **`app/views/shared/_footer.html.erb`** — Added Documents, Metrics, Methodology links.
+- **`test/integration/site_navigation_test.rb`** — Updated for new nav structure.
+- **`test/system/authentication_nav_test.rb`** — Updated (removed Verify Queue tests, added admin link visibility tests).
 
-### 0.2 What We Delete
-- **Observations** - All (contains errors from CSV import issues)
-- **Metrics** - All (will rebuild around OSC account codes + census/crime data)
+### 2. PagesController + Routes
+- **`app/controllers/pages_controller.rb`** — NEW. Actions: `methodology`, `non_filers`.
+- **`config/routes.rb`** — Added `get "methodology" => "pages#methodology"` and `get "non-filers" => "pages#non_filers"`.
+- **`test/controllers/pages_controller_test.rb`** — NEW. Tests for both pages (200 status, content assertions, not noindex).
 
-### 0.3 Reset Rake Task
+### 3. Methodology Page
+- **`app/views/pages/methodology.html.erb`** — NEW. Full content: Data Sources (61 cities via OSC, 62 via Census, NYC planned), How Metrics Are Calculated (Fund Balance %, Debt Service %, Per-Capita Spending, all-fund approach, T-fund exclusion, interfund transfers), Known Limitations, Open Source.
 
-```ruby
-# lib/tasks/data_reset.rake
-namespace :data do
-  desc "Reset observations and metrics only (DESTRUCTIVE - keeps entities, documents, and users)"
-  task reset_for_osc: :environment do
-    puts "WARNING: This will delete ALL observations and metrics!"
-    puts "Entities, documents, and users will be preserved."
-    puts "Press Ctrl+C within 5 seconds to cancel..."
-    sleep 5
+### 4. FilingStatus Concern
+- **`app/models/concerns/filing_status.rb`** — NEW. Instance methods: `last_osc_filing_year`, `osc_missing_years(range)`, `osc_filing_rate(range)`. Class methods: `Entity.latest_majority_year`, `Entity.filing_report(as_of_year)`. Three categories: chronic (3+ years behind), recent_lapse (1-2 years), sporadic (<80% 10-year filing rate).
+- **`app/models/entity.rb`** — Added `include FilingStatus`.
+- **`test/models/filing_status_test.rb`** — NEW. 10 tests covering all methods and categorization.
 
-    ActiveRecord::Base.transaction do
-      puts "Deleting observations..."
-      Observation.delete_all
-      puts "Observations deleted: #{Observation.count} remaining"
+### 5. Non-Filer Page
+- **`app/views/pages/non_filers.html.erb`** — NEW. Filing compliance page with Mount Vernon case study, tables grouped by chronic/recent_lapse/sporadic, filing rates, link to methodology.
 
-      puts "Deleting metrics..."
-      Metric.delete_all
-      puts "Metrics deleted: #{Metric.count} remaining"
+### 6. Entity Show — Non-Filer Banner + Missing Years
+- **`app/views/entities/show.html.erb`** — Amber warning banner between header and hero stats for chronic/recent_lapse entities. Single "Amber bands indicate years with no data filed: ..." note in Financial Trends section. All trend card renders pass `missing_years: @missing_osc_years`.
+- **`app/controllers/entities_controller.rb`** — Added `load_filing_status` private method (computes `@filing_category`, `@last_osc_year`, `@missing_osc_years`, `@latest_majority_year`). Added `load_non_filer_ids` for index action.
 
-      puts "Done. Database reset for OSC import."
-      puts "Entities remaining: #{Entity.count}"
-      puts "Documents remaining: #{Document.count}"
-      puts "Users remaining: #{User.count}"
-    end
-  end
-end
-```
+### 7. Trend Card — Chart.js Annotation Config
+- **`app/views/entities/_trend_card.html.erb`** — Rewritten to accept `missing_years` local, build Chart.js annotation plugin box annotations (amber rectangles) for each missing year, fill nil values for gaps in chart data, pass annotations through chartkick's `library` option.
 
----
+### 8. Landing Page + Entity Index
+- **`app/views/welcome/index.html.erb`** — Added non-filer callout: "{N} cities are not included in these rankings..." with link to /non-filers.
+- **`app/controllers/concerns/city_rankings.rb`** — Exposed `@non_filer_count`.
+- **`app/views/entities/index.html.erb`** — Amber "Late" badge next to non-filer city names.
+- **`app/controllers/entities_controller.rb`** — `load_non_filer_ids` precomputes non-filer ID set (no N+1).
+- **`test/controllers/entities_controller_test.rb`** — Added non-filer banner and Late badge tests.
+- **`test/controllers/welcome_controller_test.rb`** — Added non-filer callout test.
 
-## Phase 1: Schema Modifications
+### 9. CSS
+- **`app/assets/stylesheets/application.css`** — Added: `.non-filer-banner`, `.non-filer-callout`, `.trend-missing-years`, `.non-filer-badge`.
 
-### 1.1 Add `bulk_data` source type to Document
-
-```ruby
-# app/models/document.rb
-enum :source_type, { pdf: 0, web: 1, bulk_data: 2 }, default: :pdf
-```
-
-**Behavior for bulk_data:**
-- Does not require `page_reference` on observations
-- Does not have file attachments
-- `source_url` points to data source download page
-- Allows bulk import without manual verification
-
-### 1.2 Add `data_source` enum to Metric
-
-```ruby
-# app/models/metric.rb
-enum :data_source, {
-  manual: 0,          # Manually entered
-  osc: 1,             # NYS Comptroller AFR data (non-NYC, and NYC pre-2011)
-  census: 2,          # US Census Bureau (population, income, poverty)
-  dcjs: 3,            # NYS Division of Criminal Justice Services (crime stats)
-  rating_agency: 4,   # Moody's, S&P, Fitch (bond ratings)
-  derived: 5,         # Calculated from other metrics (per capita, ratios)
-  nyc_checkbook: 6    # NYC Checkbook data (NYC 2011+)
-}, default: :manual
-```
-
-**Rationale for separate `nyc_checkbook`:**
-- Different data structure than OSC
-- Different URL/provenance
-- NYC is uniquely large and has its own transparency portal
-- Keeps OSC data "pure" for the other 61 cities
-
-### 1.3 Add OSC Fields to Entity
-
-```ruby
-# Migration: add_osc_fields_to_entities
-add_column :entities, :osc_municipal_code, :string     # 12-digit OSC code for matching
-
-add_index :entities, :osc_municipal_code
-```
-
-### 1.4 Track Filing Status (DECISION PENDING)
-
-**Problem:** Simple fields like `osc_last_filed_year` don't capture sporadic filing patterns (e.g., Mount Vernon filed through 2015, skipped 2016-2019, filed 2020, then stopped again).
-
-**Options under consideration:**
-- **Option A:** Separate `entity_filing_records` table tracking every year
-- **Option B:** Separate `entity_filing_gaps` table tracking only problems
-- **Option C:** Derive filing status from observations (no new table)
-
-See `db/seeds/osc_data/DATA_QUALITY.md` for full analysis.
-
-**Late Filers (as of 2024):**
-| City | Last Filed | Gap | Notes |
-|------|------------|-----|-------|
-| Mount Vernon | 2020 | 4 years | Lost credit rating per OSC audit |
-| Ithaca | 2021 | 3 years | Late filer |
-| Rensselaer | 2021 | 3 years | Late filer |
-| Fulton | 2022 | 2 years | Late filer |
-
-**NYC:** Never in OSC system (has own Comptroller, uses Checkbook NYC)
-
-### 1.5 Add Account Code Fields to Metric
-
-```ruby
-# Migration: add_osc_fields_to_metrics
-add_column :metrics, :data_source, :integer, default: 0, null: false
-add_column :metrics, :account_code, :string      # Full code: "A31201" (no dots)
-add_column :metrics, :fund_code, :string         # "A" (General Fund)
-add_column :metrics, :function_code, :string     # "3120" (Police)
-add_column :metrics, :object_code, :string       # "1" (Personal Services)
-
-add_index :metrics, :data_source
-add_index :metrics, :account_code
-add_index :metrics, :fund_code
-```
-
-**Account Code Structure (Uniform System of Accounts):**
-
-> **Note:** OSC CSV files use codes WITHOUT dots (e.g., `A31201` not `A3120.1`).
-> The object code is appended directly to the function code.
-
-```
-A31201
-│ │   │
-│ │   └── Object Code: 1 = Personal Services, 2 = Equipment, 4 = Contractual, 8 = Benefits
-│ │
-│ └────── Function Code: 3120 = Police, 3410 = Fire, 8160 = Sanitation, 9015 = PFRS Pension
-│
-└──────── Fund Code: A = General, F = Water, G = Sewer, V = Debt Service
-```
+### 10. Sitemap + CLAUDE.md
+- **`config/sitemap.rb`** — Added methodology and non-filers pages.
+- **`CLAUDE.md`** — Updated testing guidance, CSS documentation.
 
 ---
 
-## Phase 2: Priority Account Codes (The "Rosetta Stone")
+## REMAINING — Chart.js Annotation Plugin Loading (THE BLOCKER)
 
-### 2.1 Revenue Codes - Local Sources
+The annotation plugin config is correctly built in `_trend_card.html.erb` and passed to chartkick via `library` option. BUT the annotation plugin itself isn't loading/registering with Chart.js properly.
 
-| Code | Label | Strategic Value |
-|------|-------|-----------------|
-| A1001 | Real Property Taxes | Primary citizen "pain point" |
-| A1110 | Sales and Use Tax | Economic activity measure |
-| A1120 | Utility Gross Receipts Tax | Local business tax |
-| A2401 | Interest and Earnings | Investment income |
+### Problem
+- Chartkick loads Chart.js via importmap (`import "Chart.bundle"` in `application.js`). This is an ES module that sets `window.Chart` when loaded.
+- The chartjs-plugin-annotation UMD build (`chartjs-plugin-annotation.min.js`) needs `window.Chart` and `window.Chart.helpers` at **parse time** (in its IIFE factory).
+- ES module scripts (`<script type="module">`) execute AFTER classic `<script defer>` scripts, so a `<script defer src="annotation.min.js">` runs before `window.Chart` exists.
 
-### 2.2 Revenue Codes - State Aid
+### Current state of `_head.html.erb`
+The annotation plugin script tags were just REMOVED (they didn't work due to the timing issue above). Only `<%= javascript_importmap_tags %>` remains.
 
-| Code | Label | Strategic Value |
-|------|-------|-----------------|
-| A3001 | State Aid - Revenue Sharing | AIM payments from Albany |
-| A3005 | State Aid - Mortgage Tax | Housing market indicator |
-| A3040 | State Aid - Public Safety | Targeted safety grants |
-| A3089 | State Aid - Other | Miscellaneous state grants |
+### Solution: Dynamic script loading in application.js
+Load the annotation plugin dynamically AFTER Chart.bundle import, when `window.Chart` is guaranteed to exist:
 
-### 2.3 Revenue Codes - Federal Aid (Important!)
+```javascript
+// app/javascript/application.js
+import "@hotwired/turbo-rails"
+import "controllers"
+import "chartkick"
+import "Chart.bundle"
 
-| Code | Label | Strategic Value |
-|------|-------|-----------------|
-| A4089 | Federal Aid - Other | General federal grants |
-| A4389 | Federal Aid - Public Safety | COPS grants, Homeland Security |
-| A4910 | Federal Aid - Housing/Community Dev | HUD, CDBG funds |
-| A4960 | Federal Aid - Emergency Management | FEMA, disaster relief |
-
-**Note:** Federal aid is significant, especially post-COVID (ARPA funds). Cities with higher poverty rates often receive more federal community development aid. This measures federal dependency alongside state dependency.
-
-### 2.4 Expenditure Codes - Public Safety (Critical)
-
-| Code | Label | Strategic Value |
-|------|-------|-----------------|
-| A31201 | Police - Personal Services | Baumol labor cost |
-| A31202 | Police - Equipment | Capital intensity |
-| A31204 | Police - Contractual | Operational overhead |
-| A34101 | Fire - Personal Services | Comparative benchmark |
-| A34104 | Fire - Contractual | Equipment/supplies |
-
-### 2.5 Expenditure Codes - Sanitation (Efficiency Benchmark!)
-
-| Code | Label | Strategic Value |
-|------|-------|-----------------|
-| A81601 | Refuse & Garbage - Personal Services | **Labor cost (your Yonkers vs Watertown example!)** |
-| A81602 | Refuse & Garbage - Equipment | Trucks, bins, automation level |
-| A81604 | Refuse & Garbage - Contractual | Contracted vs in-house collection |
-
-**Strategic Note:** Sanitation is a perfect efficiency benchmark because:
-- Service output is measurable (tons collected, households served)
-- Labor intensity varies dramatically (manual vs automated collection)
-- Easy to understand ("2 guys + driver" vs "1 guy with robotic arm")
-- Union contract impacts are visible (Teamsters negotiations)
-
-### 2.6 Expenditure Codes - Undistributed Benefits (Hidden Costs)
-
-| Code | Label | Strategic Value |
-|------|-------|-----------------|
-| A90158 | Police & Fire Retirement (PFRS) | CRITICAL - uniformed pension load |
-| A90108 | State Retirement (ERS) | Non-uniformed pensions |
-| A90308 | Social Security | Federal mandate |
-| A90408 | Workers Compensation | Risk/injury costs |
-| A90608 | Health Insurance | Fastest-growing cost |
-
-### 2.7 Expenditure Codes - Infrastructure & Debt
-
-| Code | Label | Strategic Value |
-|------|-------|-----------------|
-| A51101 | Street Maintenance | Infrastructure capacity |
-| A51424 | Snow Removal | Variable cost (upstate) |
-| A71101 | Parks | Quality of life |
-| A97106 | Serial Bonds - Principal | Debt burden |
-| A97107 | Serial Bonds - Interest | Debt cost |
-
----
-
-## Phase 3: Per Capita & Derived Metrics
-
-### 3.1 Why Per Capita Matters
-
-Raw spending numbers are misleading:
-- NYC spends $6B on police; Sherrill spends $500K
-- But NYC has 8M people; Sherrill has 3,000
-- Per capita comparison reveals efficiency
-
-### 3.2 Derived Metric Examples
-
-| Derived Metric | Formula | Strategic Value |
-|----------------|---------|-----------------|
-| police_cost_per_capita | (A3120* + A90158) / population | True cost of policing |
-| sanitation_cost_per_capita | A8160* / population | Garbage collection efficiency |
-| fire_cost_per_capita | (A3410* + A90158 allocated) / population | Fire service cost |
-| state_aid_per_capita | A3xxx / population | Dependency on Albany |
-| federal_aid_per_capita | A4xxx / population | Federal dependency |
-| property_tax_per_capita | A1001 / population | Local tax burden |
-| debt_service_per_capita | A9710* / population | Legacy cost burden |
-
-### 3.3 Implementation Approach
-
-```ruby
-# Derived metrics stored in metrics table with:
-#   data_source: :derived
-#   formula: "A3120* + A90158 / population"
-#
-# Calculation happens at query time or via background job
-# Requires population observation for same entity/year
-```
-
-### 3.4 Population Data Requirement
-
-Per capita metrics require population data. Sources:
-- **Census 2020:** Decennial count (most accurate)
-- **ACS estimates:** Annual estimates (2021-2024)
-- **data_source: :census** for these metrics
-
----
-
-## Phase 4: Manual CSV Download Process
-
-### 4.1 Download Steps
-
-1. Go to: https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm
-2. Select export type: **"Revenue, Expenditure and Balance Sheet Data"**
-3. Select detail: **"Single Class of Government for All Years"**
-4. Select class: **"City"**
-5. Click Download (downloads as a **folder**, not ZIP)
-
-### 4.2 File Organization
-
-```
-db/seeds/osc_data/
-├── README.md                    # Download date, source URL, notes
-└── city_all_years/              # Downloaded folder
-    ├── 1995_City.csv
-    ├── 1996_City.csv
-    ├── ...
-    ├── 2023_City.csv
-    ├── 2024_City.csv
-    ├── 2025_City.csv            # Partial (current year)
-    └── 2026_City.csv            # Empty (future year)
-```
-
-### 4.3 CSV Structure
-
-Each yearly file contains ALL data types (revenue, expenditure, balance sheet) for ALL cities.
-
-**Columns:**
-| Column | Example | Description |
-|--------|---------|-------------|
-| CALENDAR_YEAR | 2023 | Fiscal year |
-| MUNICIPAL_CODE | 010201000000 | 12-digit OSC entity code |
-| ENTITY_NAME | City of Albany | Official name |
-| CLASS_DESCRIPTION | City | Government type |
-| COUNTY | Albany | County location |
-| PERIOD_START | 2023-01-01 | Fiscal period start |
-| PERIOD_END | 2023-12-31 | Fiscal period end |
-| ACCOUNT_CODE | A31201 | OSC account code (no dots) |
-| ACCOUNT_CODE_NARRATIVE | Police | Account description |
-| ACCOUNT_CODE_SECTION | EXPENDITURE | REVENUE, EXPENDITURE, or BALANCE_SHEET |
-| LEVEL_1_CATEGORY | Public Safety | High-level category |
-| LEVEL_2_CATEGORY | Police | Sub-category |
-| OBJECT_OF_EXPENDITURE | Personal Services | Object class (expenditures only) |
-| AMOUNT | 37566026 | Dollar amount (may have decimals) |
-| SNAPSHOT_DATE | 2025-12-31 | Data snapshot date |
-
-**Data Notes:**
-- Amounts may include decimals (e.g., `3619538.81`)
-- Fiscal years vary by city (calendar year vs July-June)
-- 2023 file has ~20,000 rows covering all 62 cities
-
-### 4.4 NYC Data (All Years)
-
-**Important:** NYC is **never** in the OSC AFR system. NYC has its own independently elected Comptroller who operates Checkbook NYC separately. The OSC AFR Filing Status page explicitly states: "New York City is not included in this data."
-
-For ALL NYC data:
-- Source: https://checkbooknyc.com/ (launched July 2010)
-- Uses `data_source: :nyc_checkbook` on metrics
-- Different document (doc_type: "nyc_checkbook")
-- Separate import task needed: `osc:import_nyc_checkbook`
-
-**Note:** Pre-2010 NYC data may require different sources (NYC Comptroller archives, CAFR reports).
-
----
-
-## Phase 5: Extensibility for Other Government Types
-
-### 5.1 Current Entity Kinds
-
-```ruby
-enum :kind, {
-  city: "city",
-  town: "town",
-  village: "village",
-  county: "county",
-  school_district: "school_district"
+// Dynamically load annotation plugin after Chart.js is on window
+const script = document.createElement("script")
+script.src = "https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js"
+script.onload = () => {
+  if (window.Chart && window["chartjs-plugin-annotation"]) {
+    window.Chart.register(window["chartjs-plugin-annotation"])
+  }
 }
+document.head.appendChild(script)
 ```
 
-### 5.2 Future-Proofing
-
-The OSC download interface supports:
-- City ✓ (Phase 1)
-- Town (future)
-- Village (future)
-- County (future)
-- Fire District (future - would need new kind)
-- School District ✓ (already in enum)
-
-### 5.3 Rake Task Parameterization
-
-```ruby
-# Design allows for future expansion:
-namespace :osc do
-  desc "Import OSC data for a specific government class"
-  task :import, [:directory, :gov_class] => :environment do |t, args|
-    # gov_class: city, town, village, county, school_district, fire_district
-    # directory contains yearly CSV files (e.g., 2023_City.csv)
-    OscImporter.new(
-      directory: args[:directory],
-      gov_class: args[:gov_class] || 'city'
-    ).import
-  end
-end
-
-# Usage:
-# rails osc:import[db/seeds/osc_data/city_all_years,city]
-#
-# Future usage for other government types:
-# rails osc:import[db/seeds/osc_data/town_all_years,town]
-# rails osc:import[db/seeds/osc_data/village_all_years,village]
-```
-
-### 5.4 Authority Support (Deferred)
-
-Authorities have different data structure (Socrata API available). If added later:
-- New entity kind: `authority`
-- Different import process (API vs CSV)
-- Different account code structure
+**Potential timing concern:** If chartkick renders charts before the dynamic script loads, annotations won't appear on the initial page load. BUT on Turbo navigations (which is how most users browse entity pages), charts re-render after the plugin is already loaded. Test this — if initial page load is a problem, may need to defer chartkick rendering or re-render charts after plugin loads.
 
 ---
 
-## Phase 6: Census & Crime Data (Manual Re-entry)
+## REMAINING — After Plugin Fix
 
-After OSC import is working, manually add back:
-
-### 6.1 Census Metrics (data_source: :census)
-- population_2020 (Decennial Census)
-- population_2024_estimate (ACS)
-- median_household_income
-- poverty_rate
-
-### 6.2 DCJS Metrics (data_source: :dcjs)
-- violent_crime_rate
-- property_crime_rate
-
-### 6.3 Rating Agency Metrics (data_source: :rating_agency)
-- bond_credit_rating_moodys
-- bond_credit_rating_sp
-
-These will be entered via the app UI or a separate seed file, linked to `web` source documents pointing to Census/DCJS websites.
+1. **Run `dci`** — Full CI suite to verify all tests pass
+2. **Manual verification:**
+   - Mount Vernon entity page: amber banner + amber rectangles on trend charts for missing years
+   - Albany entity page: no banner, no rectangles
+   - Landing page: non-filer callout with count
+   - Entity index: "Late" badge on Mount Vernon, Ithaca, Rensselaer, Fulton
+   - `/methodology` — all sections render
+   - `/non-filers` — filing compliance table with categories
+   - Navbar: Cities, Methodology, Blog visible; Documents/Metrics only when signed in
+3. **Commit all changes** on `feat/ev-grant-sprint`
+4. **Push and create PR**
+5. **Add automated data refresh TODO to CLAUDE.md** (cron via solid_queue — per plan)
 
 ---
 
-## Implementation Order
+## FILES CHANGED (all uncommitted)
 
-### Week 1: Schema & Reset
-1. [ ] Create migration: add OSC fields to metrics
-2. [ ] Create migration: add bulk_data to document source_type
-3. [ ] Create migration: add osc_municipal_code to entities
-4. [ ] **DECIDE:** Filing status schema (see DATA_QUALITY.md)
-5. [ ] Create migration: filing status table (after decision)
-6. [ ] Update Document model validations
-7. [ ] Update Observation model validations
-8. [ ] Create data:reset_for_osc rake task
-9. [ ] **RUN RESET** (after backup confirmation)
+### New files:
+- `app/controllers/pages_controller.rb`
+- `app/models/concerns/filing_status.rb`
+- `app/views/pages/methodology.html.erb`
+- `app/views/pages/non_filers.html.erb`
+- `test/controllers/pages_controller_test.rb`
+- `test/models/filing_status_test.rb`
 
-### Week 2: Download & Explore
-7. [x] Manually download OSC CSV files
-8. [x] Analyze CSV structure (columns, format, quirks)
-9. [x] Create entity name mapping (see `db/seeds/osc_data/entity_mapping.yml`)
-10. [x] Document any data quality issues (see `db/seeds/osc_data/DATA_QUALITY.md`)
-
-### Week 3: Import Task
-11. [ ] Build OscImporter service class
-12. [ ] Build osc:import rake task
-13. [ ] Test import with one year of Big Five cities
-14. [ ] Verify data integrity
-15. [ ] Full import (all years, all cities)
-
-### Week 4: Verification & Census Data
-16. [ ] Spot-check imported data against OSC website
-17. [ ] Add census metrics (population, income, poverty)
-18. [ ] Add DCJS crime metrics
-19. [ ] Build comparison views
-
-### Week 5: Per Capita Metrics
-20. [ ] Implement derived metric calculation
-21. [ ] Add per capita metrics (police, sanitation, fire, etc.)
-22. [ ] Build per capita comparison dashboard
-
----
-
-## Success Criteria
-
-- [ ] Database reset completed (0 observations, 0 metrics, 62 entities, 6 documents preserved)
-- [ ] OSC data imported for 61 cities (NYC requires separate Checkbook import)
-- [ ] Historical depth: 1995-2024 where available
-- [ ] Can query: "Police spending for Yonkers, 2015-2023"
-- [ ] Can compare: "A31201 across Big Five cities"
-- [ ] **Per capita comparisons work** (police cost per capita, sanitation per capita, etc.)
-- [ ] **Sanitation metrics included** (A8160* for labor efficiency analysis)
-- [ ] **Federal aid tracked** alongside state aid (A4xxx codes)
-- [ ] Every observation traces to source document (OSC or NYC Checkbook)
-- [ ] Census/crime data re-added for key metrics
-- [ ] **Design supports future expansion** to towns, villages, counties, school districts
-- [ ] **Late filers tracked and highlighted** (Mount Vernon, Ithaca, Rensselaer, Fulton)
-
----
-
-## Risk Mitigation
-
-### Backup Before Reset
-```bash
-# Create backup before destructive operations
-kamal app exec -- bin/rails db:dump > backup_$(date +%Y%m%d).sql
-```
-
-### Incremental Import
-Import in stages:
-1. First: Big Five cities only (Buffalo, Rochester, Syracuse, Yonkers, Albany)
-2. Then: Recent years (2019-2024)
-3. Finally: Historical data (1995-2018)
-4. Last: NYC from Checkbook (2011-2024)
-
-### Data Validation
-After each import stage, verify:
-- Row counts match expectations
-- No orphaned records
-- Amounts are reasonable (no obvious data errors)
-- Per capita calculations produce sensible results
+### Modified files:
+- `CLAUDE.md`
+- `app/assets/stylesheets/application.css`
+- `app/controllers/concerns/city_rankings.rb`
+- `app/controllers/entities_controller.rb`
+- `app/models/entity.rb`
+- `app/views/entities/_trend_card.html.erb`
+- `app/views/entities/index.html.erb`
+- `app/views/entities/show.html.erb`
+- `app/views/shared/_footer.html.erb`
+- `app/views/shared/_navbar.html.erb`
+- `app/views/welcome/index.html.erb`
+- `config/routes.rb`
+- `config/sitemap.rb`
+- `test/controllers/entities_controller_test.rb`
+- `test/controllers/welcome_controller_test.rb`
+- `test/integration/site_navigation_test.rb`
+- `test/system/authentication_nav_test.rb`

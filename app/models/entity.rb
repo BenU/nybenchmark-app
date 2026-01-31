@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Entity < ApplicationRecord
+  include FilingStatus
+
   has_paper_trail
 
   has_many :documents, dependent: :destroy

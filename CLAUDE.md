@@ -38,7 +38,9 @@ This file provides essential context for Claude Code sessions. For detailed hist
 
 **Use TDD for behavior/logic changes:** Write failing tests first, then implement.
 
-**Skip TDD for:** Pure CSS/styling changes, simple config updates, documentation.
+**Skip TDD for:** Pure visual CSS changes (colors, spacing, fonts), simple config updates, documentation.
+
+**Navigation/layout changes require tests:** Adding, removing, or moving links in the navbar or footer is a functional change (affects what users can access), not a styling change. Update existing navigation integration tests to match the desired state before modifying views.
 
 **Use fixtures:** Prefer existing fixtures (e.g., `users(:one)`, `entities(:yonkers)`) over creating records from scratch in tests.
 
@@ -113,6 +115,10 @@ Centralized styles in `app/assets/stylesheets/application.css`:
 - `.sortable-header` - Clickable table column headers
 - `.trend-card`, `.trend-card--revenue` (green), `.trend-card--expenditure` (red), `.trend-card--balance-sheet` (blue) - Financial trend charts
 - `.trend-card--placeholder` - Coming soon cards (muted, dashed border)
+- `.non-filer-banner` - Amber warning banner for non-filing entities
+- `.non-filer-badge` - Small inline amber "Late" badge on entity index
+- `.non-filer-callout` - Landing page note about excluded non-filers
+- `.trend-missing-years` - Note below trend charts for missing years
 
 Avoid inline `style=` attributes; use CSS classes.
 
@@ -179,18 +185,19 @@ Avoid inline `style=` attributes; use CSS classes.
 
 **TODO (prioritized):**
 1. [x] ~~Exclude custodial pass-throughs from expenditure totals~~ — Merged PR #137. ACFR cross-checks still pending (only Albany verified, see AUDIT.md)
-2. [ ] **Add `app.nybenchmark.org` to Google Search Console** — Register as separate property, verify ownership, submit sitemap URL. Also set `url: "https://nybenchmark.org"` in Jekyll `_config.yml` and resubmit sitemap for apex domain.
-3. [ ] **Complete ACFR audit** — Verify remaining cities in AUDIT.md (New Rochelle, Plattsburgh, White Plains, Syracuse, Buffalo, Yonkers, Rochester) against their ACFRs
-4. [ ] **Highlight non-filing entities** — Show which cities haven't submitted data for the current year, with a dedicated page listing late/non-filers and visual indicators on entity trend charts for missing years (Mount Vernon lost credit rating due to non-filing)
-5. [ ] **Data methodology page** — Public-facing page documenting data sources, known comparability issues (custodial pass-throughs, late filers), and metric definitions. Website equivalent of footnotes so users understand the data. When created, add to `config/sitemap.rb`.
-6. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool; add observation data links on entity show page so data remains accessible)
-7. [ ] Import NYC data from Checkbook NYC (separate data source, all years)
-8. [ ] Import towns, villages, counties, districts, and authorities from OSC
-9. [ ] **State Aid as % of Revenue** — Derived metric benchmarking state aid dependency across cities. OSC revenue data already includes state aid line items; needs metric definition, derivation logic, hero stat / ranking placement. Exact denominator (revenue vs expenditures) TBD — research industry standard (GFOA/ICMA practice).
-10. [ ] Level 2 category drill-down (see options below)
-11. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
-12. [ ] Import demographic data for counties, towns, villages, and school districts from Census
-13. [ ] Import FTE staffing data by department (police, fire, public works, etc.) from ACFRs
+2. [x] ~~Add `app.nybenchmark.org` to Google Search Console~~ — Registered, verified, sitemaps submitted for both properties. Jekyll `_config.yml` url fixed. Validated redirect fix for nybenchmark.org.
+3. [ ] **Fix `www` CNAME redirect chain** — `www.nybenchmark.org` still routes through GitHub Pages/Fastly before redirecting to apex. Not an SEO issue but an unnecessary hop. Options: CNAME `www` to `app.nybenchmark.org` (needs Rails/Cloudflare redirect config), or add a Cloudflare redirect rule for `www` → apex.
+4. [ ] **Complete ACFR audit** — Verify remaining cities in AUDIT.md (New Rochelle, Plattsburgh, White Plains, Syracuse, Buffalo, Yonkers, Rochester) against their ACFRs
+5. [ ] **Highlight non-filing entities** — Show which cities haven't submitted data for the current year, with a dedicated page listing late/non-filers and visual indicators on entity trend charts for missing years (Mount Vernon lost credit rating due to non-filing)
+6. [ ] **Data methodology page** — Public-facing page documenting data sources, known comparability issues (custodial pass-throughs, late filers), and metric definitions. Website equivalent of footnotes so users understand the data. When created, add to `config/sitemap.rb`.
+7. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool; add observation data links on entity show page so data remains accessible)
+8. [ ] Import NYC data from Checkbook NYC (separate data source, all years). After import, request GSC indexing for `https://app.nybenchmark.org/entities/nyc` and other key entity pages.
+9. [ ] Import towns, villages, counties, districts, and authorities from OSC
+10. [ ] **State Aid as % of Revenue** — Derived metric benchmarking state aid dependency across cities. OSC revenue data already includes state aid line items; needs metric definition, derivation logic, hero stat / ranking placement. Exact denominator (revenue vs expenditures) TBD — research industry standard (GFOA/ICMA practice).
+11. [ ] Level 2 category drill-down (see options below)
+12. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
+13. [ ] Import demographic data for counties, towns, villages, and school districts from Census
+14. [ ] Import FTE staffing data by department (police, fire, public works, etc.) from ACFRs
 
 **Level 2 Category Drill-Down Options:**
 - **Option A:** Expandable cards - Click level_1 card to expand and show level_2 sub-charts inline
