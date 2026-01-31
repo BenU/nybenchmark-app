@@ -21,4 +21,7 @@ Rails.application.routes.draw do
 
   get "up" => "rails/health#show", as: :rails_health_check
   get "for-llms" => "welcome#for_llms"
+
+  # Redirect sitemap to DO Spaces so GSC can discover it under app.nybenchmark.org
+  get "sitemaps/sitemap.xml.gz", to: redirect("https://nybenchmark-production.nyc3.digitaloceanspaces.com/sitemaps/sitemap.xml.gz", status: 301)
 end

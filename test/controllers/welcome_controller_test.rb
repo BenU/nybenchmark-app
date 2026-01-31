@@ -313,6 +313,16 @@ class WelcomeControllerTest < ActionDispatch::IntegrationTest
     assert_select "tbody td", text: /3,400/, count: 0
   end
 
+  # ==========================================
+  # SITEMAP REDIRECT TEST
+  # ==========================================
+
+  test "sitemap path redirects to DO Spaces URL" do
+    get "/sitemaps/sitemap.xml.gz"
+    assert_response :redirect
+    assert_redirected_to "https://nybenchmark-production.nyc3.digitaloceanspaces.com/sitemaps/sitemap.xml.gz"
+  end
+
   private
 
   # Create N cities each with expenditure, fund balance, and debt service data.
