@@ -14,7 +14,7 @@ module CityRankings
 
   private
 
-  def load_city_rankings # rubocop:disable Metrics/MethodLength
+  def load_city_rankings
     city_ids = Entity.where(kind: :city).pluck(:id)
     @rankings_year = most_recent_expenditure_year(city_ids)
     return if @rankings_year.nil?
@@ -22,18 +22,19 @@ module CityRankings
     expenditures = total_expenditures_by_entity(city_ids, @rankings_year)
     return if expenditures.blank?
 
+    build_all_rankings(city_ids, expenditures)
+    @non_filer_count = city_ids.size - expenditures.keys.size
+  end
+
+  def build_all_rankings(city_ids, expenditures)
     @fund_balance_ranking = build_ranking(
-      fund_balances_by_entity(city_ids, @rankings_year),
-      expenditures, :percentage
+      fund_balances_by_entity(city_ids, @rankings_year), expenditures, :percentage
     )
     @debt_service_ranking = build_ranking(
-      debt_service_by_entity(city_ids, @rankings_year),
-      expenditures, :percentage
+      debt_service_by_entity(city_ids, @rankings_year), expenditures, :percentage
     )
     @per_capita_ranking = build_ranking(
-      expenditures,
-      population_by_entity(city_ids, @rankings_year),
-      :currency
+      expenditures, population_by_entity(city_ids, @rankings_year), :currency
     )
   end
 

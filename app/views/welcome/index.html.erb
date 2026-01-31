@@ -18,6 +18,14 @@
   </div>
 
   <p><%= link_to "Explore Cities", entities_path, role: "button" %></p>
+
+  <% if @non_filer_count && @non_filer_count > 0 %>
+    <p class="non-filer-callout">
+      <%= @non_filer_count %> <%= @non_filer_count == 1 ? "city" : "cities" %>
+      not included in the <%= @rankings_year %> rankings below due to late or missing filings.
+      <%= link_to "View filing status", non_filers_path %>
+    </p>
+  <% end %>
 </section>
 
 <% if @fund_balance_ranking.present? || @debt_service_ranking.present? || @per_capita_ranking.present? %>

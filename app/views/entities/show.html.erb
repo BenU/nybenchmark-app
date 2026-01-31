@@ -11,6 +11,25 @@
     </div>
   </div>
 
+  <%# Non-filer warning banner %>
+  <% if @filing_category == :chronic %>
+    <article class="non-filer-banner">
+      <strong><%= @entity.name %></strong> last filed financial data with the NYS Comptroller
+      <% if @last_osc_year %>
+        in <%= @last_osc_year %>. Financial trends and rankings may not reflect current conditions.
+      <% else %>
+        — no financial data has been filed with the NYS Comptroller for this city.
+      <% end %>
+      <a href="<%= non_filers_path %>">View filing compliance</a>
+    </article>
+  <% elsif @filing_category == :recent_lapse %>
+    <article class="non-filer-banner">
+      <strong><%= @entity.name %></strong> has not yet filed for FY <%= @latest_majority_year %>.
+      Data through FY <%= @last_osc_year %> is shown.
+      <a href="<%= non_filers_path %>">View filing compliance</a>
+    </article>
+  <% end %>
+
   <%# Hero stats bar %>
   <% if @hero_stats.present? %>
     <div class="hero-stats">
@@ -49,24 +68,30 @@
         <p>Curated financial dashboard<% if @fiscal_year_range&.first %> (<%= @fiscal_year_range.first %>-<%= @fiscal_year_range.last %>)<% end %></p>
       </hgroup>
 
+      <% if @missing_osc_years.present? %>
+        <p class="trend-missing-years">
+          No data filed for: <%= @missing_osc_years.sort.join(", ") %>
+        </p>
+      <% end %>
+
       <%# Fiscal Health Section %>
       <% if @balance_sheet_trends.present? || @debt_service_trends.present? %>
         <h3>Fiscal Health</h3>
         <div class="trends-grid">
           <%# Balance sheet items (Unassigned Fund Balance, Cash Position) %>
           <% @balance_sheet_trends.each do |key, info| %>
-            <%= render "trend_card", label: info[:label], info: info, account_type: "balance_sheet" %>
+            <%= render "trend_card", label: info[:label], info: info, account_type: "balance_sheet", latest_year: @latest_majority_year %>
           <% end %>
 
           <%# Debt Service %>
           <% @debt_service_trends.each do |category, info| %>
-            <%= render "trend_card", label: category, info: info, account_type: "expenditure" %>
+            <%= render "trend_card", label: category, info: info, account_type: "expenditure", latest_year: @latest_majority_year %>
           <% end %>
 
           <%# Derived metrics: Fund Balance % and Debt Service % %>
           <% @derived_trends&.each do |_key, info| %>
             <% next unless info.present? && info[:data].present? %>
-            <%= render "trend_card", label: info[:label], info: info, account_type: "derived" %>
+            <%= render "trend_card", label: info[:label], info: info, account_type: "derived", latest_year: @latest_majority_year %>
           <% end %>
         </div>
       <% end %>
@@ -76,7 +101,7 @@
         <h3>Top Revenue Sources</h3>
         <div class="trends-grid">
           <% @revenue_trends.each do |category, info| %>
-            <%= render "trend_card", label: category, info: info, account_type: "revenue" %>
+            <%= render "trend_card", label: category, info: info, account_type: "revenue", latest_year: @latest_majority_year %>
           <% end %>
         </div>
       <% end %>
@@ -86,7 +111,7 @@
         <h3>Top Expenditures</h3>
         <div class="trends-grid">
           <% @expenditure_trends.each do |category, info| %>
-            <%= render "trend_card", label: category, info: info, account_type: "expenditure" %>
+            <%= render "trend_card", label: category, info: info, account_type: "expenditure", latest_year: @latest_majority_year %>
           <% end %>
         </div>
       <% end %>

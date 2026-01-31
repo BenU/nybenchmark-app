@@ -14,21 +14,37 @@
                else "trend-card"
                end
 
+  # Extend chart data to target year so non-filer gaps are visible on x-axis
+  target_year = local_assigns[:latest_year]
+  chart_data = extend_chart_data_to_year(info[:data], target_year)
+  first_year, last_year = chart_year_range(chart_data)
+
   latest_value = info[:data].values.compact.last
   formatted_latest = if account_type == "derived"
                        latest_value ? "#{latest_value}%" : "—"
                      else
                        latest_value ? number_to_currency(latest_value, precision: 0) : "—"
                      end
+
+  chart_library = {
+    scales: { x: { display: false }, y: { display: false } },
+    plugins: { legend: { display: false } },
+    elements: { point: { radius: 0 } },
+    spanGaps: false
+  }
 %>
 <article class="<%= card_class %>">
   <header>
     <strong><%= label %></strong>
     <span class="trend-latest"><%= formatted_latest %></span>
   </header>
-  <%= area_chart info[:data],
-                 library: { scales: { x: { display: false }, y: { display: false } },
-                           plugins: { legend: { display: false } },
-                           elements: { point: { radius: 0 } } },
+  <%= area_chart chart_data,
+                 library: chart_library,
                  height: "80px", colors: [chart_color] %>
+  <% if first_year && last_year %>
+    <div class="trend-year-range">
+      <span><%= first_year %></span>
+      <span><%= last_year %></span>
+    </div>
+  <% end %>
 </article>

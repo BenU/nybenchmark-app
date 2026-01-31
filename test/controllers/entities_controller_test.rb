@@ -370,6 +370,63 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==========================================
+  # NON-FILER INDEX BADGE TESTS
+  # ==========================================
+
+  test "index shows Late badge for non-filing entities" do
+    get entities_url
+    assert_response :success
+
+    # Albany has no OSC data — should show Late badge
+    assert_select ".non-filer-badge", minimum: 1
+  end
+
+  # ==========================================
+  # NON-FILER BANNER TESTS
+  # ==========================================
+
+  test "show displays non-filer banner for entity without OSC data" do
+    albany = entities(:albany)
+    get entity_url(albany.slug)
+    assert_response :success
+
+    assert_select ".non-filer-banner"
+  end
+
+  test "show does not display non-filer banner for entity with current OSC data" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    assert_select ".non-filer-banner", count: 0
+  end
+
+  # ==========================================
+  # FILING STATUS FILTER TESTS
+  # ==========================================
+
+  test "index has filing status filter dropdown" do
+    get entities_url
+    assert_response :success
+    assert_select "select[name='filing_status']"
+  end
+
+  test "index filters to current filers only" do
+    get entities_url, params: { filing_status: "current" }
+    assert_response :success
+
+    # Yonkers has OSC data (current filer), Albany does not
+    assert_select "td", text: @entity.name
+  end
+
+  test "index filters to late/non-filers only" do
+    get entities_url, params: { filing_status: "late" }
+    assert_response :success
+
+    # Yonkers is a current filer — should not appear
+    assert_select "td", text: @entity.name, count: 0
+  end
+
+  # ==========================================
   # SEO: ENTITY PAGES SHOULD BE INDEXED
   # ==========================================
 

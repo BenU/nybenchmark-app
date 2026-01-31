@@ -32,7 +32,11 @@ SitemapGenerator::Sitemap.create do
     add entity_path(entity), lastmod: entity.updated_at, changefreq: "weekly", priority: 0.8
   end
 
-  # NOTE: When adding new public-facing pages (benchmarks, comparisons, methodology, etc.),
+  # Content pages
+  add methodology_path, changefreq: "monthly", priority: 0.6
+  add non_filers_path, changefreq: "weekly", priority: 0.6
+
+  # NOTE: When adding new public-facing pages (benchmarks, comparisons, etc.),
   # add them here. See CLAUDE.md "SEO & Sitemap" section.
   #
   # Documents, metrics, and observations are excluded intentionally — they are

@@ -1,0 +1,126 @@
+<% content_for(:title) { "Filing Compliance — NY Benchmark" } %>
+
+<main class="container">
+  <div class="page-header">
+    <hgroup>
+      <h1>Filing Compliance</h1>
+      <p>Which cities are up to date with their Annual Financial Reports?</p>
+    </hgroup>
+  </div>
+
+  <section>
+    <h2>Why Filing Matters</h2>
+    <p>
+      New York's cities are required to file Annual Financial Reports (AFRs) with the
+      <a href="https://www.osc.ny.gov/local-government/data">NYS Office of the State Comptroller</a>.
+      These reports are the primary source of comparable financial data across municipalities.
+      When a city fails to file, it becomes invisible to benchmarking, reduces public accountability,
+      and can have serious consequences.
+    </p>
+    <p>
+      The most notable case is <strong>Mount Vernon</strong>, which lost its credit rating after years
+      of non-filing. The OSC conducted special audits
+      (<a href="https://www.osc.ny.gov/local-government/audits/mount-vernon">2020M-96</a>)
+      documenting the city's failure to produce timely financial reports.
+      Approximately 20% of New York local governments fail to file on time in any given year.
+    </p>
+  </section>
+
+  <% if @filing_report[:chronic].any? %>
+    <section>
+      <h2>Chronic / Ceased Non-Filers</h2>
+      <p>Cities that have not filed for 3 or more years as of FY <%= @as_of_year %>.</p>
+      <figure>
+        <table>
+          <thead>
+            <tr>
+              <th>City</th>
+              <th>Last Filed</th>
+              <th>Years Behind</th>
+              <th>10-Year Filing Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @filing_report[:chronic].each do |city| %>
+              <% last_year = city.last_osc_filing_year %>
+              <tr>
+                <td><%= link_to city.name, entity_path(city) %></td>
+                <td><%= last_year || "Never" %></td>
+                <td><%= last_year ? @as_of_year - last_year : "N/A" %></td>
+                <td><%= city.osc_filing_rate((@as_of_year - 9)..@as_of_year) %>%</td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </figure>
+    </section>
+  <% end %>
+
+  <% if @filing_report[:recent_lapse].any? %>
+    <section>
+      <h2>Recent Lapses</h2>
+      <p>Cities that usually file but missed 1-2 recent years.</p>
+      <figure>
+        <table>
+          <thead>
+            <tr>
+              <th>City</th>
+              <th>Last Filed</th>
+              <th>Years Behind</th>
+              <th>10-Year Filing Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @filing_report[:recent_lapse].each do |city| %>
+              <% last_year = city.last_osc_filing_year %>
+              <tr>
+                <td><%= link_to city.name, entity_path(city) %></td>
+                <td><%= last_year %></td>
+                <td><%= @as_of_year - last_year %></td>
+                <td><%= city.osc_filing_rate((@as_of_year - 9)..@as_of_year) %>%</td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </figure>
+    </section>
+  <% end %>
+
+  <% if @filing_report[:sporadic].any? %>
+    <section>
+      <h2>Sporadic Filers</h2>
+      <p>Cities that file intermittently, with a 10-year filing rate below 80%.</p>
+      <figure>
+        <table>
+          <thead>
+            <tr>
+              <th>City</th>
+              <th>Last Filed</th>
+              <th>10-Year Filing Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @filing_report[:sporadic].each do |city| %>
+              <tr>
+                <td><%= link_to city.name, entity_path(city) %></td>
+                <td><%= city.last_osc_filing_year %></td>
+                <td><%= city.osc_filing_rate((@as_of_year - 9)..@as_of_year) %>%</td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </figure>
+    </section>
+  <% end %>
+
+  <section>
+    <p>
+      The remaining <strong><%= @filer_count %></strong> of <%= @total_cities %> cities
+      filed for FY <%= @as_of_year %>.
+    </p>
+    <p>
+      <a href="<%= methodology_path %>">Read our full methodology</a> for details on data sources
+      and how metrics are calculated.
+    </p>
+  </section>
+</main>

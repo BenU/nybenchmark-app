@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # The test environment is used exclusively to run your application's
 # test suite. You never need to work with it otherwise. Remember that
 # your test database is "scratch space" for the test suite and is wiped
@@ -54,9 +56,13 @@ Rails.application.configure do
   # Bullet N+1 query detection - raises errors in tests for CI
   config.after_initialize do
     Bullet.enable = true
-    Bullet.raise = true  # Raise exceptions on N+1 queries
+    Bullet.raise = true # Raise exceptions on N+1 queries
 
     # Ignore ActiveStorage internal eager loading (we don't control it)
     Bullet.add_safelist type: :unused_eager_loading, class_name: "ActiveStorage::Attachment", association: :record
+
+    # Entity index always includes :parent for fiscal autonomy column;
+    # some filtered subsets may not use it (e.g. filing_status=late)
+    Bullet.add_safelist type: :unused_eager_loading, class_name: "Entity", association: :parent
   end
 end

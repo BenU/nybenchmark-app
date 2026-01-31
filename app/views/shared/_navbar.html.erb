@@ -6,29 +6,14 @@
       </li>
     </ul>
     <ul>
-      <li><%= link_to "Entities", entities_path, class: "secondary" %></li>
-      <li><%= link_to "Documents", documents_path, class: "secondary" %></li>
-      <li><%= link_to "Metrics", metrics_path, class: "secondary" %></li>
+      <li><%= link_to "Cities", entities_path, class: "secondary" %></li>
+      <li><%= link_to "Non-Filers", non_filers_path, class: "secondary" %></li>
+      <li><%= link_to "Methodology", methodology_path, class: "secondary" %></li>
       <li><%= link_to "Blog", "https://nybenchmark.org", class: "secondary", target: "_blank", rel: "noopener" %></li>
 
     <% if user_signed_in? %>
-      <li>
-        <% first_provisional = Observation.provisional.order(:id).first %>
-        <% queue_count = Observation.provisional.count %>
-        <% if first_provisional %>
-          <%= link_to verify_observation_path(first_provisional),
-                      class: "contrast font-bold flex items-center gap-2 link-plain" do %>
-            Verify Queue
-            <span class="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full"><%= queue_count %></span>
-          <% end %>
-        <% else %>
-          <span class="secondary text-sm flex items-center gap-2">
-            Verify Queue
-            <span class="bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">0</span>
-          </span>
-        <% end %>
-      </li>
-
+      <li><%= link_to "Documents", documents_path, class: "secondary" %></li>
+      <li><%= link_to "Metrics", metrics_path, class: "secondary" %></li>
       <li><span class="secondary text-sm"><%= current_user.email %></span></li>
       <li>
         <%= button_to "Sign out",

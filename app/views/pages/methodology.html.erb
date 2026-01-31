@@ -1,0 +1,150 @@
+<% content_for(:title) { "Methodology — NY Benchmark" } %>
+
+<main class="container">
+  <div class="page-header">
+    <hgroup>
+      <h1>Methodology</h1>
+      <p>How we collect, process, and present municipal financial data.</p>
+    </hgroup>
+  </div>
+
+  <section>
+    <h2>Data Sources</h2>
+
+    <article>
+      <header><strong>NYS Comptroller (OSC)</strong></header>
+      <p>
+        The <a href="https://www.osc.ny.gov/local-government/data">NYS Office of the State Comptroller</a>
+        collects Annual Financial Reports (AFRs) from local governments across New York State.
+        NY Benchmark imports this data for all 62 cities. Of these, 61 have filed at least once
+        between 1995 and 2024. The remaining city — New York City — has its own Comptroller and
+        is not part of the OSC reporting system. We plan to import NYC data from
+        <a href="https://www.checkbooknyc.com/">Checkbook NYC</a> in a future release.
+      </p>
+      <p>
+        As of the most recent filing year (2024), 57 cities have submitted data. Four cities are
+        <a href="/non-filers">late or non-filing</a>.
+        The OSC dataset includes revenue, expenditure, and balance sheet data at the fund and
+        account-code level, totaling over 647,000 individual observations.
+      </p>
+    </article>
+
+    <article>
+      <header><strong>US Census Bureau (ACS)</strong></header>
+      <p>
+        Population, income, poverty, and housing data comes from the
+        <a href="https://www.census.gov/programs-surveys/acs">American Community Survey</a>
+        (5-year estimates) via the Census Bureau API. This covers all 62 cities (including NYC)
+        from 2012 to 2023, totaling over 14,000 observations.
+      </p>
+      <p>
+        ACS 5-year estimates are based on survey samples and carry margins of error.
+        For small cities, these margins can be significant. We use point estimates
+        throughout the application.
+      </p>
+    </article>
+  </section>
+
+  <section>
+    <h2>How Metrics Are Calculated</h2>
+
+    <p>
+      The three headline metrics used in city rankings and entity dashboards are derived
+      from OSC and Census data:
+    </p>
+
+    <dl>
+      <dt><strong>Fund Balance %</strong></dt>
+      <dd>
+        Unassigned Fund Balance (account code A917) divided by Total Expenditures, expressed
+        as a percentage. A higher fund balance generally indicates stronger fiscal reserves.
+      </dd>
+
+      <dt><strong>Debt Service %</strong></dt>
+      <dd>
+        Total Debt Service (all accounts in the Debt Service category) divided by Total
+        Expenditures, expressed as a percentage. A lower percentage typically indicates
+        less debt burden.
+      </dd>
+
+      <dt><strong>Per-Capita Spending</strong></dt>
+      <dd>
+        Total Expenditures divided by population (from Census ACS data). Provides a
+        normalized comparison of spending across cities of different sizes.
+      </dd>
+    </dl>
+
+    <h3>All-Fund Approach</h3>
+    <p>
+      Expenditure and revenue totals include all fund types (General, Highway, Water, Sewer,
+      Enterprise, etc.) with two exclusions:
+    </p>
+    <ul>
+      <li>
+        <strong>Trust & Custodial Fund (T-fund)</strong> — Cities in Westchester and Nassau
+        counties act as tax collectors for county and school district taxes. These pass-through
+        amounts are reported in the T-fund and can inflate apparent expenditures by 40-50%.
+        We exclude the entire T-fund to remove these pass-throughs.
+      </li>
+      <li>
+        <strong>Interfund Transfers</strong> — When cities move money between funds, OSC
+        reports these as expenditures ("Other Uses") and revenues ("Other Sources") at the
+        fund level. Cities' own ACFRs eliminate these in government-wide statements. We do
+        the same to prevent double-counting.
+      </li>
+    </ul>
+
+    <h3>Fund Structure Variation</h3>
+    <p>
+      Cities organize their finances differently. Some run water and sewer operations through
+      the General Fund (A), while others use dedicated Enterprise (E), Water (F), and Sewer (G)
+      funds. Debt service may appear in any fund. The all-fund approach handles this correctly
+      by including all legitimate spending regardless of fund structure.
+    </p>
+  </section>
+
+  <section>
+    <h2>Known Limitations</h2>
+
+    <ul>
+      <li>
+        <strong>Late and non-filing cities</strong> — Not all cities file their Annual Financial
+        Reports on time. Four cities are currently late, with the most significant case being
+        Mount Vernon, which lost its credit rating due to years of non-filing.
+        <a href="/non-filers">View filing compliance details</a>.
+      </li>
+      <li>
+        <strong>NYC not yet included in OSC data</strong> — New York City operates under its own
+        Comptroller and does not file with the OSC. NYC data will be imported from Checkbook NYC
+        in a future release.
+      </li>
+      <li>
+        <strong>GASB 54 and fund balance classification</strong> — The "Unassigned Fund Balance"
+        metric (account code A917) only exists from 2011 onward, when GASB Statement No. 54
+        reclassified fund balances from Reserved/Unreserved into Nonspendable, Restricted,
+        Committed, Assigned, and Unassigned categories. Some cities also reclassify fund
+        balance between categories year to year. For example, Buffalo reported no Unassigned
+        Fund Balance for 2018-2020, instead categorizing its entire General Fund balance as
+        Assigned or Restricted during those years.
+      </li>
+      <li>
+        <strong>Early year coverage</strong> — Data coverage is sparser in the earliest years
+        (1995-2000) as fewer cities had filed electronically.
+      </li>
+      <li>
+        <strong>Census margins of error</strong> — ACS 5-year estimates are survey-based and
+        carry margins of error, particularly for smaller cities.
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Open Source</h2>
+    <p>
+      NY Benchmark is fully open source under the
+      <a href="https://github.com/BenU/nybenchmark-app">MIT license</a>.
+      The source code, data import scripts, and issue tracker are all available on GitHub.
+      Contributions, bug reports, and suggestions are welcome.
+    </p>
+  </section>
+</main>

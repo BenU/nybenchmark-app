@@ -4,7 +4,6 @@ require "test_helper"
 
 class SiteNavigationTest < ActionDispatch::IntegrationTest
   test "layout has semantic header and footer with navigation (signed out)" do
-    # specific target doesn't matter, provided it renders the application layout
     get entities_url
     assert_response :success
 
@@ -18,24 +17,15 @@ class SiteNavigationTest < ActionDispatch::IntegrationTest
           end
         end
 
-        # Menu Links
-        assert_select "ul" do
-          assert_select "li" do
-            assert_select "a[href=?]", entities_path, text: "Entities"
-          end
-        end
+        # Public menu links
+        assert_select "a[href=?]", entities_path, text: "Cities"
+        assert_select "a[href=?]", non_filers_path, text: "Non-Filers"
+        assert_select "a[href=?]", methodology_path, text: "Methodology"
+        assert_select "a[href='https://nybenchmark.org'][target='_blank'][rel='noopener']", text: "Blog"
 
-        assert_select "li" do
-          assert_select "a[href=?]", documents_path, text: "Documents"
-        end
-
-        assert_select "li" do
-          assert_select "a[href=?]", metrics_path, text: "Metrics"
-        end
-
-        assert_select "li" do
-          assert_select "a[href='https://nybenchmark.org'][target='_blank'][rel='noopener']", text: "Blog"
-        end
+        # Admin links should NOT be visible when signed out
+        assert_select "a", text: "Documents", count: 0
+        assert_select "a", text: "Metrics", count: 0
 
         # Auth links (signed out)
         assert_select "a[href=?]", new_user_session_path, text: "Sign in"
@@ -47,17 +37,26 @@ class SiteNavigationTest < ActionDispatch::IntegrationTest
     # 2. Semantic Footer Check
     assert_select "body > footer.container", count: 1 do
       assert_select "small", text: /NY Benchmark/
-      assert_select "small", text: /#{Time.current.year}/ # Dynamic year check
+      assert_select "small", text: /#{Time.current.year}/
+      # Footer should contain admin navigation links
+      assert_select "a[href=?]", observations_path, text: "Observations"
+      assert_select "a[href=?]", documents_path, text: "Documents"
+      assert_select "a[href=?]", metrics_path, text: "Metrics"
+      assert_select "a[href=?]", methodology_path, text: "Methodology"
     end
   end
 
-  test "navbar shows sign out + email when signed in" do
+  test "navbar shows admin links + sign out when signed in" do
     sign_in users(:one)
 
     get entities_url
     assert_response :success
 
     assert_select "body > header.container nav" do
+      # Admin links visible when signed in
+      assert_select "a[href=?]", documents_path, text: "Documents"
+      assert_select "a[href=?]", metrics_path, text: "Metrics"
+
       assert_select "span.secondary", text: users(:one).email
 
       assert_select "form[action=?]", destroy_user_session_path do

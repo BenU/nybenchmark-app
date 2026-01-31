@@ -86,6 +86,75 @@
   display: none;
 }
 
+/* Non-filer warning banner (reuses flash--warning palette) */
+.non-filer-banner {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: #fff3cd;
+  color: #664d03;
+  border: 1px solid #ffecb5;
+  border-left: 0.5rem solid #664d03;
+  border-radius: var(--pico-border-radius);
+}
+
+.non-filer-banner a {
+  color: #664d03;
+  font-weight: 600;
+}
+
+/* Non-filer callout on landing page */
+.non-filer-callout {
+  text-align: center;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  color: #664d03;
+  background-color: rgba(255, 243, 205, 0.5);
+  border-radius: var(--pico-border-radius);
+}
+
+.non-filer-callout a {
+  color: #664d03;
+  font-weight: 600;
+}
+
+/* Year range labels below trend charts */
+.trend-year-range {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: #94a3b8;
+  margin-top: -0.25rem;
+  padding: 0 0.125rem;
+}
+
+/* Missing years note below trend charts */
+.trend-missing-years {
+  display: block;
+  margin-top: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.7rem;
+  color: #664d03;
+  background-color: rgba(255, 243, 205, 0.5);
+  border-radius: 0.25rem;
+}
+
+/* Non-filer badge for entity index */
+.non-filer-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background-color: #fff3cd;
+  color: #664d03;
+  border: 1px solid #ffecb5;
+  border-radius: 0.25rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
 /*
  * SORTABLE TABLE HEADERS
  * Clickable column headers for sorting tables

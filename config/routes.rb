@@ -19,6 +19,10 @@ Rails.application.routes.draw do
     end
   end  
 
+  # Content pages
+  get "methodology" => "pages#methodology"
+  get "non-filers" => "pages#non_filers"
+
   get "up" => "rails/health#show", as: :rails_health_check
   get "for-llms" => "welcome#for_llms"
 
