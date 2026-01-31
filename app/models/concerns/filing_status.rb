@@ -38,7 +38,7 @@ module FilingStatus
   # Returns :chronic, :recent_lapse, :sporadic, or nil (current filer).
   def filing_category(as_of_year)
     last_year = last_osc_filing_year
-    return nil if last_year == as_of_year
+    return nil if last_year && last_year >= as_of_year
 
     gap = last_year.nil? ? as_of_year : (as_of_year - last_year)
     return :chronic if gap >= CHRONIC_THRESHOLD
