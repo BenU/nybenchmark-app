@@ -4,9 +4,9 @@ This file provides essential context for Claude Code sessions. For detailed hist
 
 ## Essential Reading
 
-- **AI-CONTEXT.md** - Domain invariants and non-negotiable rules
-- **README.md** - Project overview and core concepts
+- **README.md** - Project overview, tech stack, and getting started
 - **AUDIT.md** - Data quality audit checklist (pending ACFR cross-check)
+- **doc/ops.md** - Production operations, backups, security
 
 ## Development Environment
 
@@ -94,7 +94,18 @@ After updating secrets: `kamal env push` then `kd` to deploy.
 
 **Entity relationships:**
 - Fiscally dependent entities (e.g., Big Five school districts) have a `parent_id`
+- `parent_id` represents **fiscal/reporting roll-up only**, not geography or political containment
+- Geographic containment is not currently modeled; do not overload `parent_id` for this
 - `Document.for_entity(id)` includes parent entity documents
+
+**School district rule:**
+- If `kind == school_district`, `school_legal_type` must be present
+- Otherwise, `school_legal_type` must be blank
+
+**Authentication & authorization:**
+- Authentication via Devise
+- No role distinctions — all logged-in users have full read/write access to all resources
+- Public visitors can view entities, landing page, methodology, and non-filers pages
 
 ## Verify Cockpit
 
@@ -122,9 +133,9 @@ Centralized styles in `app/assets/stylesheets/application.css`:
 
 Avoid inline `style=` attributes; use CSS classes.
 
-## In Progress
+## Project History
 
-**OSC Data Import** - See `PLAN.md` for full roadmap, `db/seeds/osc_data/` for data files and analysis.
+**OSC Data Import** - See `db/seeds/osc_data/` for data files and analysis.
 
 **Completed:**
 - [x] Downloaded OSC CSV files (1995-2024, 57 cities)
@@ -183,14 +194,33 @@ Avoid inline `style=` attributes; use CSS classes.
 - [x] Production counts after cleanup: 2,507 documents, 4,343 metrics, 661,883 observations
 - [x] Bumped brakeman 8.0.0 → 8.0.1
 
+**Completed (EV Grant Sprint — PR #145):**
+- [x] Navbar cleanup: public nav is Cities, Non-Filers, Methodology, Blog; Documents/Metrics behind auth only; Verify Queue removed from nav
+- [x] Footer: added Documents, Metrics, Methodology links; observations link kept in footer
+- [x] PagesController with `/methodology` and `/non-filers` routes
+- [x] Methodology page: data sources (OSC, Census), metric calculations (Fund Balance %, Debt Service %, Per-Capita Spending), all-fund approach, T-fund exclusion, interfund transfers, known limitations
+- [x] FilingStatus concern (`app/models/concerns/filing_status.rb`): `last_osc_filing_year`, `osc_missing_years`, `osc_filing_rate`, `filing_category` (chronic/recent_lapse/sporadic), `Entity.latest_majority_year`, `Entity.filing_report`
+- [x] Non-filers page: filing compliance tables grouped by category, filing rates, Mount Vernon case study
+- [x] Entity show: non-filer amber banner, missing years note in Financial Trends section
+- [x] Entity index: "Late" badge on non-filer cities, filing status filter dropdown
+- [x] Landing page: non-filer callout with count and link to `/non-filers`
+- [x] CityRankings concern: exposed `@non_filer_count`
+- [x] TrendChartHelper for consistent x-axis year labels (string keys for Chart.js category scale)
+- [x] Sitemap updated with methodology and non-filers pages
+- [x] 207 new test assertions across 6 new and 5 updated test files
+
+**Completed (filing status bugfix — PR #146):**
+- [x] Fixed `filing_category` returning `:recent_lapse` for cities filing ahead of `latest_majority_year` (e.g., early filers for 2025 when target year is 2024)
+- [x] Changed `== as_of_year` to `>= as_of_year` in `FilingStatus#filing_category`
+
 **TODO (prioritized):**
 1. [x] ~~Exclude custodial pass-throughs from expenditure totals~~ — Merged PR #137. ACFR cross-checks still pending (only Albany verified, see AUDIT.md)
 2. [x] ~~Add `app.nybenchmark.org` to Google Search Console~~ — Registered, verified, sitemaps submitted for both properties. Jekyll `_config.yml` url fixed. Validated redirect fix for nybenchmark.org.
-3. [ ] **Fix `www` CNAME redirect chain** — `www.nybenchmark.org` still routes through GitHub Pages/Fastly before redirecting to apex. Not an SEO issue but an unnecessary hop. Options: CNAME `www` to `app.nybenchmark.org` (needs Rails/Cloudflare redirect config), or add a Cloudflare redirect rule for `www` → apex.
-4. [ ] **Complete ACFR audit** — Verify remaining cities in AUDIT.md (New Rochelle, Plattsburgh, White Plains, Syracuse, Buffalo, Yonkers, Rochester) against their ACFRs
-5. [ ] **Highlight non-filing entities** — Show which cities haven't submitted data for the current year, with a dedicated page listing late/non-filers and visual indicators on entity trend charts for missing years (Mount Vernon lost credit rating due to non-filing)
-6. [ ] **Data methodology page** — Public-facing page documenting data sources, known comparability issues (custodial pass-throughs, late filers), and metric definitions. Website equivalent of footnotes so users understand the data. When created, add to `config/sitemap.rb`.
-7. [ ] De-emphasize raw observations (remove from main nav, make admin/audit tool; add observation data links on entity show page so data remains accessible)
+3. [x] ~~Highlight non-filing entities~~ — Merged PR #145. FilingStatus concern, `/non-filers` page, amber banners/badges, landing page callout. Fixed early-filer bug in PR #146.
+4. [x] ~~Data methodology page~~ — Merged PR #145. `/methodology` page with full content, added to sitemap.
+5. [x] ~~Fix `www` CNAME redirect chain~~ — Added Cloudflare Page Rule: `www.nybenchmark.org/*` → 301 to `https://nybenchmark.org/$1`. Redirect now happens at Cloudflare edge, no longer hops through GitHub Pages/Fastly.
+6. [ ] **Chart.js missing-year annotations on entity trend charts** — Amber highlight rectangles on trend charts for years with no data filed. Chart.js annotation plugin has a loading/timing conflict with chartkick's importmap-based Chart.js (UMD plugin needs `window.Chart` at parse time, but ES modules load later). Attempted dynamic script loading; deferred for now. Options: pin annotation plugin in importmap, vendor the ESM build, or use a Stimulus controller to add annotations after chart render.
+7. [ ] **Complete ACFR audit** — Verify remaining cities in AUDIT.md (New Rochelle, Plattsburgh, White Plains, Syracuse, Buffalo, Yonkers, Rochester) against their ACFRs
 8. [ ] Import NYC data from Checkbook NYC (separate data source, all years). After import, request GSC indexing for `https://app.nybenchmark.org/entities/nyc` and other key entity pages.
 9. [ ] Import towns, villages, counties, districts, and authorities from OSC
 10. [ ] **State Aid as % of Revenue** — Derived metric benchmarking state aid dependency across cities. OSC revenue data already includes state aid line items; needs metric definition, derivation logic, hero stat / ranking placement. Exact denominator (revenue vs expenditures) TBD — research industry standard (GFOA/ICMA practice).
@@ -198,6 +228,7 @@ Avoid inline `style=` attributes; use CSS classes.
 12. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
 13. [ ] Import demographic data for counties, towns, villages, and school districts from Census
 14. [ ] Import FTE staffing data by department (police, fire, public works, etc.) from ACFRs
+15. [ ] **Automate OSC/Census data refresh** — Cron job (via solid_queue) to periodically re-import OSC and Census data as new years become available. Currently manual rake tasks.
 
 **Level 2 Category Drill-Down Options:**
 - **Option A:** Expandable cards - Click level_1 card to expand and show level_2 sub-charts inline
@@ -365,4 +396,4 @@ Cities organize their funds differently. Some run water/sewer through the Genera
 - Rensselaer (last filed: 2021)
 - Fulton (last filed: 2022)
 
-~20% of NY local governments fail to file on time. Non-filing cities should be visually distinguished in rankings and trend charts.
+~20% of NY local governments fail to file on time. Non-filing cities are visually distinguished with amber "Late" badges on entity index, amber banners on entity show, and excluded from landing page rankings. See `/non-filers` page and `FilingStatus` concern.
