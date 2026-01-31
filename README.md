@@ -159,20 +159,46 @@ This application uses **Kamal** for zero-downtime deployments to a DigitalOcean 
 
 See **[doc/ops.md](doc/ops.md)** for production operations, backups, and security procedures.
 
-### Deployment prerequisites
+### Environment variables
 
-Configure these in your local `.env` file (never committed):
+Secrets are managed through three files that work together:
 
-| Variable | Purpose |
-|----------|---------|
-| `KAMAL_REGISTRY_PASSWORD` | GitHub PAT for pushing Docker images to `ghcr.io` |
-| `DO_SPACES_KEY` / `DO_SPACES_SECRET` | DigitalOcean Spaces (PDF storage, sitemaps) |
-| `BREVO_SMTP_USERNAME` / `BREVO_SMTP_PASSWORD` | Transactional email |
-| `CENSUS_API_KEY` | US Census Bureau API (register at api.census.gov) |
+1. **`.env`** (local, gitignored) — Define actual secret values
+2. **`.kamal/secrets`** — Reads `.env` and exports variables to Kamal (format: `VAR_NAME=$VAR_NAME`)
+3. **`config/deploy.yml`** — Declares which secrets are injected into production containers (under `env.secret`)
+
+When adding a new secret: add it to all three files, then run `kamal env push` before deploying.
+
+#### Required `.env` variables
+
+| Variable | Purpose | How to get it |
+|----------|---------|---------------|
+| `KAMAL_REGISTRY_PASSWORD` | Push Docker images to `ghcr.io` | GitHub PAT (Classic) with `write:packages` and `delete:packages` scopes |
+| `POSTGRES_PASSWORD` | Production database password | Generate a strong random password |
+| `DO_SPACES_KEY` | DigitalOcean Spaces access key | DO control panel → API → Spaces Keys |
+| `DO_SPACES_SECRET` | DigitalOcean Spaces secret key | Generated with the access key above |
+| `BREVO_SMTP_USERNAME` | Transactional email (SMTP login) | Brevo account → SMTP & API → SMTP settings |
+| `BREVO_SMTP_PASSWORD` | Transactional email (SMTP password) | Same location as username |
+| `ADMIN_EMAIL` | Email for admin notifications | Your email address |
+| `CENSUS_API_KEY` | US Census Bureau API access | Register at [api.census.gov](https://api.census.gov/data/key_signup.html) |
+| `HTTP_AUTH_USER` | Basic auth for staging/preview | Choose a username |
+| `HTTP_AUTH_PASSWORD` | Basic auth for staging/preview | Choose a password |
+
+`RAILS_MASTER_KEY` is handled separately — `.kamal/secrets` reads it from `config/master.key` (not `.env`).
+
+#### Non-secret environment (set in `config/deploy.yml` under `env.clear`)
+
+| Variable | Value | Purpose |
+|----------|-------|---------|
+| `DB_HOST` | `nybenchmark_app-db` | Docker network hostname for Postgres |
+| `POSTGRES_USER` | `nybenchmark_app` | Database username |
+| `POSTGRES_DB` | `nybenchmark_app_production` | Database name |
+| `SMTP_PORT` | `2525` | Brevo SMTP port |
 
 ### Deploy
 
 ```bash
+kamal env push  # Push secrets to server (only needed after changing .env)
 kamal deploy    # or: kd
 ```
 
