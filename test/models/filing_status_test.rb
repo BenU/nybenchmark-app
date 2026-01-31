@@ -73,6 +73,11 @@ class FilingStatusTest < ActiveSupport::TestCase
     assert_includes chronic_ids, entities(:albany).id
   end
 
+  test "filing_category returns nil when entity filed after as_of_year" do
+    # Yonkers last filed 2023; asking about 2022 should treat as current filer
+    assert_nil entities(:yonkers).filing_category(2022)
+  end
+
   test "filing_report does not include entities that filed for as_of_year" do
     report = Entity.filing_report(2023)
     all_ids = report.values.flatten.map(&:id)
