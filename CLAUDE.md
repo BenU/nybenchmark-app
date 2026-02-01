@@ -219,16 +219,18 @@ Avoid inline `style=` attributes; use CSS classes.
 3. [x] ~~Highlight non-filing entities~~ — Merged PR #145. FilingStatus concern, `/non-filers` page, amber banners/badges, landing page callout. Fixed early-filer bug in PR #146.
 4. [x] ~~Data methodology page~~ — Merged PR #145. `/methodology` page with full content, added to sitemap.
 5. [x] ~~Fix `www` CNAME redirect chain~~ — Added Cloudflare Page Rule: `www.nybenchmark.org/*` → 301 to `https://nybenchmark.org/$1`. Redirect now happens at Cloudflare edge, no longer hops through GitHub Pages/Fastly.
-6. [ ] **Chart.js missing-year annotations on entity trend charts** — Amber highlight rectangles on trend charts for years with no data filed. Chart.js annotation plugin has a loading/timing conflict with chartkick's importmap-based Chart.js (UMD plugin needs `window.Chart` at parse time, but ES modules load later). Attempted dynamic script loading; deferred for now. Options: pin annotation plugin in importmap, vendor the ESM build, or use a Stimulus controller to add annotations after chart render.
-7. [ ] **Complete ACFR audit** — Verify remaining cities in AUDIT.md (New Rochelle, Plattsburgh, White Plains, Syracuse, Buffalo, Yonkers, Rochester) against their ACFRs
-8. [ ] Import NYC data from Checkbook NYC (separate data source, all years). After import, request GSC indexing for `https://app.nybenchmark.org/entities/nyc` and other key entity pages.
-9. [ ] Import towns, villages, counties, districts, and authorities from OSC
-10. [ ] **State Aid as % of Revenue** — Derived metric benchmarking state aid dependency across cities. OSC revenue data already includes state aid line items; needs metric definition, derivation logic, hero stat / ranking placement. Exact denominator (revenue vs expenditures) TBD — research industry standard (GFOA/ICMA practice).
-11. [ ] Level 2 category drill-down (see options below)
-12. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
-13. [ ] Import demographic data for counties, towns, villages, and school districts from Census
-14. [ ] Import FTE staffing data by department (police, fire, public works, etc.) from ACFRs
-15. [ ] **Automate OSC/Census data refresh** — Cron job (via solid_queue) to periodically re-import OSC and Census data as new years become available. Currently manual rake tasks.
+6. [ ] **Per-page Open Graph meta tags** — Current OG tags use site-wide defaults. Build a helper or `content_for :head` blocks to generate per-page `og:title`, `og:description`, and optionally `og:image` for entity dashboards (e.g., "Mount Vernon — City Dashboard | NY Benchmark"), the non-filers page, methodology, and landing page. This improves social sharing previews and search engine rich results.
+7. [ ] **Chart.js missing-year annotations on entity trend charts** — Amber highlight rectangles on trend charts for years with no data filed. Chart.js annotation plugin has a loading/timing conflict with chartkick's importmap-based Chart.js (UMD plugin needs `window.Chart` at parse time, but ES modules load later). Attempted dynamic script loading; deferred for now. Options: pin annotation plugin in importmap, vendor the ESM build, or use a Stimulus controller to add annotations after chart render.
+8. [ ] **Complete ACFR audit** — Verify remaining cities in AUDIT.md (New Rochelle, Plattsburgh, White Plains, Syracuse, Buffalo, Yonkers, Rochester) against their ACFRs
+9. [ ] Import NYC data from Checkbook NYC (separate data source, all years). After import, request GSC indexing for `https://app.nybenchmark.org/entities/nyc` and other key entity pages.
+10. [ ] **Upgrade DigitalOcean droplet to 4GB Basic ($24/month)** — Required before bulk imports below. Current 1GB droplet handles 661K observations but towns/villages/counties/authorities will add 15-25M rows. PostgreSQL needs ~1GB shared_buffers for that volume; Rails + OS need another 1.5GB. 4GB gives 80GB disk (vs current 25GB) and room for solid_queue. Do this after NYC import (which fits on 1GB) but before the larger imports.
+11. [ ] Import towns, villages, counties, districts, and authorities from OSC
+12. [ ] **State Aid as % of Revenue** — Derived metric benchmarking state aid dependency across cities. OSC revenue data already includes state aid line items; needs metric definition, derivation logic, hero stat / ranking placement. Exact denominator (revenue vs expenditures) TBD — research industry standard (GFOA/ICMA practice).
+13. [ ] Level 2 category drill-down (see options below)
+14. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
+15. [ ] Import demographic data for counties, towns, villages, and school districts from Census
+16. [ ] Import FTE staffing data by department (police, fire, public works, etc.) from ACFRs
+17. [ ] **Automate OSC/Census data refresh** — Cron job (via solid_queue) to periodically re-import OSC and Census data as new years become available. Currently manual rake tasks.
 
 **Level 2 Category Drill-Down Options:**
 - **Option A:** Expandable cards - Click level_1 card to expand and show level_2 sub-charts inline

@@ -7,6 +7,15 @@
 <meta name="google-site-verification" content="meKoSx7ZA3vGgxqZWswJ9uQKHAI2LQudID0QQBYLk7g" />
 <%= tag.meta(name: "robots", content: "noindex, nofollow") if @noindex %>
 
+<%# Open Graph / Twitter Card defaults (override per-page via content_for :head) %>
+<meta property="og:site_name" content="NY Benchmark">
+<meta property="og:title" content="<%= content_for(:title) || 'NY Benchmark' %>">
+<meta property="og:description" content="Data collection, validation, and analysis engine for New York State local government financial data. Part of the New York Benchmarking Project.">
+<meta property="og:image" content="https://app.nybenchmark.org/og-default.png">
+<meta property="og:url" content="<%= request.original_url %>">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+
 <%= csrf_meta_tags %>
 <%= csp_meta_tag %>
 
