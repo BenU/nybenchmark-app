@@ -19,6 +19,11 @@ Disallow: /users/password
 Disallow: /users/confirmation
 Disallow: /users/unlock
 
+# Exclude admin/audit pages (also marked noindex in HTML)
+Disallow: /documents
+Disallow: /metrics
+Disallow: /observations
+
 # Exclude Rails internal routes
 Disallow: /rails/
 
