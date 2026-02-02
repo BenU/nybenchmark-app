@@ -56,4 +56,10 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "a[href=?]", methodology_path
   end
+
+  test "non-filers page does not list NYC" do
+    get non_filers_url
+    assert_response :success
+    assert_select "td", text: "New York City", count: 0
+  end
 end

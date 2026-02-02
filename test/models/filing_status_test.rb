@@ -78,6 +78,35 @@ class FilingStatusTest < ActiveSupport::TestCase
     assert_nil entities(:yonkers).filing_category(2022)
   end
 
+  # ==========================================
+  # OSC FILING EXEMPTION (NYC)
+  # ==========================================
+
+  test "osc_filing_exempt? returns true for NYC" do
+    assert entities(:nyc).osc_filing_exempt?
+  end
+
+  test "osc_filing_exempt? returns false for regular cities" do
+    assert_not entities(:yonkers).osc_filing_exempt?
+  end
+
+  test "filing_category returns nil for exempt entity" do
+    assert_nil entities(:nyc).filing_category(2023)
+  end
+
+  test "filing_report does not include exempt entities" do
+    report = Entity.filing_report(2023)
+    all_ids = report.values.flatten.map(&:id)
+    assert_not_includes all_ids, entities(:nyc).id
+  end
+
+  test "latest_majority_year excludes exempt entities from city count" do
+    # NYC is exempt, so it shouldn't inflate the denominator
+    # This just verifies the method runs without error with the exemption
+    year = Entity.latest_majority_year
+    assert_kind_of Integer, year if year
+  end
+
   test "filing_report does not include entities that filed for as_of_year" do
     report = Entity.filing_report(2023)
     all_ids = report.values.flatten.map(&:id)

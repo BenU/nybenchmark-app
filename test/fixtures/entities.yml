@@ -43,6 +43,15 @@ new_rochelle_schools:
   executive_selection: appointed_professional
   organization_note: "Elected board; superintendent appointed"
 
+nyc:
+  name: New York City
+  kind: city
+  state: NY
+  slug: nyc
+  government_structure: strong_mayor
+  fiscal_autonomy: independent
+  organization_note: "Has own Comptroller; files via Checkbook NYC, not OSC"
+
 # Entity without government_structure for testing "needs research" indicators
 albany:
   name: Albany

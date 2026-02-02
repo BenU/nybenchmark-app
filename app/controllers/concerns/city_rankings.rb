@@ -15,7 +15,7 @@ module CityRankings
   private
 
   def load_city_rankings
-    city_ids = Entity.where(kind: :city).pluck(:id)
+    city_ids = Entity.where(kind: :city).where.not(slug: "nyc").pluck(:id)
     @rankings_year = most_recent_expenditure_year(city_ids)
     return if @rankings_year.nil?
 

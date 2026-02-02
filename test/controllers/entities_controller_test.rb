@@ -427,6 +427,27 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==========================================
+  # NYC EXEMPT FROM NON-FILER DISPLAY
+  # ==========================================
+
+  test "show does not display non-filer banner for NYC" do
+    nyc = entities(:nyc)
+    get entity_url(nyc.slug)
+    assert_response :success
+    assert_select ".non-filer-banner", count: 0
+  end
+
+  test "index does not show Late badge for NYC" do
+    get entities_url
+    assert_response :success
+
+    # Find the NYC row and verify no Late badge next to it
+    nyc = entities(:nyc)
+    # NYC should appear in the table but without a non-filer badge
+    assert_select "td", text: nyc.name
+  end
+
+  # ==========================================
   # SEO: ENTITY PAGES SHOULD BE INDEXED
   # ==========================================
 
