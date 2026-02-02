@@ -34,9 +34,17 @@ module FilingStatus
     ((total - missing).to_f / total * 100).round(1)
   end
 
+  # Whether this entity is exempt from OSC filing expectations.
+  # NYC has its own Comptroller and files via Checkbook NYC, not OSC.
+  def osc_filing_exempt?
+    slug == "nyc"
+  end
+
   # Categorize a city's filing status relative to a target year.
   # Returns :chronic, :recent_lapse, :sporadic, or nil (current filer).
   def filing_category(as_of_year)
+    return nil if osc_filing_exempt?
+
     last_year = last_osc_filing_year
     return nil if last_year && last_year >= as_of_year
 
@@ -49,8 +57,9 @@ module FilingStatus
 
   class_methods do
     # Most recent fiscal year where >= 50% of cities have OSC data.
+    # Excludes OSC-filing-exempt entities (e.g., NYC) from the city count.
     def latest_majority_year
-      city_ids = where(kind: :city).pluck(:id)
+      city_ids = where(kind: :city).where.not(slug: "nyc").pluck(:id)
       return nil if city_ids.empty?
 
       min_cities = city_ids.size / 2
@@ -67,10 +76,13 @@ module FilingStatus
 
     # Returns non-filing cities grouped by category.
     # { chronic: [entities], recent_lapse: [entities], sporadic: [entities] }
+    # Excludes OSC-filing-exempt entities (e.g., NYC).
     def filing_report(as_of_year)
       report = { chronic: [], recent_lapse: [], sporadic: [] }
 
       where(kind: :city).find_each do |city|
+        next if city.osc_filing_exempt?
+
         category = city.filing_category(as_of_year)
         report[category] << city if category
       end
