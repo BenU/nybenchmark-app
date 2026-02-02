@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Sitemap configuration for search engine indexing
-# Regenerated automatically on deploy via Kamal post-deploy hook
+# Regenerated automatically on every deploy via docker-entrypoint
 # Manual refresh: bin/rails sitemap:refresh
 #
 # Discovery: Search engines find the sitemap via robots.txt
@@ -27,8 +27,9 @@ SitemapGenerator::Sitemap.sitemaps_host = "https://nybenchmark-production.nyc3.d
 SitemapGenerator::Sitemap.create do
   # Root/landing page added automatically
 
-  # Entity pages - the primary public content
-  Entity.find_each do |entity|
+  # Entity pages - only include entities that have actual data (observations)
+  # Avoids thin pages for entities added to the database but not yet imported
+  Entity.where("EXISTS (SELECT 1 FROM observations WHERE observations.entity_id = entities.id)").find_each do |entity|
     add entity_path(entity), lastmod: entity.updated_at, changefreq: "weekly", priority: 0.8
   end
 
