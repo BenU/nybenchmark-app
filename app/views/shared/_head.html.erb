@@ -1,3 +1,4 @@
+<% if Rails.env.production? %>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LQDC8ED7J6"></script>
 <script>
@@ -7,6 +8,7 @@
 
   gtag('config', 'G-LQDC8ED7J6');
 </script>
+<% end %>
 
 <title><%= content_for(:title) || "NY Benchmark" %></title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
