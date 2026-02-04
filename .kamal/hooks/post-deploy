@@ -6,3 +6,8 @@
 echo "Regenerating sitemap..."
 kamal app exec -- bin/rails sitemap:refresh
 echo "Sitemap regeneration complete."
+
+# Prune Docker images older than 72h (keeps current + one rollback)
+echo "Pruning old Docker images..."
+ssh deploy@68.183.56.0 "docker image prune -a --filter until=72h -f"
+echo "Docker prune complete."
