@@ -146,7 +146,7 @@ Avoid inline `style=` attributes; use CSS classes.
 - [x] Filing status schema decision: **Option C** - derive from observations (no filing status table)
 - [x] Schema migrations: added `osc_municipal_code` to entities
 - [x] Built `osc:import` rake task
-- [x] Tested locally: 647,630 observations imported (31 years, 57 cities)
+- [x] Tested locally: 647,630 observations imported (1995–2024, 57 cities)
 - [x] Deployed to production
 
 **Completed (metric categories):**

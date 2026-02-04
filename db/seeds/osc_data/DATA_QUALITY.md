@@ -2,7 +2,7 @@
 
 **Analysis Date:** 2026-01-26
 **Data Source:** NYS Comptroller Financial Data for Local Governments
-**Coverage:** 1995-2024 (30 years)
+**Coverage:** 1995–present
 
 ## Executive Summary
 

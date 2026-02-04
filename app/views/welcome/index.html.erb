@@ -8,7 +8,7 @@
       <span class="landing-stat-label">Cities</span>
     </div>
     <div class="landing-stat">
-      <span class="landing-stat-value">30</span>
+      <span class="landing-stat-value"><%= Observation.distinct.count(:fiscal_year) %></span>
       <span class="landing-stat-label">Years of Data</span>
     </div>
     <div class="landing-stat">

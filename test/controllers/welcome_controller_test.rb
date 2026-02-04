@@ -8,15 +8,24 @@ class WelcomeControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "landing page shows headline stats" do
+  test "landing page headline stats are dynamically computed from the database" do
     get root_url
     assert_response :success
 
     assert_select ".landing-hero h1", "NY Benchmark"
     assert_select ".landing-stat", minimum: 3
-    assert_select ".landing-stat-label", text: "Cities"
-    assert_select ".landing-stat-label", text: "Years of Data"
-    assert_select ".landing-stat-label", text: "Data Points"
+
+    assert_select ".landing-stat" do |stats|
+      stat_map = stats.each_with_object({}) do |stat, hash|
+        label = stat.css(".landing-stat-label").text
+        value = stat.css(".landing-stat-value").text
+        hash[label] = value
+      end
+
+      assert_equal Entity.where(kind: :city).count.to_s, stat_map["Cities"]
+      assert_equal Observation.distinct.count(:fiscal_year).to_s, stat_map["Years of Data"]
+      assert_equal "#{Observation.count / 1000}K+", stat_map["Data Points"]
+    end
   end
 
   test "landing page shows explore cities button" do
