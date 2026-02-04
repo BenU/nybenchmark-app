@@ -1,6 +1,6 @@
 # NY Benchmark
 
-A civic-tech Rails application that benchmarks financial data across New York State's 62 cities using bulk data from the NYS Office of the State Comptroller (OSC) and U.S. Census Bureau.
+A civic-tech Rails application that benchmarks financial data across New York State's local governments — cities, counties, towns, villages, and special districts — using bulk data from the NYS Office of the State Comptroller (OSC) and U.S. Census Bureau.
 
 - **Application:** https://app.nybenchmark.org
 - **Project site / blog:** https://nybenchmark.org
@@ -13,7 +13,7 @@ A civic-tech Rails application that benchmarks financial data across New York St
 - **Entity dashboards** — Each city has a page with hero stats, financial trend charts, top revenue/expenditure breakdowns, and governance info
 - **Non-filer tracking** — Identifies cities that haven't filed with OSC, with amber badges and a dedicated filing compliance page
 - **Data methodology** — Public-facing documentation of data sources, metric calculations, and known limitations
-- **661K+ observations** — 31 years of financial data (1995-2024) for 57 filing cities, plus Census demographics for all 62
+- **661K+ observations** — OSC financial data since 1995 for 61 cities, plus Census demographics for all 62. NYC financial data (via Checkbook NYC) coming soon, followed by counties, towns, villages, and special districts.
 
 ---
 
