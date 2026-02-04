@@ -30,7 +30,8 @@ This file provides essential context for Claude Code sessions. For detailed hist
 3. Run `dci` to verify all checks pass
 4. Push and create PR: `git push -u origin feat/your-feature-name && gh pr create`
 5. **User merges PR on GitHub website** (not via CLI)
-6. **User handles deploy in separate terminal:** `git switch main && git pull && dci && kd`
+6. **User handles deploy in separate terminal:** `git switch main && git pull && kd`
+   - Skip `dci` locally — CI already passed on the same commits in GitHub. Only re-run `dci` if you made local changes after merge (e.g., conflict resolution).
 
 **Docs-only changes (CLAUDE.md, AUDIT.md, PLAN.md, README.md, etc.):** Commit locally on a branch but don't push or deploy — fold into the next feature PR unless otherwise specified. Skip `dci` and `kd` since nothing user-facing changed. Exception: push a standalone docs PR when significant planning or institutional knowledge is at stake and warrants off-machine backup.
 
@@ -220,7 +221,8 @@ Avoid inline `style=` attributes; use CSS classes.
 4. [x] ~~Data methodology page~~ — Merged PR #145. `/methodology` page with full content, added to sitemap.
 5. [x] ~~Fix `www` CNAME redirect chain~~ — Added Cloudflare Page Rule: `www.nybenchmark.org/*` → 301 to `https://nybenchmark.org/$1`. Redirect now happens at Cloudflare edge, no longer hops through GitHub Pages/Fastly.
 6. [x] ~~Fix NYC non-filer misclassification~~ — Merged PR #154. Added `osc_filing_exempt?` to `FilingStatus`, excluded NYC from `filing_category`, `filing_report`, `latest_majority_year`, non-filers page, landing page rankings. Non-filer count corrected from 12 to 11.
-7. [ ] **Wikipedia link on entity show page** — Add a link to the entity's Wikipedia page on the entity show page, if one exists. Store a `wikipedia_url` (or derive from entity name/slug) and render it in the entity header or governance section.
+7. [ ] **Production monitoring** — Add `lograge` gem (structured single-line request logs, zero overhead) and AppSignal free tier (error tracking, host metrics, slow query detection, no overage fees, Rust agent ~15-25MB, no Redis needed). Skip `rails_performance` (needs Redis) and Skylight (auto-bills on overage). Optionally enable `rack-mini-profiler` in production for admin-only ad-hoc debugging.
+8. [ ] **Wikipedia link on entity show page** — Add a link to the entity's Wikipedia page on the entity show page, if one exists. Store a `wikipedia_url` (or derive from entity name/slug) and render it in the entity header or governance section.
 9. [ ] **Per-page Open Graph meta tags** — Current OG tags use site-wide defaults. Build a helper or `content_for :head` blocks to generate per-page `og:title`, `og:description`, and optionally `og:image` for entity dashboards (e.g., "Mount Vernon — City Dashboard | NY Benchmark"), the non-filers page, methodology, and landing page. This improves social sharing previews and search engine rich results.
 10. [ ] **Chart.js missing-year annotations on entity trend charts** — Amber highlight rectangles on trend charts for years with no data filed. Chart.js annotation plugin has a loading/timing conflict with chartkick's importmap-based Chart.js (UMD plugin needs `window.Chart` at parse time, but ES modules load later). Attempted dynamic script loading; deferred for now. Options: pin annotation plugin in importmap, vendor the ESM build, or use a Stimulus controller to add annotations after chart render.
 11. [ ] **Complete ACFR audit** — Verify remaining cities in AUDIT.md (New Rochelle, Plattsburgh, White Plains, Syracuse, Buffalo, Yonkers, Rochester) against their ACFRs
