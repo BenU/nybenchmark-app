@@ -180,7 +180,7 @@ class EntitiesTest < ApplicationSystemTestCase
 
     click_on "Create Entity"
 
-    assert_text "Entity was successfully created"
+    assert_text "Notice: Entity was successfully created."
     assert_text "Test CM City"
   end
 

@@ -70,6 +70,8 @@ accessories:
     image: postgres:17
     host: 68.183.56.0
     # REMOVED: port: 5432 (This keeps the DB private to the docker network)
+    # PG tuning — update these when resizing the droplet (see doc/ops.md scaling roadmap)
+    cmd: postgres -c shared_buffers=512MB -c effective_cache_size=1536MB -c work_mem=4MB
     env:
       clear:
         POSTGRES_USER: nybenchmark_app
