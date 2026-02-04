@@ -225,7 +225,14 @@ Avoid inline `style=` attributes; use CSS classes.
 10. [ ] **Chart.js missing-year annotations on entity trend charts** — Amber highlight rectangles on trend charts for years with no data filed. Chart.js annotation plugin has a loading/timing conflict with chartkick's importmap-based Chart.js (UMD plugin needs `window.Chart` at parse time, but ES modules load later). Attempted dynamic script loading; deferred for now. Options: pin annotation plugin in importmap, vendor the ESM build, or use a Stimulus controller to add annotations after chart render.
 11. [ ] **Complete ACFR audit** — Verify remaining cities in AUDIT.md (New Rochelle, Plattsburgh, White Plains, Syracuse, Buffalo, Yonkers, Rochester) against their ACFRs
 12. [ ] Import NYC data from Checkbook NYC (separate data source, all years). After import, request GSC indexing for `https://app.nybenchmark.org/entities/nyc` and other key entity pages.
-13. [ ] **Upgrade DigitalOcean droplet to 4GB Basic ($24/month)** — Required before bulk imports below. Current 1GB droplet handles 661K observations but towns/villages/counties/authorities will add 15-25M rows. PostgreSQL needs ~1GB shared_buffers for that volume; Rails + OS need another 1.5GB. 4GB gives 80GB disk (vs current 25GB) and room for solid_queue. Do this after NYC import (which fits on 1GB) but before the larger imports.
+13. [ ] **Infrastructure scaling (phased — see `doc/ops.md` for full details)**
+    - **Phase 1 (now):** Resize to `s-1vcpu-2gb` ($12/mo, 50GB disk). Eliminates swap thrashing at current 661K observations. Tune PG: `shared_buffers=512MB`, `effective_cache_size=1.5GB`.
+    - **Phase 2 (NYC import):** No resize needed — 2GB handles ~900K observations fine.
+    - **Phase 3 (counties, ~62 entities):** Resize to `s-2vcpu-4gb` ($24/mo, 80GB disk) before import. Tune PG: `shared_buffers=1GB`, `effective_cache_size=3GB`.
+    - **Phase 4 (towns + villages, ~1,500 entities):** Resize to `s-4vcpu-8gb` ($48/mo, 160GB disk). Tune PG: `shared_buffers=2GB`, `effective_cache_size=6GB`. ~15-20M observations.
+    - **Phase 5 (school districts + authorities, ~1,700 entities):** 8GB droplet still sufficient. ~22-28M observations.
+    - **Phase 6 (full Census/DCJS for all entities):** Evaluate managed PostgreSQL if ops burden grows. ~25-30M observations.
+    - **Trigger to resize:** swap usage > 100MB sustained, or before any bulk import that will >2x observation count.
 14. [ ] Import towns, villages, counties, districts, and authorities from OSC
 15. [ ] **Side-by-side city comparison tool** — Select two or more cities and compare them on any metric across years. Core benchmarking feature. Likely a new route (`/compare?cities=albany,syracuse`) with multi-select UI, shared chart, and table view. Consider URL-shareable comparisons for embedding/sharing.
 16. [ ] **Metric-specific leaderboards** — Rank all cities on any individual metric (e.g., police spending per capita, fire department costs, debt service burden). Extends the landing page's three summary rankings to arbitrary metrics. Could be a filterable index or per-metric show page.
