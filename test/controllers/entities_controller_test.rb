@@ -38,8 +38,8 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
     end
 
     # Hub Requirements: Verify Sections exist for the related data
-    assert_select "section#documents" do
-      assert_select "h2", "Financial Documents"
+    assert_select "details#documents" do
+      assert_select "summary", text: /Financial Documents/
     end
 
     assert_select "section#observations" do
@@ -445,6 +445,98 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
     nyc = entities(:nyc)
     # NYC should appear in the table but without a non-filer badge
     assert_select "td", text: nyc.name
+  end
+
+  # ==========================================
+  # DOCUMENTS SECTION SEO OPTIMIZATION
+  # ==========================================
+
+  test "show renders documents in collapsible details element" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    assert_select "details#documents" do
+      assert_select "summary", text: /Financial Documents/
+    end
+  end
+
+  test "show limits inline documents to 5 most recent" do
+    # Add a 6th document to Yonkers (already has 5)
+    Document.create!(
+      entity: @entity,
+      title: "OSC Annual Financial Report 2020",
+      doc_type: "osc_afr",
+      fiscal_year: 2020,
+      source_type: :bulk_data,
+      source_url: "https://example.com/osc-2020"
+    )
+
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Should only show 5 documents in the table
+    assert_select "details#documents table tbody tr", count: 5
+  end
+
+  test "show displays View all documents link when more than 5 documents exist" do
+    # Add a 6th document
+    Document.create!(
+      entity: @entity,
+      title: "OSC Annual Financial Report 2020",
+      doc_type: "osc_afr",
+      fiscal_year: 2020,
+      source_type: :bulk_data,
+      source_url: "https://example.com/osc-2020"
+    )
+
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Should show "View all X documents" link
+    assert_select "a[href*='documents']", text: /View all 6 documents/
+  end
+
+  test "show does not display View all link when 5 or fewer documents" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Yonkers has exactly 5 documents - no "View all" link needed
+    assert_select "a", text: /View all.*documents/, count: 0
+  end
+
+  test "show document links have rel nofollow for SEO" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # All document links should have rel="nofollow"
+    assert_select "details#documents table a[rel='nofollow']", minimum: 1
+    # No document links without nofollow
+    assert_select "details#documents table a:not([rel='nofollow'])", count: 0
+  end
+
+  test "show View all documents link has rel nofollow" do
+    # Add a 6th document
+    Document.create!(
+      entity: @entity,
+      title: "OSC Annual Financial Report 2020",
+      doc_type: "osc_afr",
+      fiscal_year: 2020,
+      source_type: :bulk_data,
+      source_url: "https://example.com/osc-2020"
+    )
+
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    assert_select "a[rel='nofollow']", text: /View all.*documents/
+  end
+
+  test "show documents summary shows count" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    # Summary should show document count
+    assert_select "details#documents summary", text: /Financial Documents \(5\)/
   end
 
   # ==========================================
