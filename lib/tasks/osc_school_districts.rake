@@ -15,6 +15,18 @@ namespace :osc do
       creator = SchoolDistrictEntityCreator.new(dry_run: true)
       creator.run
     end
+
+    desc "Create metrics for school district data from CSV headers"
+    task create_metrics: :environment do
+      creator = SchoolDistrictMetricCreator.new
+      creator.run
+    end
+
+    desc "Preview metric creation (dry run)"
+    task preview_metrics: :environment do
+      creator = SchoolDistrictMetricCreator.new(dry_run: true)
+      creator.run
+    end
   end
 end
 
@@ -283,6 +295,235 @@ class SchoolDistrictEntityCreator
     puts "  Cities:           #{Entity.where(kind: :city).count}"
     puts "  School Districts: #{Entity.where(kind: :school_district).count}"
     puts "  Total Entities:   #{Entity.count}"
+  end
+end
+# rubocop:enable Metrics/ClassLength
+
+# Service class for creating school district metrics
+# rubocop:disable Metrics/ClassLength
+class SchoolDistrictMetricCreator
+  CSV_FILE = Rails.root.join("db/seeds/osc_school_district_data/leveltwo24.csv")
+
+  # Columns to skip (metadata, not financial data)
+  METADATA_COLUMNS = [
+    "Muni Code",
+    "Entity Name",
+    "County",
+    "Class Description",
+    "Fiscal Year End Date",
+    "Months in Fiscal Period"
+  ].freeze
+
+  # Revenue column patterns (order matters for matching)
+  REVENUE_PATTERNS = [
+    /tax/i,
+    /assessment/i,
+    /star payment/i,
+    /payment.*lieu/i,
+    /interest.*penalties/i,
+    /fee/i,
+    /charge/i,
+    /earning/i,
+    /rental/i,
+    /sale of property/i,
+    /fine/i,
+    /forfeit/i,
+    /compensation/i,
+    /grant/i,
+    /gift/i,
+    /contribution/i,
+    /miscellaneous revenue/i,
+    /state aid/i,
+    /federal aid/i,
+    /mortgage tax/i,
+    /sale of obligations/i,
+    /bans redeemed/i,
+    /debt proceeds/i,
+    /transfer/i,
+    /other source/i
+  ].freeze
+
+  # Balance sheet patterns
+  BALANCE_SHEET_PATTERNS = [
+    /debt outstanding/i,
+    /full value/i
+  ].freeze
+
+  attr_reader :dry_run, :stats
+
+  def initialize(dry_run: false)
+    @dry_run = dry_run
+    @stats = Hash.new(0)
+  end
+
+  def run
+    puts "=" * 70
+    puts dry_run ? "School District Metric Creation PREVIEW (dry run)" : "School District Metric Creation"
+    puts "=" * 70
+    puts ""
+
+    abort "ERROR: CSV file not found: #{CSV_FILE}" unless File.exist?(CSV_FILE)
+
+    process_headers
+    print_summary
+  end
+
+  private
+
+  def process_headers
+    headers = CSV.read(CSV_FILE, headers: true).headers
+
+    puts "Processing #{headers.size} columns from CSV..."
+    puts ""
+
+    headers.each do |col|
+      next if col.blank?
+      next if METADATA_COLUMNS.include?(col)
+
+      process_column(col)
+    end
+  end
+
+  def process_column(col)
+    account_type = infer_account_type(col)
+    level_1 = infer_level_1_category(col) # rubocop:disable Naming/VariableNumber
+
+    # Check if metric already exists (by key, since label might not be unique)
+    metric_key = "school_#{col.parameterize.underscore}"
+    existing = Metric.find_by(key: metric_key)
+    if existing
+      stats[:already_exists] += 1
+      return
+    end
+
+    if dry_run
+      puts "  Would create: #{col}"
+      puts "    key: #{metric_key}"
+      puts "    account_type: #{account_type || 'nil'}"
+      puts "    level_1_category: #{level_1 || 'nil'}"
+      puts ""
+      stats[:would_create] += 1
+    else
+      metric = Metric.create!(
+        key: metric_key,
+        label: col,
+        data_source: :osc,
+        value_type: :numeric,
+        display_format: col == "Enrollment" ? "integer" : "currency_rounded",
+        account_type: account_type,
+        level_1_category: level_1,
+        description: "School district #{account_type || 'metric'}: #{col}"
+      )
+      stats[:created] += 1
+
+      puts "  Created: #{metric.label} (#{account_type})" if stats[:created] <= 10 || (stats[:created] % 50).zero?
+    end
+  end
+
+  def infer_account_type(col)
+    # Special cases
+    return nil if col == "Enrollment"
+    return :balance_sheet if BALANCE_SHEET_PATTERNS.any? { |p| col.match?(p) }
+    return :revenue if REVENUE_PATTERNS.any? { |p| col.match?(p) }
+
+    # Everything else is expenditure (operations, admin, education, benefits, debt service, totals)
+    :expenditure
+  end
+
+  def infer_level_1_category(col)
+    case col
+    # Revenue categories
+    when /real property tax/i, /special assessment/i, /star payment/i, /payment.*lieu/i,
+         /interest.*penalties/i, /miscellaneous tax/i
+      "Real Property Taxes"
+    when /sales tax/i, /utilities.*tax/i, /franchise/i, /emergency telephone/i,
+         /city income tax/i, /non-property tax/i
+      "Non-Property Taxes"
+    when /fee/i
+      "Fees"
+    when /charge/i
+      "Charges"
+    when /state aid/i, /unrestricted state aid/i, /miscellaneous state aid/i
+      "State Aid"
+    when /federal aid/i, /miscellaneous federal aid/i
+      "Federal Aid"
+    when /sale of obligations/i, /bans redeemed/i, /debt proceeds/i
+      "Debt Proceeds"
+    when /transfer/i, /other source/i
+      "Other Sources"
+
+    # Expenditure categories
+    when /instruction/i, /pupil service/i, /student activit/i, /education.*transport/i,
+         /community college/i, /miscellaneous education/i
+      "Education"
+    when /operation/i, /administration/i, /general government/i, /zoning/i, /judgement/i
+      "General Government"
+    when /police/i, /fire/i, /public safety/i, /emergency/i, /correctional/i,
+         /disaster/i, /homeland/i
+      "Public Safety"
+    when /health/i, /mental health/i, /environmental/i
+      "Public Health"
+    when /highway/i, /bus service/i, /airport/i, /rail/i, /waterway/i,
+         /transportation/i
+      "Transportation"
+    when /social service/i, /financial assistance/i, /medicaid/i, /housing/i,
+         /employment service/i, /youth service/i
+      "Social Services"
+    when /economic development/i, /promotion/i, /infrastructure/i
+      "Economic Development"
+    when /recreation/i, /library/i, /cultural/i, /constituent/i, /elder/i,
+         /natural resource/i, /community service/i, /student census/i
+      "Culture And Recreation"
+    when /water(?!way)/i, /electric/i, /natural gas/i, /steam/i, /sewer/i,
+         /refuse/i, /garbage/i, /landfill/i, /drainage/i, /sanitation/i
+      "Utilities"
+    when /retirement/i, /social security/i, /insurance/i, /worker.*comp/i,
+         /unemployment/i, /losap/i, /benefit/i
+      "Employee Benefits"
+    when /debt principal/i, /interest on debt/i
+      "Debt Service"
+    when /total expenditure/i
+      "Total"
+    end
+  end
+
+  def print_summary
+    puts ""
+    puts "=" * 70
+    puts dry_run ? "PREVIEW SUMMARY (no changes made)" : "CREATION SUMMARY"
+    puts "=" * 70
+    puts ""
+
+    if dry_run
+      puts "Would create:     #{stats[:would_create]}"
+    else
+      puts "Created:          #{stats[:created]}"
+    end
+    puts "Already exists:   #{stats[:already_exists]}"
+    puts ""
+
+    unless dry_run
+      puts "Metrics by account_type:"
+      Metric.where(data_source: :osc).group(:account_type).count.each do |type, count|
+        puts "  #{type || 'nil'}: #{count}"
+      end
+      puts ""
+
+      puts "School district metrics by level_1_category:"
+      Metric.where(data_source: :osc)
+            .where("key LIKE 'school_%'")
+            .group(:level_1_category)
+            .count
+            .sort_by { |_, v| -v }
+            .each do |cat, count|
+              puts "  #{cat || 'nil'}: #{count}"
+      end
+      puts ""
+    end
+
+    puts "Current totals:"
+    puts "  Total Metrics:          #{Metric.count}"
+    puts "  School District Metrics: #{Metric.where("key LIKE 'school_%'").count}"
   end
 end
 # rubocop:enable Metrics/ClassLength

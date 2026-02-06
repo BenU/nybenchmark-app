@@ -338,7 +338,10 @@ BANDS = [
    - 689 school districts created
    - Distribution: 546 central, 72 union free, 57 small city, 10 common, 4 big five
    - 61 city school districts linked to parent cities
-2. **Create metrics** - `osc:schools:create_metrics`
+2. **Create metrics** - `osc:schools:create_metrics` ✅ COMPLETE (2026-02-05)
+   - 171 metrics created from CSV column headers
+   - Distribution: 83 revenue, 85 expenditure, 2 balance sheet, 1 enrollment
+   - Categories assigned: Education, Employee Benefits, Debt Service, State/Federal Aid, etc.
 3. **Import financial data** - `osc:schools:import`
 4. **Calculate derived metrics** - `osc:schools:derive_metrics`
 5. **Download NYSED outcomes** - Manual or scripted
