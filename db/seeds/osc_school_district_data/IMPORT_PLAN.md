@@ -348,11 +348,19 @@ BANDS = [
    - Years 2012-2014 skipped (no header rows in CSV)
    - Column normalization handles name differences between years
    - 3 merged districts skipped (Berkshire, Elizabethtown-Lewis, Westport)
-4. **Calculate derived metrics** - `osc:schools:derive_metrics`
-5. **Download NYSED outcomes** - Manual or scripted
-6. **Import outcomes** - `nysed:import_outcomes`
-7. **Build school district dashboard** - New view similar to entity show
-8. **Build comparison/ranking views** - Per-pupil leaderboards, scatter plots
+4. **Calculate derived metrics** - `osc:schools:derive_metrics` ✅ COMPLETE (2026-02-05)
+   - 7 derived metrics created (per-pupil spending, admin overhead %, state aid dependency %)
+   - 42,210 observations calculated
+   - 35 entity-years skipped (missing enrollment data)
+5. **Update UI for school districts** - Navbar + landing page ✅ COMPLETE (2026-02-05)
+   - Added "School Districts" link to navbar (links to entities filtered by kind=school_district)
+   - Updated landing page tagline: "local governments" instead of "62 cities"
+   - Added School Districts count to landing page stats
+   - Updated About section to mention school districts
+6. **Download NYSED outcomes** - Manual or scripted
+7. **Import outcomes** - `nysed:import_outcomes`
+8. **Build school district dashboard** - New view similar to entity show
+9. **Build comparison/ranking views** - Per-pupil leaderboards, scatter plots
 
 ## File Structure
 

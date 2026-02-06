@@ -48,6 +48,18 @@ namespace :osc do
       importer = SchoolDistrictImporter.new(dry_run: true)
       importer.run
     end
+
+    desc "Calculate derived metrics (per-pupil spending, admin overhead %, state aid dependency %)"
+    task derive_metrics: :environment do
+      calculator = SchoolDistrictDerivedMetrics.new
+      calculator.run
+    end
+
+    desc "Preview derived metrics calculation (dry run)"
+    task preview_derive_metrics: :environment do
+      calculator = SchoolDistrictDerivedMetrics.new(dry_run: true)
+      calculator.run
+    end
   end
 end
 
@@ -815,6 +827,284 @@ class SchoolDistrictImporter
     puts "  Observations:     #{Observation.count}"
     school_obs_count = Observation.joins(:metric).where("metrics.key LIKE ?", "school_%").count
     puts "  School District Observations: #{school_obs_count}"
+  end
+end
+# rubocop:enable Metrics/ClassLength
+
+# Service class for calculating derived school district metrics
+# rubocop:disable Metrics/ClassLength
+class SchoolDistrictDerivedMetrics
+  # Per-pupil metrics: divide numerator by enrollment
+  PER_PUPIL_METRICS = [
+    { key: "school_per_pupil_spending", label: "Per-Pupil Spending",
+      numerator: "school_total_expenditures", display: "currency_rounded" },
+    { key: "school_per_pupil_instruction", label: "Per-Pupil Instruction",
+      numerator: "school_instruction", display: "currency_rounded" },
+    { key: "school_per_pupil_administration", label: "Per-Pupil Administration",
+      numerator: "school_administration", display: "currency_rounded" },
+    { key: "school_per_pupil_property_tax", label: "Per-Pupil Property Tax",
+      numerator: "school_real_property_taxes", display: "currency_rounded" },
+    { key: "school_per_pupil_debt", label: "Per-Pupil Debt",
+      numerator: "school_debt_outstanding", display: "currency_rounded" }
+  ].freeze
+
+  # Percentage metrics: (numerator / denominator) * 100
+  PERCENTAGE_METRICS = [
+    { key: "school_admin_overhead_pct", label: "Administrative Overhead %",
+      numerator: "school_administration", denominator: "school_total_expenditures" },
+    { key: "school_state_aid_dependency_pct", label: "State Aid Dependency %",
+      numerator: :state_aid_total, denominator: :revenue_total }
+  ].freeze
+
+  # State aid keys to sum for total
+  STATE_AID_KEYS = %w[
+    school_state_aid_education
+    school_state_aid_community_services
+    school_state_aid_culture_and_recreation
+    school_state_aid_economic_development
+    school_state_aid_general_government
+    school_state_aid_health
+    school_state_aid_public_safety
+    school_state_aid_sanitation
+    school_state_aid_social_services
+    school_state_aid_transportation
+    school_state_aid_utilities
+    school_unrestricted_state_aid
+    school_miscellaneous_state_aid
+  ].freeze
+
+  attr_reader :dry_run, :stats
+
+  def initialize(dry_run: false)
+    @dry_run = dry_run
+    @stats = Hash.new(0)
+    @metric_cache = {}
+  end
+
+  def run
+    puts "=" * 70
+    puts dry_run ? "Derived Metrics Calculation PREVIEW (dry run)" : "Derived Metrics Calculation"
+    puts "=" * 70
+    puts ""
+
+    # Step 1: Create derived metrics (if not exists)
+    create_derived_metrics
+
+    # Step 2: Load source metrics
+    load_metric_cache
+
+    # Step 3: Calculate and store observations
+    calculate_all_observations
+
+    print_summary
+  end
+
+  private
+
+  def create_derived_metrics
+    puts "Creating derived metric definitions..."
+    puts ""
+
+    (PER_PUPIL_METRICS + PERCENTAGE_METRICS).each do |config|
+      create_metric(config)
+    end
+
+    puts ""
+  end
+
+  def create_metric(config)
+    existing = Metric.find_by(key: config[:key])
+    if existing
+      puts "  Exists: #{config[:label]}"
+      stats[:metrics_exist] += 1
+      return
+    end
+
+    if dry_run
+      puts "  Would create: #{config[:label]}"
+      stats[:metrics_would_create] += 1
+    else
+      Metric.create!(
+        key: config[:key],
+        label: config[:label],
+        data_source: :derived,
+        value_type: :numeric,
+        display_format: config[:display] || "percentage",
+        description: "Derived metric for school districts"
+      )
+      puts "  Created: #{config[:label]}"
+      stats[:metrics_created] += 1
+    end
+  end
+
+  def load_metric_cache
+    puts "Loading source metrics..."
+    Metric.where("key LIKE 'school_%'").find_each do |m|
+      @metric_cache[m.key] = m
+    end
+    puts "  Loaded #{@metric_cache.size} metrics"
+    puts ""
+  end
+
+  def calculate_all_observations
+    puts "Calculating derived observations..."
+    puts ""
+
+    years = Observation.joins(:metric)
+                       .where("metrics.key LIKE 'school_%'")
+                       .distinct.pluck(:fiscal_year).sort
+
+    puts "  Years with data: #{years.first}..#{years.last}"
+    puts ""
+
+    Entity.school_districts.find_each.with_index do |entity, idx|
+      years.each do |year|
+        calculate_for_entity_year(entity, year)
+      end
+      print_progress(idx + 1) if ((idx + 1) % 100).zero?
+    end
+
+    puts ""
+  end
+
+  def calculate_for_entity_year(entity, year)
+    # Load base values for this entity/year
+    base_values = load_base_values(entity, year)
+
+    # Find source document for derived observations
+    document = find_source_document(entity, year)
+    return if document.nil? && !dry_run
+
+    # Calculate per-pupil metrics
+    enrollment = base_values["school_enrollment"]
+    if enrollment&.positive?
+      PER_PUPIL_METRICS.each do |config|
+        numerator = base_values[config[:numerator]]
+        next unless numerator
+
+        value = (numerator / enrollment).round(2)
+        save_observation(entity, config[:key], year, value, document)
+      end
+    else
+      stats[:missing_enrollment] += 1
+    end
+
+    # Calculate percentage metrics
+    PERCENTAGE_METRICS.each do |config|
+      numerator = resolve_value(config[:numerator], base_values)
+      denominator = resolve_value(config[:denominator], base_values)
+
+      next unless numerator && denominator&.positive?
+
+      value = (numerator / denominator * 100).round(2)
+      save_observation(entity, config[:key], year, value, document)
+    end
+  end
+
+  def find_source_document(entity, year)
+    Document.find_by(entity: entity, fiscal_year: year, doc_type: "osc_school_afr")
+  end
+
+  def load_base_values(entity, year)
+    Observation.joins(:metric)
+               .where(entity: entity, fiscal_year: year)
+               .where("metrics.key LIKE 'school_%'")
+               .pluck("metrics.key", :value_numeric)
+               .to_h
+  end
+
+  def resolve_value(source, base_values)
+    case source
+    when String
+      base_values[source]
+    when :state_aid_total
+      STATE_AID_KEYS.sum { |k| base_values[k].to_f }
+    when :revenue_total
+      # Sum all revenue metrics
+      base_values.select { |k, _| revenue_key?(k) }.values.sum
+    end
+  end
+
+  def revenue_key?(key)
+    # Revenue metrics have account_type: revenue
+    metric = @metric_cache[key]
+    metric&.revenue_account?
+  end
+
+  def save_observation(entity, metric_key, year, value, document)
+    if dry_run
+      stats[:would_create] += 1
+      return
+    end
+
+    metric = @metric_cache[metric_key]
+    unless metric
+      stats[:metric_not_found] += 1
+      return
+    end
+
+    obs = Observation.find_or_initialize_by(
+      entity: entity,
+      metric: metric,
+      document: document,
+      fiscal_year: year
+    )
+
+    if obs.new_record?
+      obs.value_numeric = value
+      obs.verification_status = :verified
+      obs.save!
+      stats[:created] += 1
+    elsif obs.value_numeric != value
+      obs.update!(value_numeric: value)
+      stats[:updated] += 1
+    else
+      stats[:unchanged] += 1
+    end
+  end
+
+  def print_progress(count)
+    total = Entity.school_districts.count
+    puts "  Processed #{count}/#{total} districts..."
+  end
+
+  def print_summary
+    puts ""
+    puts "=" * 70
+    puts dry_run ? "PREVIEW SUMMARY (no changes made)" : "CALCULATION SUMMARY"
+    puts "=" * 70
+    puts ""
+
+    puts "Metrics:"
+    if dry_run
+      puts "  Would create:     #{stats[:metrics_would_create]}"
+    else
+      puts "  Created:          #{stats[:metrics_created]}"
+    end
+    puts "  Already exist:    #{stats[:metrics_exist]}"
+    puts ""
+
+    puts "Observations:"
+    if dry_run
+      puts "  Would create:     #{stats[:would_create]}"
+    else
+      puts "  Created:          #{stats[:created]}"
+      puts "  Updated:          #{stats[:updated]}"
+      puts "  Unchanged:        #{stats[:unchanged]}"
+    end
+    puts ""
+
+    if stats[:missing_enrollment].positive?
+      puts "Warnings:"
+      puts "  Missing enrollment: #{stats[:missing_enrollment]} entity-years skipped"
+      puts ""
+    end
+
+    puts "Derived metrics summary:"
+    (PER_PUPIL_METRICS + PERCENTAGE_METRICS).each do |config|
+      count = Observation.joins(:metric).where(metrics: { key: config[:key] }).count
+      puts "  #{config[:label]}: #{count} observations"
+    end
   end
 end
 # rubocop:enable Metrics/ClassLength
