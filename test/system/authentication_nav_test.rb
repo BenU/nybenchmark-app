@@ -25,6 +25,14 @@ class AuthenticationNavTest < ApplicationSystemTestCase
     end
   end
 
+  test "navbar shows Compare Districts link" do
+    visit root_path
+
+    within "header nav" do
+      assert_link "Compare Districts", href: school_districts_compare_path
+    end
+  end
+
   test "navbar shows admin links when signed in" do
     sign_in @user
     visit root_path
