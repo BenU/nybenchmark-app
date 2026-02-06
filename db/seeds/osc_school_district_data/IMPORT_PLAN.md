@@ -342,7 +342,12 @@ BANDS = [
    - 171 metrics created from CSV column headers
    - Distribution: 83 revenue, 85 expenditure, 2 balance sheet, 1 enrollment
    - Categories assigned: Education, Employee Benefits, Debt Service, State/Federal Aid, etc.
-3. **Import financial data** - `osc:schools:import`
+3. **Import financial data** - `osc:schools:import` ✅ COMPLETE (2026-02-05)
+   - 272,580 observations imported (2015-2024, 10 years)
+   - 6,885 documents created (689 districts × 10 years, minus non-filers)
+   - Years 2012-2014 skipped (no header rows in CSV)
+   - Column normalization handles name differences between years
+   - 3 merged districts skipped (Berkshire, Elizabethtown-Lewis, Westport)
 4. **Calculate derived metrics** - `osc:schools:derive_metrics`
 5. **Download NYSED outcomes** - Manual or scripted
 6. **Import outcomes** - `nysed:import_outcomes`
@@ -398,11 +403,47 @@ Set `parent_id` on Big Five school districts to link them to their parent city f
 
 **Rationale:** Charter schools are not in OSC's school district bulk data — they operate under different financial reporting requirements. NYSED tracks them separately. Could be added as a future entity type if there's demand.
 
-### 4. Historical district mergers — Don't track lineage
+### 4. Historical district mergers — Don't track lineage (for now)
 
-**Decision:** Each filing year stands alone. Do not track historical lineage.
+**Decision:** Each filing year stands alone. Do not track historical lineage in Phase 1.
 
-**Rationale:** When districts merge, the old district stops appearing in new years and the successor district starts appearing. This works fine for year-over-year analysis within a district. Full historical lineage tracking would require manual research and offers limited analytical value for the core benchmarking use case.
+**Rationale:** When districts merge, the old district stops appearing in new years and the successor district starts appearing. This works fine for year-over-year analysis within a district.
+
+**Known merged districts (skipped in import):**
+- Berkshire Union Free School District (100911800800)
+- Elizabethtown-Lewis Central School District (150726000100)
+- Westport Central School District (150789600100)
+
+**Future Enhancement: Merger Tracking**
+
+Tracking mergers would enable "economies of scale" analysis:
+- Did per-pupil spending decrease after merger?
+- Did outcomes improve for students from the smaller district?
+- What's the optimal district size for cost efficiency?
+
+**Proposed schema:**
+```ruby
+# Add to entities table
+add_column :status, :string, default: 'active'  # active, merged, closed
+add_column :successor_id, :bigint               # points to merged-into entity
+add_column :merger_year, :integer               # when merger happened
+add_index :entities, :successor_id
+```
+
+**Workflow:**
+1. Research actual merger history (NYSED maintains this)
+2. Create entities for merged districts with `status: 'merged'`
+3. Set `successor_id` to point to the new combined district
+4. Import pre-merger data to the original entities
+5. Analysis can then compare pre-merger (A+B combined) vs post-merger (C)
+
+**Challenges:**
+- Manual research required to identify all mergers
+- Need to sum A+B metrics for apples-to-apples comparison with C
+- Demographic composition may change (not just A+B population)
+- Some mergers are consolidations (new name), others are absorptions (one name survives)
+
+**Priority:** Low. Most districts are stable. Focus on current benchmarking first.
 
 ### 5. Metric naming — No prefix
 

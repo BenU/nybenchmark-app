@@ -27,6 +27,27 @@ namespace :osc do
       creator = SchoolDistrictMetricCreator.new(dry_run: true)
       creator.run
     end
+
+    desc "Import school district financial data from OSC CSV files"
+    task import: :environment do
+      importer = SchoolDistrictImporter.new
+      importer.run
+    end
+
+    desc "Import a single year of school district data"
+    task :import_year, [:year] => :environment do |_t, args|
+      year = args[:year]&.to_i
+      abort "Usage: rails osc:schools:import_year[2024]" unless year
+
+      importer = SchoolDistrictImporter.new
+      importer.run(year: year)
+    end
+
+    desc "Preview import (dry run)"
+    task preview_import: :environment do
+      importer = SchoolDistrictImporter.new(dry_run: true)
+      importer.run
+    end
   end
 end
 
@@ -524,6 +545,276 @@ class SchoolDistrictMetricCreator
     puts "Current totals:"
     puts "  Total Metrics:          #{Metric.count}"
     puts "  School District Metrics: #{Metric.where("key LIKE 'school_%'").count}"
+  end
+end
+# rubocop:enable Metrics/ClassLength
+
+# Service class for importing school district financial data
+# rubocop:disable Metrics/ClassLength
+class SchoolDistrictImporter
+  CSV_DIR = Rails.root.join("db/seeds/osc_school_district_data")
+  OSC_SOURCE_URL = "https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm"
+
+  # Files 2012-2014 have no header row - skip them for now
+  YEARS_WITHOUT_HEADERS = [2012, 2013, 2014].freeze
+
+  # Columns to skip (metadata, not financial data)
+  METADATA_COLUMNS = (
+    SchoolDistrictMetricCreator::METADATA_COLUMNS + ["District Type"]
+  ).freeze
+
+  # Normalize column names across years (old name => canonical name matching 2024)
+  COLUMN_ALIASES = {
+    "Total Debt Outstanding at End of FY" => "Debt Outstanding",
+    "Sanitation" => "Sanitation Fees"
+  }.freeze
+
+  attr_reader :dry_run, :stats, :errors
+
+  def initialize(dry_run: false)
+    @dry_run = dry_run
+    @stats = Hash.new(0)
+    @errors = []
+    @entity_cache = {}
+    @metric_cache = {}
+    @document_cache = {}
+  end
+
+  def run(year: nil)
+    puts "=" * 70
+    puts dry_run ? "School District Import PREVIEW (dry run)" : "School District Import"
+    puts "=" * 70
+    puts ""
+
+    files = csv_files(year)
+    if files.empty?
+      puts "No CSV files found#{" for year #{year}" if year}"
+      return
+    end
+
+    puts "Found #{files.count} CSV file(s) to process"
+    puts ""
+
+    # Pre-load caches for performance
+    load_entity_cache
+    load_metric_cache
+
+    files.each { |file| process_file(file) }
+
+    print_summary
+  end
+
+  private
+
+  def csv_files(year)
+    if year
+      if YEARS_WITHOUT_HEADERS.include?(year)
+        puts "WARNING: Year #{year} has no headers, skipping"
+        return []
+      end
+      file = CSV_DIR.join("leveltwo#{year.to_s[-2..]}.csv")
+      File.exist?(file) ? [file] : []
+    else
+      # Filter out years without headers
+      Dir.glob(CSV_DIR.join("leveltwo*.csv")).reject do |f|
+        file_year = extract_year_from_filename(File.basename(f))
+        YEARS_WITHOUT_HEADERS.include?(file_year)
+      end
+    end
+  end
+
+  def load_entity_cache
+    puts "Loading entity cache..."
+    Entity.where(kind: :school_district).find_each do |entity|
+      @entity_cache[entity.osc_municipal_code] = entity
+    end
+    puts "  Loaded #{@entity_cache.size} school districts"
+  end
+
+  def load_metric_cache
+    puts "Loading metric cache..."
+    Metric.where("key LIKE 'school_%'").find_each do |metric|
+      @metric_cache[metric.key] = metric
+    end
+    puts "  Loaded #{@metric_cache.size} school district metrics"
+    puts ""
+  end
+
+  def process_file(file)
+    year = extract_year_from_filename(File.basename(file))
+    puts "-" * 40
+    puts "Processing: #{File.basename(file)} (FY #{year})"
+
+    row_count = 0
+    skipped_empty = 0
+
+    CSV.foreach(file, headers: true) do |row|
+      row_count += 1
+      skipped_empty += process_row(row, year)
+    end
+
+    puts "  Rows: #{row_count}, Skipped empty values: #{skipped_empty}"
+    puts ""
+  end
+
+  def process_row(row, year)
+    muni_code = row["Muni Code"]
+    return 0 if muni_code.blank?
+
+    entity = find_entity(muni_code, row["Entity Name"])
+    return 0 unless entity
+
+    document = find_or_create_document(entity, year) unless dry_run
+
+    skipped = 0
+    row.headers.each do |col|
+      next if col.blank?
+      next if METADATA_COLUMNS.include?(col)
+
+      if should_skip_value?(row[col])
+        skipped += 1
+        next
+      end
+
+      process_observation(entity, document, col, row[col], year)
+    end
+
+    skipped
+  end
+
+  def find_entity(muni_code, name)
+    return @entity_cache[muni_code] if @entity_cache.key?(muni_code)
+
+    # Not in cache - likely a new district or data issue
+    stats[:entities_not_found] += 1
+    errors << "Entity not found: #{name} (#{muni_code})" if errors.size < 20
+    nil
+  end
+
+  def find_or_create_document(entity, year)
+    cache_key = "#{entity.id}-#{year}"
+    return @document_cache[cache_key] if @document_cache.key?(cache_key)
+
+    document = Document.find_or_create_by!(
+      entity: entity,
+      doc_type: "osc_school_afr",
+      fiscal_year: year
+    ) do |d|
+      d.title = "#{entity.name} OSC Annual Financial Report #{year}"
+      d.source_type = :bulk_data
+      d.source_url = OSC_SOURCE_URL
+    end
+
+    stats[:documents_created] += 1 if document.previously_new_record?
+    @document_cache[cache_key] = document
+    document
+  end
+
+  def process_observation(entity, document, col, value, year)
+    # Normalize column name to match 2024 canonical names
+    normalized_col = normalize_column_name(col)
+    metric_key = metric_key_for(normalized_col)
+    metric = @metric_cache[metric_key]
+
+    unless metric
+      stats[:metrics_not_found] += 1
+      errors << "Metric not found: #{col} (key: #{metric_key})" if errors.size < 20
+      return
+    end
+
+    amount = parse_amount(value)
+    return unless amount
+
+    if dry_run
+      stats[:would_create] += 1
+      return
+    end
+
+    observation = Observation.find_or_initialize_by(
+      entity: entity,
+      metric: metric,
+      document: document,
+      fiscal_year: year
+    )
+
+    if observation.new_record?
+      observation.value_numeric = amount
+      observation.verification_status = :verified
+      observation.save!
+      stats[:observations_created] += 1
+    elsif observation.value_numeric != amount
+      observation.update!(value_numeric: amount)
+      stats[:observations_updated] += 1
+    else
+      stats[:observations_unchanged] += 1
+    end
+  end
+
+  def extract_year_from_filename(filename)
+    # leveltwo24.csv -> 2024, leveltwo12.csv -> 2012
+    year_suffix = filename.match(/leveltwo(\d{2})\.csv/)[1].to_i
+    year_suffix < 50 ? 2000 + year_suffix : 1900 + year_suffix
+  end
+
+  def metric_key_for(col)
+    "school_#{col.parameterize.underscore}"
+  end
+
+  def normalize_column_name(col)
+    COLUMN_ALIASES.fetch(col, col)
+  end
+
+  def parse_amount(value)
+    return nil if value.blank?
+
+    BigDecimal(value.to_s.delete(","))
+  rescue ArgumentError
+    nil
+  end
+
+  def should_skip_value?(value)
+    return true if value.blank?
+
+    amount = parse_amount(value)
+    amount.nil? || amount.zero?
+  end
+
+  def print_summary
+    puts ""
+    puts "=" * 70
+    puts dry_run ? "PREVIEW SUMMARY (no changes made)" : "IMPORT SUMMARY"
+    puts "=" * 70
+    puts ""
+
+    if dry_run
+      puts "Would create:           #{stats[:would_create]} observations"
+    else
+      puts "Documents created:      #{stats[:documents_created]}"
+      puts "Observations created:   #{stats[:observations_created]}"
+      puts "Observations updated:   #{stats[:observations_updated]}"
+      puts "Observations unchanged: #{stats[:observations_unchanged]}"
+    end
+    puts ""
+
+    if stats[:entities_not_found].positive? || stats[:metrics_not_found].positive?
+      puts "WARNINGS:"
+      puts "  Entities not found: #{stats[:entities_not_found]}" if stats[:entities_not_found].positive?
+      puts "  Metrics not found:  #{stats[:metrics_not_found]}" if stats[:metrics_not_found].positive?
+      puts ""
+    end
+
+    if errors.any?
+      puts "ERRORS (first 20):"
+      errors.each { |e| puts "  - #{e}" }
+      puts ""
+    end
+
+    puts "Current totals:"
+    puts "  School Districts: #{Entity.where(kind: :school_district).count}"
+    puts "  Documents:        #{Document.count}"
+    puts "  Observations:     #{Observation.count}"
+    school_obs_count = Observation.joins(:metric).where("metrics.key LIKE ?", "school_%").count
+    puts "  School District Observations: #{school_obs_count}"
   end
 end
 # rubocop:enable Metrics/ClassLength
