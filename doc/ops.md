@@ -50,7 +50,7 @@ PostgreSQL (Port 5432) is **not** exposed to the public internet.
 - **Frequency:** Daily at **02:00 AM Eastern Time**.
 - **Method:** `pg_dump` via cron script.
 - **Destination:** DigitalOcean Spaces (`s3://nybenchmark-production/db-backups/`).
-- **Retention:** Managed via Lifecycle Rules on DigitalOcean Spaces (e.g., expire after 30 days).
+- **Retention:** 30 days. The backup script deletes files older than 30 days after each upload. (DigitalOcean Spaces does not support S3 lifecycle rules via the AWS CLI.)
 
 ---
 
