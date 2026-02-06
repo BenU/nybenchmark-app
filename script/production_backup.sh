@@ -26,6 +26,18 @@ docker exec $CONTAINER_NAME pg_dump -U $DB_USER $DB_NAME | gzip > $TEMP_FILE
 echo "[$(date)] Uploading to ${BUCKET}..."
 /snap/bin/aws s3 cp $TEMP_FILE $BUCKET/${FILENAME} --endpoint-url https://nyc3.digitaloceanspaces.com
 
-# 3. Cleanup
+# 3. Cleanup local temp file
 rm $TEMP_FILE
+
+# 4. Delete backups older than 30 days
+CUTOFF=$(date -d '-30 days' +%Y-%m-%d)
+echo "[$(date)] Removing backups older than ${CUTOFF}..."
+/snap/bin/aws s3 ls $BUCKET/ --endpoint-url https://nyc3.digitaloceanspaces.com \
+  | while read -r DATE TIME SIZE FILE; do
+      if [[ "$DATE" < "$CUTOFF" ]] && [[ -n "$FILE" ]]; then
+        echo "[$(date)] Deleting $FILE"
+        /snap/bin/aws s3 rm "$BUCKET/$FILE" --endpoint-url https://nyc3.digitaloceanspaces.com
+      fi
+    done
+
 echo "[$(date)] Backup complete: ${FILENAME}"
