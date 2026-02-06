@@ -46,6 +46,9 @@
 # Ignore Mac system files
 .DS_Store
 
+# Ignore bulk data downloads (large zip/mdb/xlsx files, re-downloadable from source)
+/db/seeds/nysed_data/
+
 # Ignore local database files if you use SQLite in dev
 /db/*.sqlite3
 /db/*.sqlite3-*
