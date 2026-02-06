@@ -44,6 +44,22 @@ class WelcomeControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[role='button']", text: "Explore Cities"
   end
 
+  test "landing page shows compare school districts button" do
+    get root_url
+    assert_response :success
+
+    assert_select "a[role='button']", text: "Compare School Districts"
+  end
+
+  test "landing page hero buttons are in a responsive button group" do
+    get root_url
+    assert_response :success
+
+    assert_select ".hero-buttons" do
+      assert_select "a[role='button']", count: 2
+    end
+  end
+
   test "landing page renders rankings when data exists" do
     create_ranking_cities(15)
     get root_url
