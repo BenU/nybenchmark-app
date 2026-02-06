@@ -58,6 +58,14 @@
     </fieldset>
   </form>
 
+  <% if params[:kind] == "school_district" %>
+    <div class="school-district-compare-callout">
+      <strong>Compare Districts:</strong>
+      Visualize spending and efficiency patterns across all school districts.
+      <%= link_to "Open Comparison Tool", school_districts_compare_path, role: "button", class: "outline" %>
+    </div>
+  <% end %>
+
   <figure>
     <table role="grid">
       <thead>

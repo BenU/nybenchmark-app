@@ -554,4 +554,31 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select 'meta[name="robots"][content="noindex, nofollow"]', count: 0
   end
+
+  # ==========================================
+  # SCHOOL DISTRICT COMPARISON LINK
+  # ==========================================
+
+  test "index shows compare link when filtering by school districts" do
+    get entities_url(kind: "school_district")
+    assert_response :success
+
+    assert_select ".school-district-compare-callout" do
+      assert_select "a[href=?]", school_districts_compare_path
+    end
+  end
+
+  test "index does not show compare link when viewing cities" do
+    get entities_url(kind: "city")
+    assert_response :success
+
+    assert_select ".school-district-compare-callout", count: 0
+  end
+
+  test "index does not show compare link when viewing all entities" do
+    get entities_url
+    assert_response :success
+
+    assert_select ".school-district-compare-callout", count: 0
+  end
 end

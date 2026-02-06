@@ -21,7 +21,10 @@
     </div>
   </div>
 
-  <p><%= link_to "Explore Cities", entities_path, role: "button" %></p>
+  <div class="hero-buttons">
+    <%= link_to "Explore Cities", entities_path, role: "button" %>
+    <%= link_to "Compare School Districts", school_districts_compare_path, role: "button", class: "outline" %>
+  </div>
 
   <% if @non_filer_count && @non_filer_count > 0 %>
     <p class="non-filer-callout">
