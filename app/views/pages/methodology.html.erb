@@ -4,15 +4,19 @@
   <div class="page-header">
     <hgroup>
       <h1>Methodology</h1>
-      <p>How we collect, process, and present municipal financial data.</p>
+      <p>How we collect, process, and present financial data for New York's cities and school districts.</p>
     </hgroup>
   </div>
 
+  <%# ── Cities ──────────────────────────────────────────────────── %>
+
   <section>
-    <h2>Data Sources</h2>
+    <h2>Cities</h2>
+
+    <h3>Data Sources</h3>
 
     <article>
-      <header><strong>NYS Comptroller (OSC)</strong></header>
+      <header><strong>NYS Comptroller (OSC) — City Financials</strong></header>
       <p>
         The <a href="https://www.osc.ny.gov/local-government/data">NYS Office of the State Comptroller</a>
         collects Annual Financial Reports (AFRs) from local governments across New York State.
@@ -43,10 +47,8 @@
         throughout the application.
       </p>
     </article>
-  </section>
 
-  <section>
-    <h2>How Metrics Are Calculated</h2>
+    <h3>How City Metrics Are Calculated</h3>
 
     <p>
       The three headline metrics used in city rankings and entity dashboards are derived
@@ -74,7 +76,7 @@
       </dd>
     </dl>
 
-    <h3>All-Fund Approach</h3>
+    <h4>All-Fund Approach</h4>
     <p>
       Expenditure and revenue totals include all fund types (General, Highway, Water, Sewer,
       Enterprise, etc.) with two exclusions:
@@ -94,18 +96,15 @@
       </li>
     </ul>
 
-    <h3>Fund Structure Variation</h3>
+    <h4>Fund Structure Variation</h4>
     <p>
       Cities organize their finances differently. Some run water and sewer operations through
       the General Fund (A), while others use dedicated Enterprise (E), Water (F), and Sewer (G)
       funds. Debt service may appear in any fund. The all-fund approach handles this correctly
       by including all legitimate spending regardless of fund structure.
     </p>
-  </section>
 
-  <section>
-    <h2>Known Limitations</h2>
-
+    <h3>City Data Limitations</h3>
     <ul>
       <li>
         <strong>Late and non-filing cities</strong> — Not all cities file their Annual Financial
@@ -138,12 +137,202 @@
     </ul>
   </section>
 
+  <%# ── School Districts ────────────────────────────────────────── %>
+
+  <section>
+    <h2>School Districts</h2>
+
+    <h3>Data Sources</h3>
+
+    <article>
+      <header><strong>NYS Comptroller (OSC) — School District Financials</strong></header>
+      <p>
+        The <a href="https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm">NYS Office of the State Comptroller</a>
+        publishes annual financial data for all ~691 school districts in New York State.
+        NY Benchmark imports this data from fiscal year 2012 to present.
+      </p>
+      <p>
+        Unlike city data (which uses a long format with one row per account code), school district
+        data is published in a wide format — one row per district per year with approximately
+        180 columns representing pre-aggregated category totals covering revenue by source
+        (property taxes, state aid, federal aid), expenditures by function (instruction,
+        administration, transportation, debt service), balance sheet items, enrollment,
+        and property values.
+      </p>
+    </article>
+
+    <article>
+      <header><strong>NYS Education Department (NYSED) — Outcomes Data</strong></header>
+      <p>
+        The <a href="https://data.nysed.gov/downloads.php">New York State Education Department</a>
+        publishes assessment results, graduation rates, and enrollment demographics for all
+        school districts. We have downloaded graduation rates (2012–2025), Grades 3–8 assessment
+        results (2014–2021), and enrollment demographics (2018–2025). Import of this outcomes
+        data is planned for a future release.
+      </p>
+      <p>
+        <strong>Note:</strong> 2019–20 state assessments were cancelled due to COVID-19 school
+        closures, so that year has no assessment data.
+      </p>
+    </article>
+
+    <h3>District Types</h3>
+    <p>
+      New York has five legal classifications for school districts, each with distinct
+      governance and fiscal structures:
+    </p>
+    <ul>
+      <li>
+        <strong>Central</strong> (~550 districts) — The most common type. Consolidated districts
+        serving multiple municipalities, typically in rural and suburban areas. This category
+        includes "Independent Superintendent" and "Central High" variants, which share the same
+        legal structure.
+      </li>
+      <li>
+        <strong>Union Free</strong> (72 districts) — Independent districts formed by vote of
+        multiple school districts, typically in suburban areas.
+      </li>
+      <li>
+        <strong>City — Big Five</strong> (4 in OSC data) — Buffalo, Rochester, Syracuse, and
+        Yonkers. These districts are fiscally dependent on their parent cities — their budgets
+        require city approval. NYC is also a Big Five district but operates under its own
+        Comptroller and is not in OSC data.
+      </li>
+      <li>
+        <strong>City — Small City</strong> (57 districts) — Districts coterminous with smaller
+        New York cities (population under 125,000). While they have some fiscal relationship with
+        their city, they have greater budgetary independence than the Big Five.
+      </li>
+      <li>
+        <strong>Common</strong> (10 districts) — The oldest form of school district in New York,
+        governed by trustees rather than a board of education. These range from 7 to 229 students.
+        Despite the name, they are not one-room schoolhouses — they operate modern facilities but
+        retain the historic "common school" designation.
+      </li>
+    </ul>
+
+    <h3>How School District Metrics Are Calculated</h3>
+    <p>
+      The headline metrics used in <a href="<%= school_districts_compare_path %>">school district
+      comparisons</a> are:
+    </p>
+
+    <dl>
+      <dt><strong>Per-Pupil Spending</strong></dt>
+      <dd>
+        Total Expenditures divided by Enrollment. The primary measure for comparing spending
+        across districts of different sizes.
+      </dd>
+
+      <dt><strong>Per-Pupil Instruction</strong></dt>
+      <dd>
+        Instruction expenditures divided by Enrollment. Isolates spending that directly supports
+        classroom teaching.
+      </dd>
+
+      <dt><strong>Per-Pupil Administration</strong></dt>
+      <dd>
+        Administration expenditures divided by Enrollment. Measures administrative spending
+        relative to student body size.
+      </dd>
+
+      <dt><strong>Administrative Overhead %</strong></dt>
+      <dd>
+        Administration expenditures divided by Total Expenditures. Measures how much of the
+        budget goes to administration versus instruction and other services.
+      </dd>
+
+      <dt><strong>State Aid Dependency %</strong></dt>
+      <dd>
+        Total State Aid divided by Total Revenue. Measures fiscal independence — higher values
+        indicate greater reliance on state funding and more vulnerability to state budget cuts.
+      </dd>
+    </dl>
+
+    <h3>Big Five: Separate Data, No Double-Counting</h3>
+    <p>
+      The Big Five school districts (Buffalo, Rochester, Syracuse, Yonkers) are fiscally dependent
+      on their parent cities, which raises a natural question about whether importing both city and
+      school district data leads to double-counting. It does not — OSC assigns entirely separate
+      municipal codes and financial reports to cities and their school districts. We verified this
+      by comparing FY 2024 expenditures:
+    </p>
+    <ul>
+      <li>Buffalo — city operations: $896M, school district: $1.28B</li>
+      <li>Rochester — city operations: $908M, school district: $1.08B</li>
+      <li>Syracuse — city operations: $507M, school district: $624M</li>
+      <li>Yonkers — city operations: $925M, school district: $830M</li>
+    </ul>
+    <p>
+      In three of four cases, school district spending exceeds municipal operations spending.
+      We link Big Five districts to their parent city entity to reflect the fiscal dependency
+      relationship.
+    </p>
+
+    <h3>Exclusions</h3>
+    <ul>
+      <li>
+        <strong>BOCES</strong> — Boards of Cooperative Educational Services are regional
+        shared-service providers. They don't serve students directly and have no enrollment
+        figures for per-pupil calculations. Districts that use BOCES services report those
+        costs as expenditures in their own filings.
+      </li>
+      <li>
+        <strong>Charter schools</strong> — Not included in OSC's school district bulk data.
+        NYSED tracks charter schools separately under different financial reporting requirements.
+      </li>
+      <li>
+        <strong>NYC Department of Education</strong> — Not in OSC data. NYC operates under its
+        own Comptroller. NYC school data will be imported from a separate source in a future release.
+      </li>
+    </ul>
+
+    <h3>School District Data Limitations</h3>
+    <ul>
+      <li>
+        <strong>Pre-2012 data unavailable</strong> — OSC's school district bulk downloads begin
+        in 2012, unlike city data which goes back to 1995.
+      </li>
+      <li>
+        <strong>District mergers</strong> — A small number of districts have consolidated over
+        time (e.g., Berkshire, Elizabethtown-Lewis, Westport). We do not currently track
+        historical lineage — each year's filing stands alone under the district name that filed it.
+        We hope to cover these mergers soon, not because they involve large numbers of students,
+        but because they may serve as useful case studies for other districts considering
+        consolidation — particularly around whether economies of scale produce cost savings
+        without detrimental impact to outcomes.
+      </li>
+      <li>
+        <strong>Outlier districts</strong> — A few districts have unusual structures that produce
+        extreme per-pupil figures. For example,
+        <a href="https://en.wikipedia.org/wiki/Kiryas_Joel_School_District">Kiryas Joel Village Union Free School District</a>
+        reports ~$385,000 per pupil because it operates exclusively as a special education
+        provider for a community where most children attend private religious schools. Its
+        176-student enrollment counts only the public special education program, while
+        expenditures cover services for the broader community.
+      </li>
+      <li>
+        <strong>Enrollment timing</strong> — OSC enrollment figures are point-in-time snapshots
+        that may differ slightly from NYSED's audited enrollment counts.
+      </li>
+      <li>
+        <strong>NYSED outcomes not yet imported</strong> — We have downloaded graduation rates,
+        assessment results, and demographics from NYSED but have not yet integrated them into
+        the application. This is planned for a future release and will enable spending-vs-outcomes
+        analysis.
+      </li>
+    </ul>
+  </section>
+
+  <%# ── Open Source ─────────────────────────────────────────────── %>
+
   <section>
     <h2>Open Source</h2>
     <p>
       NY Benchmark is fully open source under the
-      <a href="https://github.com/BenU/nybenchmark-app">MIT license</a>.
-      The source code, data import scripts, and issue tracker are all available on GitHub.
+      <a href="https://github.com/BenU/nybenchmark-app?tab=MIT-1-ov-file#readme">MIT license</a>.
+      The <a href="https://github.com/BenU/nybenchmark-app">source code, data import scripts, and issue tracker</a>
+      are all available on GitHub.
       Contributions, bug reports, and suggestions are welcome.
     </p>
   </section>
