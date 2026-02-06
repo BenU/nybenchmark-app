@@ -1,0 +1,96 @@
+<h1>School District Comparisons</h1>
+
+<p class="muted">
+  Explore relationships between spending, enrollment, and efficiency metrics across
+  <%= Entity.school_districts.count %> NY school districts.
+</p>
+
+<%= form_with url: school_districts_compare_path, method: :get, local: true, class: "scatter-controls" do |f| %>
+  <div class="grid">
+    <label>
+      X-Axis
+      <%= select_tag :x_axis,
+            options_for_select(@metrics.map { |k, v| [v[:label], k] }, @x_axis),
+            onchange: "this.form.submit()" %>
+    </label>
+    <label>
+      Y-Axis
+      <%= select_tag :y_axis,
+            options_for_select(@metrics.map { |k, v| [v[:label], k] }, @y_axis),
+            onchange: "this.form.submit()" %>
+    </label>
+    <label>
+      Fiscal Year
+      <%= select_tag :year,
+            options_for_select(@years, @year),
+            onchange: "this.form.submit()" %>
+    </label>
+  </div>
+  <div class="grid">
+    <label>
+      District Type
+      <%= select_tag :district_type,
+            options_for_select([["All Types", ""]] + @legal_type_labels.map { |k, v| [v, k] }, @district_type),
+            onchange: "this.form.submit()" %>
+    </label>
+    <label>
+      Min Enrollment
+      <%= select_tag :min_enrollment,
+            options_for_select([["All Sizes", 0], ["50+", 50], ["100+", 100], ["250+", 250], ["500+", 500], ["1,000+", 1000]], @min_enrollment),
+            onchange: "this.form.submit()" %>
+    </label>
+    <div></div>
+    <div></div>
+  </div>
+<% end %>
+
+<div class="scatter-chart-container">
+  <% if @scatter_data.present? %>
+    <% district_count = @scatter_data.sum { |s| s[:data].size } %>
+    <p class="muted scatter-count">Showing <%= district_count %> districts</p>
+    <%= render "scatter_chart",
+          data: @scatter_data,
+          x_label: axis_label_with_format(@x_axis, @metrics),
+          y_label: axis_label_with_format(@y_axis, @metrics),
+          x_format: @metrics[@x_axis][:format],
+          y_format: @metrics[@y_axis][:format] %>
+  <% else %>
+    <p class="muted">No data available for the selected metrics and year.</p>
+  <% end %>
+</div>
+
+<div class="scatter-legend">
+  <strong>District Type:</strong>
+  <% @legal_type_colors.each do |type, color| %>
+    <span class="scatter-legend-item">
+      <span class="scatter-legend-color" style="background-color: <%= color %>;"></span>
+      <%= @legal_type_labels[type] %>
+    </span>
+  <% end %>
+</div>
+
+<article>
+  <header><h3>About This Chart</h3></header>
+  <p>
+    This scatter plot visualizes relationships between school district metrics.
+    Each point represents one school district, colored by its legal classification.
+    Hover over points to see district names and exact values.
+  </p>
+  <p>
+    <strong>District Types:</strong>
+  </p>
+  <ul>
+    <li><strong>Big Five:</strong> Buffalo, Rochester, Syracuse, and Yonkers are fiscally dependent on their cities.
+      New York City is also a Big Five district but is not yet included—NYC has its own Comptroller and data will be imported separately.</li>
+    <li><strong>Small City:</strong> Districts in smaller cities (population under 125,000) with some fiscal dependency on their municipal government.</li>
+    <li><strong>Central:</strong> The most common type (~550 districts), typically serving rural and suburban areas with full K-12 programs.</li>
+    <li><strong>Union Free:</strong> Independent districts that may serve only elementary grades, with students attending other districts for high school.</li>
+    <li><strong>Common:</strong> The oldest form of school district in NY, governed by trustees rather than a board of education. Only 10 remain, ranging from 7 to 229 students. Despite the name, these are not one-room schoolhouses—they operate modern facilities but retain the historic "common school" designation.</li>
+  </ul>
+  <p>
+    <strong>Data Note:</strong> Kiryas Joel Village Union Free School District appears as an extreme outlier ($385k per pupil) because it operates exclusively as a special education provider. Most children in Kiryas Joel attend private religious schools; the public district provides special education services, transportation, and supplies to private school students. Its 176-student enrollment counts only those in the public special education program, while expenditures cover services for the broader community.
+  </p>
+  <p>
+    Data sourced from the NYS Comptroller's Office. See <%= link_to "Methodology", methodology_path %> for details.
+  </p>
+</article>

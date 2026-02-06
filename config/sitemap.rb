@@ -37,6 +37,9 @@ SitemapGenerator::Sitemap.create do
   add methodology_path, changefreq: "monthly", priority: 0.6
   add non_filers_path, changefreq: "weekly", priority: 0.6
 
+  # Comparison tools
+  add school_districts_compare_path, changefreq: "weekly", priority: 0.7
+
   # NOTE: When adding new public-facing pages (benchmarks, comparisons, etc.),
   # add them here. See CLAUDE.md "SEO & Sitemap" section.
   #

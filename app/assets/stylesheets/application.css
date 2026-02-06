@@ -622,3 +622,61 @@ details[open] > figure {
 details[open] > figure > table {
   margin-bottom: 0;
 }
+
+/*
+ * SCATTER PLOT COMPARISONS
+ * School district comparison charts
+ */
+.scatter-controls {
+  margin-bottom: 1.5rem;
+}
+
+.scatter-controls .grid {
+  gap: 1rem;
+}
+
+.scatter-controls label {
+  margin-bottom: 0;
+}
+
+.scatter-chart-container {
+  min-height: 500px;
+  margin-bottom: 1.5rem;
+  background: var(--pico-card-background-color);
+  border-radius: var(--pico-border-radius);
+  padding: 1rem;
+}
+
+.scatter-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--pico-card-background-color);
+  border-radius: var(--pico-border-radius);
+}
+
+.scatter-legend strong {
+  margin-right: 0.5rem;
+}
+
+.scatter-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+}
+
+.scatter-legend-color {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.scatter-count {
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
