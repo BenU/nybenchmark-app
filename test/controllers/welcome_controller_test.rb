@@ -13,7 +13,7 @@ class WelcomeControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     assert_select ".landing-hero h1", "NY Benchmark"
-    assert_select ".landing-stat", minimum: 3
+    assert_select ".landing-stat", minimum: 4
 
     assert_select ".landing-stat" do |stats|
       stat_map = stats.each_with_object({}) do |stat, hash|
@@ -23,9 +23,18 @@ class WelcomeControllerTest < ActionDispatch::IntegrationTest
       end
 
       assert_equal Entity.where(kind: :city).count.to_s, stat_map["Cities"]
+      assert_equal Entity.school_districts.count.to_s, stat_map["School Districts"]
       assert_equal Observation.distinct.count(:fiscal_year).to_s, stat_map["Years of Data"]
       assert_equal "#{Observation.count / 1000}K+", stat_map["Data Points"]
     end
+  end
+
+  test "landing page tagline reflects broader data coverage" do
+    get root_url
+    assert_response :success
+
+    # Tagline should mention local governments, not just cities
+    assert_select ".landing-hero p", text: /local governments/i
   end
 
   test "landing page shows explore cities button" do

@@ -1,11 +1,15 @@
 <section class="landing-hero">
   <h1>NY Benchmark</h1>
-  <p>Comparing financial health across New York's 62 cities</p>
+  <p>Comparing financial health across New York's local governments</p>
 
   <div class="landing-stats">
     <div class="landing-stat">
       <span class="landing-stat-value"><%= Entity.where(kind: :city).count %></span>
       <span class="landing-stat-label">Cities</span>
+    </div>
+    <div class="landing-stat">
+      <span class="landing-stat-value"><%= Entity.school_districts.count %></span>
+      <span class="landing-stat-label">School Districts</span>
     </div>
     <div class="landing-stat">
       <span class="landing-stat-value"><%= Observation.distinct.count(:fiscal_year) %></span>
@@ -66,7 +70,7 @@
 <article>
   <header><h3>About</h3></header>
   <p>
-    Nonpartisan, evidence-based analysis of governance and financial data across New York State's 62 cities.
+    Nonpartisan, evidence-based analysis of governance and financial data across New York State's cities and school districts.
     All data sourced from official filings and public records.
   </p>
   <div class="grid">
