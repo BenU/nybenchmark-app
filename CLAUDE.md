@@ -249,6 +249,23 @@ Avoid inline `style=` attributes; use CSS classes.
 - `lib/tasks/osc_counties.rake` — county entity creation + OSC data import
 - `db/seeds/county_data/council_partisan_composition_2025.csv` — partisan data for 57 counties
 
+**In Progress (CD workflow — PR #169, branch `feat/cd-workflow-version-endpoint`):**
+- [x] `/version` endpoint (`PagesController#version`) returns deployed git SHA as JSON
+- [x] Route, tests (2 new), noindex
+- [x] `.github/workflows/deploy.yml` — triggers on push to `main`, runs `kamal deploy`, verifies `/version` SHA
+- [x] `config/deploy.yml` — added `context: "."` to builder (CI writes REVISION file to build context)
+- [x] `.gitignore` — added `/REVISION`
+- [x] All CI passes (443 unit + 141 system tests, Brakeman, RuboCop, bundle-audit)
+- [x] PR created, branch pushed
+- [x] All 12 GitHub Actions secrets added to repo
+
+*Remaining to activate CD:*
+- [ ] Generate SSH deploy key: `ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/deploy_nybenchmark` (done — key exists)
+- [ ] Copy public key to server: `ssh-copy-id -i ~/.ssh/deploy_nybenchmark.pub deploy@68.183.56.0` (blocked — SSH connection reset from airplane, try when landed)
+- [ ] Merge PR #169 on GitHub
+- [ ] Verify deploy workflow runs in Actions tab
+- [ ] Visit `https://app.nybenchmark.org/version` to confirm SHA
+
 **TODO (prioritized):**
 1. [x] ~~Exclude custodial pass-throughs from expenditure totals~~ — Merged PR #137. ACFR cross-checks still pending (only Albany verified, see AUDIT.md)
 2. [x] ~~Add `app.nybenchmark.org` to Google Search Console~~ — Registered, verified, sitemaps submitted for both properties. Jekyll `_config.yml` url fixed. Validated redirect fix for nybenchmark.org.
@@ -288,6 +305,8 @@ Avoid inline `style=` attributes; use CSS classes.
     - "New York's Republican Crack-Up" (2001) — https://www.city-journal.org/article/new-yorks-republican-crack-up
     - "The Decline of the Republican Party in New York State" (2011, URI honors thesis) — https://digitalcommons.uri.edu/cgi/viewcontent.cgi?article=1270&context=srhonorsprog
 29. [ ] **Cache county comparison scatter data** — Year scrolling on `/counties/compare` is slow because each year change triggers 3 heavy queries (expenditures, fund balances, debt service across 57 counties). Add `Rails.cache.fetch("county_scatter_#{year}")` to cache query results per year. First visit is slow, repeat visits instant. Must invalidate cache after data imports (`osc:counties:import`). If still too slow, consider preloading adjacent years as JSON for client-side swapping.
+30. [ ] **Import OSC Fiscal Stress Monitoring System (FSMS) scores** — OSC publishes annual FSMS scores as Excel "All Data Worksheet" files for municipalities (2012-2024) and school districts (2013-2025). Download from [OSC Lists page](https://www.osc.ny.gov/local-government/fiscal-monitoring/lists) (current year) and [Archived Data](https://www.osc.ny.gov/local-government/fiscal-monitoring/archived-data-and-publications) (historical). Build a rake task to import scores per entity per year. Note: FSMS was redesigned in Nov 2017, so pre-2017 scores use a different methodology.
+31. [ ] **Fiscal distress early warning analysis** — Using FSMS scores (#30) and our OSC financial data (1995-2024), analyze the years leading up to non-filing or fiscal distress designation. For Mount Vernon (filed through 2020), Ithaca (2021), Rensselaer (2021), Fulton (2022), and any entities OSC has designated "significant stress" or "moderate stress": track how fund balance %, debt service %, cash position, and FSMS scores evolved in the 5-10 years before distress. Goal: identify leading indicators (e.g., "fund balance drops below X% three years before FSMS score spikes") that could be applied to currently-filing cities as an automated early warning when new AFR data becomes available. Could power a "fiscal health watchlist" page or alert system.
 
 **Level 2 Category Drill-Down Options:**
 - **Option A:** Expandable cards - Click level_1 card to expand and show level_2 sub-charts inline
