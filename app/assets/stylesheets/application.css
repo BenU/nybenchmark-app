@@ -688,6 +688,36 @@ details[open] > figure > table {
   margin-bottom: 0;
 }
 
+/* Year scroller for county comparison charts */
+.year-scroller {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.year-scroller-btn {
+  width: auto;
+  padding: 0.25rem 0.75rem;
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.year-scroller-label {
+  font-size: 1.1rem;
+  min-width: 5rem;
+  text-align: center;
+}
+
+.year-scroller-hint {
+  font-size: 0.8rem;
+}
+
+.year-scroller-range {
+  margin-bottom: 1.5rem;
+}
+
 .scatter-chart-container {
   min-height: 500px;
   margin-bottom: 1.5rem;

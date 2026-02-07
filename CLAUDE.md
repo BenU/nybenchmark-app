@@ -214,6 +214,41 @@ Avoid inline `style=` attributes; use CSS classes.
 - [x] Fixed `filing_category` returning `:recent_lapse` for cities filing ahead of `latest_majority_year` (e.g., early filers for 2025 when target year is 2024)
 - [x] Changed `== as_of_year` to `>= as_of_year` in `FilingStatus#filing_category`
 
+**In Progress (county partisan scatter — branch `feat/county-partisan-scatter`):**
+
+- [x] `lib/tasks/osc_counties.rake` — `CountyEntityCreator` + `CountyOscImporter`, rake tasks: `osc:counties:create_entities`, `osc:counties:import`, `osc:counties:import_year[YEAR]`
+- [x] 57 county entities created; OSC financial data imported
+- [x] `app/views/shared/_scatter_chart.html.erb` — shared scatter chart partial used by both county and school district comparisons
+- [x] `scatter_chart_controller.js` — Stimulus controller that creates Chart.js scatter charts directly (bypasses Chartkick), with plugins (partisan zones, reference lines) and custom tooltips built into the initial config
+- [x] School district comparisons use same shared partial (no regression)
+- [x] `CountyPartisanScatterData` concern — loads partisan CSV, calculates Fund Balance %, Debt Service %, Operating Ratio vs Conservative %
+- [x] Fund balance uses A917 (GASB 54, FY 2011+) or A910+A911 (pre-GASB 54) for historical consistency
+- [x] Operating Ratio = Revenue / Expenditures × 100 (>100% = surplus), with green 100% reference line and compressed y-axis (70-140%)
+- [x] `CountyComparisonsController` + view at `/counties/compare` with 3 scatter charts
+- [x] Year scroller: arrow buttons, range slider, mouse wheel. `year_scroller_controller.js` Stimulus controller navigates via Turbo with `?year=YYYY`
+- [x] Route, navbar link ("Compare Counties"), sitemap entry
+- [x] Methodology page updated: added Operating Ratio definition, GASB 54 fund balance note, Counties section
+- [x] Dot color: `#64748b` (Tailwind slate-500, visible in light + dark modes)
+- [x] Background partisan zones (blue/purple/red gradient behind scatter plots)
+- [x] Custom tooltips showing county/district names with formatted values
+- [x] Green dashed reference line at 100% on operating ratio chart
+
+*Remaining work:*
+- [ ] Verify in browser: all 3 charts render with zones, tooltips, and reference line
+- [ ] Gitignore `db/seeds/osc_data/county_all_years/` (large CSVs)
+- [ ] Census county demographic import (API works: `for=county:*&in=state:36`, needs FIPS mapping + task)
+- [ ] Push branch, create PR, merge
+
+*Key files:*
+- `app/javascript/controllers/scatter_chart_controller.js` — Stimulus controller: creates Chart.js scatter charts directly with plugins/tooltips in initial config
+- `app/views/shared/_scatter_chart.html.erb` — shared partial: passes config as Stimulus data attributes
+- `app/controllers/concerns/county_partisan_scatter_data.rb` — data queries + scatter series building
+- `app/controllers/county_comparisons_controller.rb` — loads 3 chart datasets + available years
+- `app/views/county_comparisons/show.html.erb` — 3 charts with year scrollers, legend, about section
+- `app/javascript/controllers/year_scroller_controller.js` — Stimulus controller for year navigation
+- `lib/tasks/osc_counties.rake` — county entity creation + OSC data import
+- `db/seeds/county_data/council_partisan_composition_2025.csv` — partisan data for 57 counties
+
 **TODO (prioritized):**
 1. [x] ~~Exclude custodial pass-throughs from expenditure totals~~ — Merged PR #137. ACFR cross-checks still pending (only Albany verified, see AUDIT.md)
 2. [x] ~~Add `app.nybenchmark.org` to Google Search Console~~ — Registered, verified, sitemaps submitted for both properties. Jekyll `_config.yml` url fixed. Validated redirect fix for nybenchmark.org.
@@ -221,13 +256,14 @@ Avoid inline `style=` attributes; use CSS classes.
 4. [x] ~~Data methodology page~~ — Merged PR #145. `/methodology` page with full content, added to sitemap.
 5. [x] ~~Fix `www` CNAME redirect chain~~ — Added Cloudflare Page Rule: `www.nybenchmark.org/*` → 301 to `https://nybenchmark.org/$1`. Redirect now happens at Cloudflare edge, no longer hops through GitHub Pages/Fastly.
 6. [x] ~~Fix NYC non-filer misclassification~~ — Merged PR #154. Added `osc_filing_exempt?` to `FilingStatus`, excluded NYC from `filing_category`, `filing_report`, `latest_majority_year`, non-filers page, landing page rankings. Non-filer count corrected from 12 to 11.
-7. [ ] **Production monitoring** — Add `lograge` gem (structured single-line request logs, zero overhead) and AppSignal free tier (error tracking, host metrics, slow query detection, no overage fees, Rust agent ~15-25MB, no Redis needed). Skip `rails_performance` (needs Redis) and Skylight (auto-bills on overage). Optionally enable `rack-mini-profiler` in production for admin-only ad-hoc debugging.
-8. [ ] **Wikipedia link on entity show page** — Add a link to the entity's Wikipedia page on the entity show page, if one exists. Store a `wikipedia_url` (or derive from entity name/slug) and render it in the entity header or governance section.
-9. [ ] **Per-page Open Graph meta tags** — Current OG tags use site-wide defaults. Build a helper or `content_for :head` blocks to generate per-page `og:title`, `og:description`, and optionally `og:image` for entity dashboards (e.g., "Mount Vernon — City Dashboard | NY Benchmark"), the non-filers page, methodology, and landing page. This improves social sharing previews and search engine rich results.
-10. [ ] **Chart.js missing-year annotations on entity trend charts** — Amber highlight rectangles on trend charts for years with no data filed. Chart.js annotation plugin has a loading/timing conflict with chartkick's importmap-based Chart.js (UMD plugin needs `window.Chart` at parse time, but ES modules load later). Attempted dynamic script loading; deferred for now. Options: pin annotation plugin in importmap, vendor the ESM build, or use a Stimulus controller to add annotations after chart render.
-11. [ ] **Complete ACFR audit** — Verify remaining cities in AUDIT.md (New Rochelle, Plattsburgh, White Plains, Syracuse, Buffalo, Yonkers, Rochester) against their ACFRs
-12. [ ] Import NYC data from Checkbook NYC (separate data source, all years). After import, request GSC indexing for `https://app.nybenchmark.org/entities/nyc` and other key entity pages.
-13. [ ] **Infrastructure scaling (phased — see `doc/ops.md` for full details)**
+7. [ ] **Verify backup retention** — After next 2:00 AM run, confirm old backups (>30 days) were pruned: `ssh deploy@68.183.56.0 "/snap/bin/aws s3 ls s3://nybenchmark-production/db-backups/ --endpoint-url https://nyc3.digitaloceanspaces.com"` (PR #163)
+8. [ ] **Production monitoring** — Add `lograge` gem (structured single-line request logs, zero overhead) and AppSignal free tier (error tracking, host metrics, slow query detection, no overage fees, Rust agent ~15-25MB, no Redis needed). Skip `rails_performance` (needs Redis) and Skylight (auto-bills on overage). Optionally enable `rack-mini-profiler` in production for admin-only ad-hoc debugging.
+9. [ ] **Wikipedia link on entity show page** — Add a link to the entity's Wikipedia page on the entity show page, if one exists. Store a `wikipedia_url` (or derive from entity name/slug) and render it in the entity header or governance section.
+10. [ ] **Per-page Open Graph meta tags** — Current OG tags use site-wide defaults. Build a helper or `content_for :head` blocks to generate per-page `og:title`, `og:description`, and optionally `og:image` for entity dashboards (e.g., "Mount Vernon — City Dashboard | NY Benchmark"), the non-filers page, methodology, and landing page. This improves social sharing previews and search engine rich results.
+11. [ ] **Chart.js missing-year annotations on entity trend charts** — Amber highlight rectangles on trend charts for years with no data filed. Chart.js annotation plugin has a loading/timing conflict with chartkick's importmap-based Chart.js (UMD plugin needs `window.Chart` at parse time, but ES modules load later). Attempted dynamic script loading; deferred for now. Options: pin annotation plugin in importmap, vendor the ESM build, or use a Stimulus controller to add annotations after chart render.
+12. [ ] **Complete ACFR audit** — Verify remaining cities in AUDIT.md (New Rochelle, Plattsburgh, White Plains, Syracuse, Buffalo, Yonkers, Rochester) against their ACFRs
+13. [ ] Import NYC data from Checkbook NYC (separate data source, all years). After import, request GSC indexing for `https://app.nybenchmark.org/entities/nyc` and other key entity pages.
+14. [ ] **Infrastructure scaling (phased — see `doc/ops.md` for full details)**
     - **Phase 1 (now):** Resize to `s-1vcpu-2gb` ($12/mo, 50GB disk). Eliminates swap thrashing at current 661K observations. Tune PG: `shared_buffers=512MB`, `effective_cache_size=1.5GB`.
     - **Phase 2 (NYC import):** No resize needed — 2GB handles ~900K observations fine.
     - **Phase 3 (counties, ~62 entities):** Resize to `s-2vcpu-4gb` ($24/mo, 80GB disk) before import. Tune PG: `shared_buffers=1GB`, `effective_cache_size=3GB`.
@@ -235,17 +271,18 @@ Avoid inline `style=` attributes; use CSS classes.
     - **Phase 5 (school districts + authorities, ~1,700 entities):** 8GB droplet still sufficient. ~22-28M observations.
     - **Phase 6 (full Census/DCJS for all entities):** Evaluate managed PostgreSQL if ops burden grows. ~25-30M observations.
     - **Trigger to resize:** swap usage > 100MB sustained, or before any bulk import that will >2x observation count.
-14. [ ] Import towns, villages, counties, districts, and authorities from OSC
-15. [ ] **Side-by-side city comparison tool** — Select two or more cities and compare them on any metric across years. Core benchmarking feature. Likely a new route (`/compare?cities=albany,syracuse`) with multi-select UI, shared chart, and table view. Consider URL-shareable comparisons for embedding/sharing.
-16. [ ] **Metric-specific leaderboards** — Rank all cities on any individual metric (e.g., police spending per capita, fire department costs, debt service burden). Extends the landing page's three summary rankings to arbitrary metrics. Could be a filterable index or per-metric show page.
-17. [ ] **State Aid as % of Revenue** — Derived metric benchmarking state aid dependency across cities. OSC revenue data already includes state aid line items; needs metric definition, derivation logic, hero stat / ranking placement. Exact denominator (revenue vs expenditures) TBD — research industry standard (GFOA/ICMA practice).
-18. [ ] Level 2 category drill-down (see options below)
-19. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
-20. [ ] Import demographic data for counties, towns, villages, and school districts from Census
-21. [ ] Import FTE staffing data by department (police, fire, public works, etc.) from ACFRs
-22. [ ] **Cross-entity-type benchmarking** — Compare cities vs. villages vs. towns on comparable per-capita metrics. Requires entity type imports (#14) and population data for non-city entities (#20). Enables questions like "Do cities spend more on public safety per capita than villages?"
-23. [ ] **Demographic context for comparisons** — Overlay poverty rates, crime rates, population density, and other contextual variables on spending comparisons. Helps distinguish policy choices from structural differences. Requires crime data (#19) and expanded Census data (#20).
-24. [ ] **Automate OSC/Census data refresh** — Cron job (via solid_queue) to periodically re-import OSC and Census data as new years become available. Currently manual rake tasks.
+15. [ ] Import towns, villages, counties, districts, and authorities from OSC
+16. [ ] **Side-by-side city comparison tool** — Select two or more cities and compare them on any metric across years. Core benchmarking feature. Likely a new route (`/compare?cities=albany,syracuse`) with multi-select UI, shared chart, and table view. Consider URL-shareable comparisons for embedding/sharing.
+17. [ ] **Metric-specific leaderboards** — Rank all cities on any individual metric (e.g., police spending per capita, fire department costs, debt service burden). Extends the landing page's three summary rankings to arbitrary metrics. Could be a filterable index or per-metric show page.
+18. [ ] **State Aid as % of Revenue** — Derived metric benchmarking state aid dependency across cities. OSC revenue data already includes state aid line items; needs metric definition, derivation logic, hero stat / ranking placement. Exact denominator (revenue vs expenditures) TBD — research industry standard (GFOA/ICMA practice).
+19. [ ] Level 2 category drill-down (see options below)
+20. [ ] Import crime data from DCJS/FBI UCR (property and violent crime rates)
+21. [ ] Import demographic data for counties, towns, villages, and school districts from Census
+22. [ ] Import FTE staffing data by department (police, fire, public works, etc.) from ACFRs
+23. [ ] **Cross-entity-type benchmarking** — Compare cities vs. villages vs. towns on comparable per-capita metrics. Requires entity type imports (#15) and population data for non-city entities (#21). Enables questions like "Do cities spend more on public safety per capita than villages?"
+24. [ ] **Demographic context for comparisons** — Overlay poverty rates, crime rates, population density, and other contextual variables on spending comparisons. Helps distinguish policy choices from structural differences. Requires crime data (#20) and expanded Census data (#21).
+25. [ ] **Automate OSC/Census data refresh** — Cron job (via solid_queue) to periodically re-import OSC and Census data as new years become available. Currently manual rake tasks.
+26. [ ] **Import historical county council partisan composition** — Currently using only Nov 2025 election results (`council_partisan_composition_2025.csv`) for all fiscal years. Gather historical election results (or at minimum a few benchmark years) so the scatter x-axis reflects actual partisan makeup for each fiscal year, not just the current one. Source TBD (NY Board of Elections, county clerk records, Ballotpedia).
 
 **Level 2 Category Drill-Down Options:**
 - **Option A:** Expandable cards - Click level_1 card to expand and show level_2 sub-charts inline
@@ -279,6 +316,9 @@ Avoid inline `style=` attributes; use CSS classes.
 - `census:import_year[YEAR]` - Import Census data for single year
 - `census:preview` - Dry run Census import (verifies API key and entity matching)
 - `data:cleanup_manual` - Remove manually-entered documents/observations (keeps OSC and Census)
+- `osc:counties:create_entities` - Create county entities from OSC county CSV
+- `osc:counties:import` - Import all county OSC financial data
+- `osc:counties:import_year[YEAR]` - Import county OSC data for single year
 
 **Account code format:** `A31201` (no dots) - fund + function + object concatenated
 

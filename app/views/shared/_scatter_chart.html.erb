@@ -1,0 +1,29 @@
+<%
+  # Normalize data: ensure floats for chart and coordinate-based tooltip lookup
+  chart_id ||= "scatter-chart"
+  partisan_zones ||= false
+  reference_line ||= nil
+  y_min ||= nil
+  y_max ||= nil
+
+  normalized_data = data.map do |series|
+    {
+      name: series[:name],
+      data: series[:data].map { |pt| { x: pt[:x].to_f, y: pt[:y].to_f, name: pt[:name] } },
+      backgroundColor: series[:backgroundColor]
+    }
+  end
+%>
+
+<div id="<%= chart_id %>-wrapper"
+     data-controller="scatter-chart"
+     data-scatter-chart-series-value="<%= normalized_data.to_json %>"
+     data-scatter-chart-x-label-value="<%= x_label %>"
+     data-scatter-chart-y-label-value="<%= y_label %>"
+     data-scatter-chart-x-format-value="<%= x_format %>"
+     data-scatter-chart-y-format-value="<%= y_format %>"
+     <% if partisan_zones %>data-scatter-chart-partisan-zones-value="true"<% end %>
+     <% if reference_line %>data-scatter-chart-reference-line-value="<%= reference_line %>"<% end %>
+     <% if y_min %>data-scatter-chart-y-min-value="<%= y_min %>"<% end %>
+     <% if y_max %>data-scatter-chart-y-max-value="<%= y_max %>"<% end %>>
+</div>

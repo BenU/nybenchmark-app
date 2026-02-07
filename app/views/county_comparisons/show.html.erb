@@ -1,0 +1,157 @@
+<h1>County Political Composition vs. Financial Health</h1>
+
+<p class="muted">
+  How does the partisan composition of county councils relate to fiscal outcomes?
+  Each dot represents one of 57 non-NYC New York counties, plotted by the conservative share of its county
+  legislature (from the November 2025 elections) against key financial metrics.
+  <% if @year %>
+    Financial data is from fiscal year <strong><%= @year %></strong>.
+  <% end %>
+</p>
+
+<% if @year.nil? %>
+  <p class="muted">No county financial data is available yet. Import county OSC data to populate these charts.</p>
+<% else %>
+
+  <%# Reusable year scroller partial-like block %>
+  <% year_scroller = capture do %>
+    <% if @years.size > 1 %>
+      <div data-controller="year-scroller"
+           data-year-scroller-years-value="<%= @years.to_json %>"
+           data-year-scroller-current-value="<%= @year %>"
+           data-year-scroller-url-value="<%= counties_compare_path %>">
+        <div class="year-scroller">
+          <button data-action="year-scroller#previous" data-year-scroller-target="prevBtn" class="year-scroller-btn">&larr;</button>
+          <span class="year-scroller-label">
+            FY <strong data-year-scroller-target="display"><%= @year %></strong>
+          </span>
+          <button data-action="year-scroller#next" data-year-scroller-target="nextBtn" class="year-scroller-btn">&rarr;</button>
+          <span class="muted year-scroller-hint">Scroll or use arrows to change year</span>
+        </div>
+        <input type="range"
+               data-year-scroller-target="slider"
+               data-action="input->year-scroller#slide"
+               min="0" max="<%= @years.size - 1 %>"
+               value="<%= @years.index(@year) || 0 %>"
+               class="year-scroller-range">
+      </div>
+    <% end %>
+  <% end %>
+
+  <div class="scatter-chart-container">
+    <%= year_scroller %>
+    <h3>Operating Ratio <small class="muted">(>100% = surplus)</small></h3>
+    <% if @operating_ratio_data.present? %>
+      <% county_count = @operating_ratio_data.sum { |s| s[:data].size } %>
+      <p class="muted scatter-count">Showing <%= county_count %> counties for FY <%= @year %></p>
+      <%= render "shared/scatter_chart",
+            data: @operating_ratio_data,
+            chart_id: "operating-ratio-scatter",
+            x_label: "Conservative % of County Council",
+            y_label: "Operating Ratio (Revenue / Expenditures)",
+            x_format: "percentage",
+            y_format: "percentage",
+            partisan_zones: true,
+            reference_line: 100,
+            y_min: 70,
+            y_max: 140 %>
+    <% else %>
+      <p class="muted">No revenue/expenditure data available for FY <%= @year %>.</p>
+    <% end %>
+  </div>
+
+  <div class="scatter-chart-container">
+    <%= year_scroller %>
+    <h3>Fund Balance % <small class="muted">(higher = healthier)</small></h3>
+    <% if @fund_balance_data.present? %>
+      <% county_count = @fund_balance_data.sum { |s| s[:data].size } %>
+      <p class="muted scatter-count">Showing <%= county_count %> counties for FY <%= @year %></p>
+      <%= render "shared/scatter_chart",
+            data: @fund_balance_data,
+            chart_id: "fund-balance-scatter",
+            x_label: "Conservative % of County Council",
+            y_label: "Fund Balance %",
+            x_format: "percentage",
+            y_format: "percentage",
+            partisan_zones: true %>
+    <% else %>
+      <p class="muted">No fund balance data available for FY <%= @year %>.</p>
+    <% end %>
+  </div>
+
+  <div class="scatter-chart-container">
+    <%= year_scroller %>
+    <h3>Debt Service % <small class="muted">(lower = healthier)</small></h3>
+    <% if @debt_service_data.present? %>
+      <% county_count = @debt_service_data.sum { |s| s[:data].size } %>
+      <p class="muted scatter-count">Showing <%= county_count %> counties for FY <%= @year %></p>
+      <%= render "shared/scatter_chart",
+            data: @debt_service_data,
+            chart_id: "debt-service-scatter",
+            x_label: "Conservative % of County Council",
+            y_label: "Debt Service %",
+            x_format: "percentage",
+            y_format: "percentage",
+            partisan_zones: true %>
+    <% else %>
+      <p class="muted">No debt service data available for FY <%= @year %>.</p>
+    <% end %>
+  </div>
+
+<% end %>
+
+<div class="scatter-legend">
+  <strong>Background:</strong>
+  <span class="scatter-legend-item">
+    <span class="scatter-legend-color" style="background-color: rgba(37, 99, 235, 0.15);"></span>
+    D-leaning
+  </span>
+  <span class="scatter-legend-item">
+    <span class="scatter-legend-color" style="background-color: rgba(139, 92, 246, 0.10);"></span>
+    Balanced
+  </span>
+  <span class="scatter-legend-item">
+    <span class="scatter-legend-color" style="background-color: rgba(220, 38, 38, 0.15);"></span>
+    R-leaning
+  </span>
+  <span class="scatter-legend-item" style="margin-left: 0.5rem;">
+    <span style="border-left: 2px dashed rgba(100,100,100,0.5); height: 12px; display: inline-block; margin-right: 0.3rem;"></span>
+    Veto-proof (&#8532;)
+  </span>
+</div>
+
+<article>
+  <header><h3>About These Charts</h3></header>
+  <p>
+    These scatter plots visualize the relationship between county council partisan composition
+    and key financial health metrics. The x-axis shows the percentage of county council
+    members who are Republican or Conservative party, based on the November 2025 election results.
+    Use the year scroller above each chart to see how patterns change over time.
+  </p>
+  <p>
+    <strong>Background zones:</strong> The blue-tinted area (left) represents Democratic-leaning
+    councils; the red-tinted area (right) represents Republican-leaning councils. The purple zone
+    (45&ndash;55%) represents balanced councils. Dashed vertical lines
+    mark the two-thirds veto-proof thresholds at 33% and 67%.
+  </p>
+  <p>
+    <strong>Operating Ratio</strong> measures total revenue as a percentage of total expenditures.
+    Values above the green 100% line indicate a surplus; below indicates a deficit. This is the most
+    direct measure of whether a county is living within its means.
+  </p>
+  <p>
+    <strong>Fund Balance %</strong> measures the unassigned fund balance as a percentage
+    of total expenditures. Higher values indicate a larger fiscal cushion. Uses account A917
+    (GASB 54, FY 2011+) or A910+A911 (pre-GASB 54) for historical consistency.
+  </p>
+  <p>
+    <strong>Debt Service %</strong> measures annual debt service payments as a percentage of total
+    expenditures. Lower values generally indicate less debt burden.
+  </p>
+  <p>
+    All metrics exclude Trust &amp; Custodial fund pass-throughs and interfund transfers to avoid
+    double-counting. NYC is excluded (has its own Comptroller). Data sourced from the
+    NYS Comptroller's Office. See <%= link_to "Methodology", methodology_path %> for details.
+  </p>
+</article>
+
