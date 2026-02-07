@@ -58,8 +58,11 @@
     <dl>
       <dt><strong>Fund Balance %</strong></dt>
       <dd>
-        Unassigned Fund Balance (account code A917) divided by Total Expenditures, expressed
+        Unassigned Fund Balance divided by Total Expenditures, expressed
         as a percentage. A higher fund balance generally indicates stronger fiscal reserves.
+        For fiscal years 2011 and later, uses account code A917 (introduced by GASB Statement
+        No.&nbsp;54). For pre-2011 data, uses A910 + A911 (Unreserved Fund Balance Appropriated
+        + Unappropriated), the predecessor classification.
       </dd>
 
       <dt><strong>Debt Service %</strong></dt>
@@ -67,6 +70,14 @@
         Total Debt Service (all accounts in the Debt Service category) divided by Total
         Expenditures, expressed as a percentage. A lower percentage typically indicates
         less debt burden.
+      </dd>
+
+      <dt><strong>Operating Ratio</strong></dt>
+      <dd>
+        Total Revenue divided by Total Expenditures, expressed as a percentage. Values above
+        100% indicate a surplus (revenues exceed expenditures); below 100% indicates a deficit.
+        Both revenue and expenditure totals exclude interfund transfers and Trust &amp; Custodial
+        fund pass-throughs.
       </dd>
 
       <dt><strong>Per-Capita Spending</strong></dt>
@@ -135,6 +146,38 @@
         carry margins of error, particularly for smaller cities.
       </li>
     </ul>
+  </section>
+
+  <%# ── Counties ────────────────────────────────────────────────── %>
+
+  <section>
+    <h2>Counties</h2>
+
+    <h3>Data Sources</h3>
+    <p>
+      County financial data comes from the same NYS Comptroller (OSC) Annual Financial Reports
+      used for cities. Data covers 57 non-NYC New York counties from 1995 to the most recently
+      available fiscal year.
+    </p>
+
+    <h3>County Partisan Comparison</h3>
+    <p>
+      The <%= link_to "County Comparison", counties_compare_path %> page plots three fiscal
+      health metrics against the partisan composition of each county's legislature (from the
+      November 2025 elections):
+    </p>
+    <ul>
+      <li><strong>Operating Ratio</strong> — Revenue / Expenditures. Above 100% = surplus.</li>
+      <li><strong>Fund Balance %</strong> — Unassigned fund balance / Expenditures. Uses A917
+        (GASB 54, FY 2011+) or A910+A911 (pre-GASB 54) for historical consistency.</li>
+      <li><strong>Debt Service %</strong> — Debt service payments / Expenditures.</li>
+    </ul>
+    <p>
+      The conservative share of each county council is calculated as (Republican + Conservative
+      not also Republican) / total council members. Partisan data is from the November 2025
+      election results and does not change when viewing different fiscal years — only the
+      financial metrics change.
+    </p>
   </section>
 
   <%# ── School Districts ────────────────────────────────────────── %>

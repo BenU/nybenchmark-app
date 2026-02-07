@@ -20,6 +20,8 @@ class SiteNavigationTest < ActionDispatch::IntegrationTest
         # Public menu links
         assert_select "a[href=?]", entities_path, text: "Cities"
         assert_select "a[href=?]", entities_path(kind: "school_district"), text: "School Districts"
+        assert_select "a[href=?]", school_districts_compare_path, text: "Compare Districts"
+        assert_select "a[href=?]", counties_compare_path, text: "Compare Counties"
         assert_select "a[href=?]", non_filers_path, text: "Non-Filers"
         assert_select "a[href=?]", methodology_path, text: "Methodology"
         assert_select "a[href='https://nybenchmark.org'][target='_blank'][rel='noopener']", text: "Blog"

@@ -60,3 +60,25 @@ albany:
   slug: albany
   organization_note: "State capital - governance structure needs research"
   osc_municipal_code: "010201000000"
+
+# County entities for partisan scatter chart tests
+albany_county:
+  name: Albany County
+  kind: county
+  state: NY
+  slug: albany-county
+  osc_municipal_code: "010100000000"
+
+allegany_county:
+  name: Allegany County
+  kind: county
+  state: NY
+  slug: allegany-county
+  osc_municipal_code: "020100000000"
+
+tompkins_county:
+  name: Tompkins County
+  kind: county
+  state: NY
+  slug: tompkins-county
+  osc_municipal_code: "540100000000"

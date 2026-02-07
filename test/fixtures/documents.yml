@@ -77,3 +77,31 @@ yonkers_osc_afr_fy2021:
   source_type: 2  # bulk_data
   source_url: https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm
   notes: "Bulk imported from NYS Comptroller"
+
+# County OSC AFR documents for partisan scatter chart tests
+albany_county_osc_afr_fy2024:
+  entity: albany_county
+  title: "Albany County OSC Annual Financial Report 2024"
+  doc_type: osc_county_afr
+  fiscal_year: 2024
+  source_type: 2  # bulk_data
+  source_url: https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm
+  notes: "Bulk imported from NYS Comptroller"
+
+allegany_county_osc_afr_fy2024:
+  entity: allegany_county
+  title: "Allegany County OSC Annual Financial Report 2024"
+  doc_type: osc_county_afr
+  fiscal_year: 2024
+  source_type: 2  # bulk_data
+  source_url: https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm
+  notes: "Bulk imported from NYS Comptroller"
+
+tompkins_county_osc_afr_fy2024:
+  entity: tompkins_county
+  title: "Tompkins County OSC Annual Financial Report 2024"
+  doc_type: osc_county_afr
+  fiscal_year: 2024
+  source_type: 2  # bulk_data
+  source_url: https://wwe1.osc.state.ny.us/localgov/findata/financial-data-for-local-governments.cfm
+  notes: "Bulk imported from NYS Comptroller"

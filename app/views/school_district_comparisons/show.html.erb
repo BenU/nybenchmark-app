@@ -48,7 +48,7 @@
   <% if @scatter_data.present? %>
     <% district_count = @scatter_data.sum { |s| s[:data].size } %>
     <p class="muted scatter-count">Showing <%= district_count %> districts</p>
-    <%= render "scatter_chart",
+    <%= render "shared/scatter_chart",
           data: @scatter_data,
           x_label: axis_label_with_format(@x_axis, @metrics),
           y_label: axis_label_with_format(@y_axis, @metrics),
