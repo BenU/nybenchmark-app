@@ -48,7 +48,6 @@
 
 # Ignore bulk data downloads (large zip/mdb/xlsx files, re-downloadable from source)
 /db/seeds/nysed_data/
-/db/seeds/osc_data/county_all_years/
 
 # Ignore local database files if you use SQLite in dev
 /db/*.sqlite3
