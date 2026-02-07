@@ -42,6 +42,7 @@ drain_timeout: 120
 # 7. Builder (Use AMD64 for DigitalOcean)
 builder:
   arch: amd64
+  context: "."
 
 # 8. Environment Variables
 env:

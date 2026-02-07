@@ -27,6 +27,7 @@ Rails.application.routes.draw do
   get "school-districts/compare" => "school_district_comparisons#show", as: :school_districts_compare
   get "counties/compare" => "county_comparisons#show", as: :counties_compare
 
+  get "version" => "pages#version"
   get "up" => "rails/health#show", as: :rails_health_check
   get "for-llms" => "welcome#for_llms"
 
