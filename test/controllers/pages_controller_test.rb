@@ -62,4 +62,22 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "td", text: "New York City", count: 0
   end
+
+  # ==========================================
+  # VERSION ENDPOINT
+  # ==========================================
+
+  test "version endpoint returns JSON with sha" do
+    get version_url
+    assert_response :success
+    json = response.parsed_body
+    assert json.key?("sha"), "Expected JSON to contain 'sha' key"
+    assert json["sha"].present?, "Expected sha to be present"
+  end
+
+  test "version endpoint returns valid JSON content type" do
+    get version_url
+    assert_response :success
+    assert_equal "application/json; charset=utf-8", response.content_type
+  end
 end

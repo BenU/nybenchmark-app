@@ -1,7 +1,7 @@
 service: nybenchmark_app
 
 # 1. Image Location
-image: ghcr.io/benu/nybenchmark_app
+image: benu/nybenchmark_app
 
 # 2. Server IP
 ssh:
@@ -42,6 +42,7 @@ drain_timeout: 120
 # 7. Builder (Use AMD64 for DigitalOcean)
 builder:
   arch: amd64
+  context: "."
 
 # 8. Environment Variables
 env:

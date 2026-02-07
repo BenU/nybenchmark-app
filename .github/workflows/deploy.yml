@@ -1,0 +1,78 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      DOCKER_BUILDKIT: 1
+      KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      DO_SPACES_KEY: ${{ secrets.DO_SPACES_KEY }}
+      DO_SPACES_SECRET: ${{ secrets.DO_SPACES_SECRET }}
+      HTTP_AUTH_USER: ${{ secrets.HTTP_AUTH_USER }}
+      HTTP_AUTH_PASSWORD: ${{ secrets.HTTP_AUTH_PASSWORD }}
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+      BREVO_SMTP_USERNAME: ${{ secrets.BREVO_SMTP_USERNAME }}
+      BREVO_SMTP_PASSWORD: ${{ secrets.BREVO_SMTP_PASSWORD }}
+      CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Write REVISION file
+        run: echo "${{ github.sha }}" > REVISION
+
+      - name: Write master.key
+        run: echo "${{ secrets.RAILS_MASTER_KEY }}" > config/master.key
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -t ed25519 68.183.56.0 >> ~/.ssh/known_hosts 2>/dev/null
+          cat >> ~/.ssh/config <<EOF
+          Host 68.183.56.0
+            User deploy
+            IdentityFile ~/.ssh/id_deploy
+            StrictHostKeyChecking no
+          EOF
+
+      - name: Deploy with Kamal
+        run: bundle exec kamal deploy
+
+      - name: Verify deployment
+        run: |
+          sleep 10
+          EXPECTED_SHA="${{ github.sha }}"
+          DEPLOYED_SHA=$(curl -sf https://app.nybenchmark.org/version | jq -r '.sha')
+          echo "Expected: $EXPECTED_SHA"
+          echo "Deployed: $DEPLOYED_SHA"
+          if [ "$DEPLOYED_SHA" = "$EXPECTED_SHA" ]; then
+            echo "Deployment verified successfully!"
+          else
+            echo "WARNING: SHA mismatch. Deploy may still be rolling out."
+            exit 1
+          fi
