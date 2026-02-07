@@ -7,11 +7,13 @@ class AuthenticationNavTest < ApplicationSystemTestCase
     @user = users(:one)
   end
 
-  test "navbar shows Sign in when logged out" do
+  test "navbar does not show Sign in or Sign up when logged out" do
     visit root_path
 
-    assert_link "Sign in", href: new_user_session_path
-    assert_selector "a", text: "Sign in"
+    within "header nav" do
+      assert_no_link "Sign in"
+      assert_no_link "Sign up"
+    end
   end
 
   test "navbar shows Entities and Methodology links when logged out" do
