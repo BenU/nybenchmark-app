@@ -56,14 +56,18 @@ class CountyEntityCreator
       name = normalize_county_name(osc_name)
       slug = name.parameterize
 
-      entity = Entity.find_or_initialize_by(osc_municipal_code: municipal_code)
-      if entity.new_record?
-        entity.assign_attributes(name: name, kind: :county, state: "NY", slug: slug)
-        entity.save!
+      # Look up by municipal code first, then by slug (handles re-runs where
+      # some entities were created before the task crashed)
+      entity = Entity.find_by(osc_municipal_code: municipal_code) ||
+               Entity.find_by(slug: slug, kind: :county)
+
+      if entity
+        entity.update!(osc_municipal_code: municipal_code) unless entity.osc_municipal_code == municipal_code
+        skipped += 1
+      else
+        Entity.create!(name: name, kind: :county, state: "NY", slug: slug, osc_municipal_code: municipal_code)
         puts "  Created: #{name} (#{municipal_code})"
         created += 1
-      else
-        skipped += 1
       end
     end
 
