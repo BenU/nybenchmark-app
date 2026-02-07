@@ -18,7 +18,7 @@ class SiteNavigationTest < ActionDispatch::IntegrationTest
         end
 
         # Public menu links
-        assert_select "a[href=?]", entities_path, text: "Cities"
+        assert_select "a[href=?]", entities_path, text: "Entities"
         assert_select "a[href=?]", entities_path(kind: "school_district"), text: "School Districts"
         assert_select "a[href=?]", school_districts_compare_path, text: "Compare Districts"
         assert_select "a[href=?]", counties_compare_path, text: "Compare Counties"

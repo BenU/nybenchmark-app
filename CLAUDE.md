@@ -283,6 +283,7 @@ Avoid inline `style=` attributes; use CSS classes.
 24. [ ] **Demographic context for comparisons** — Overlay poverty rates, crime rates, population density, and other contextual variables on spending comparisons. Helps distinguish policy choices from structural differences. Requires crime data (#20) and expanded Census data (#21).
 25. [ ] **Automate OSC/Census data refresh** — Cron job (via solid_queue) to periodically re-import OSC and Census data as new years become available. Currently manual rake tasks.
 26. [ ] **Import historical county council partisan composition** — Currently using only Nov 2025 election results (`council_partisan_composition_2025.csv`) for all fiscal years. Gather historical election results (or at minimum a few benchmark years) so the scatter x-axis reflects actual partisan makeup for each fiscal year, not just the current one. Source TBD (NY Board of Elections, county clerk records, Ballotpedia).
+27. [ ] **Investigate missing school district financial charts** — School district entity show pages only display a Debt Service trend chart. Fund Balance, revenue, and expenditure charts are missing. Determine whether the data exists in the imported OSC school district data (check account codes/categories), whether `EntityTrends` concern needs school-district-specific logic, or whether additional metrics need to be derived.
 
 **Level 2 Category Drill-Down Options:**
 - **Option A:** Expandable cards - Click level_1 card to expand and show level_2 sub-charts inline

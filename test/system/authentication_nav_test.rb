@@ -14,11 +14,11 @@ class AuthenticationNavTest < ApplicationSystemTestCase
     assert_selector "a", text: "Sign in"
   end
 
-  test "navbar shows Cities and Methodology links when logged out" do
+  test "navbar shows Entities and Methodology links when logged out" do
     visit root_path
 
     within "header nav" do
-      assert_link "Cities", href: entities_path
+      assert_link "Entities", href: entities_path
       assert_link "Methodology", href: methodology_path
       assert_no_link "Documents"
       assert_no_link "Metrics"
