@@ -30,9 +30,9 @@ class SiteNavigationTest < ActionDispatch::IntegrationTest
         assert_select "a", text: "Documents", count: 0
         assert_select "a", text: "Metrics", count: 0
 
-        # Auth links (signed out)
-        assert_select "a[href=?]", new_user_session_path, text: "Sign in"
-        assert_select "a[href=?]", new_user_registration_path, text: "Sign up"
+        # Auth links should NOT be visible when signed out
+        assert_select "a", text: "Sign in", count: 0
+        assert_select "a", text: "Sign up", count: 0
         assert_select "button", text: "Sign out", count: 0
       end
     end
