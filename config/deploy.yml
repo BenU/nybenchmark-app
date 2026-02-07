@@ -1,7 +1,7 @@
 service: nybenchmark_app
 
 # 1. Image Location
-image: ghcr.io/benu/nybenchmark_app
+image: benu/nybenchmark_app
 
 # 2. Server IP
 ssh:
