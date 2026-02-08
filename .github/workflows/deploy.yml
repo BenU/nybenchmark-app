@@ -27,6 +27,7 @@ jobs:
       BREVO_SMTP_USERNAME: ${{ secrets.BREVO_SMTP_USERNAME }}
       BREVO_SMTP_PASSWORD: ${{ secrets.BREVO_SMTP_PASSWORD }}
       CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+      RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
 
     steps:
       - name: Checkout code
@@ -45,7 +46,7 @@ jobs:
         run: echo "${{ github.sha }}" > REVISION
 
       - name: Write master.key
-        run: echo "${{ secrets.RAILS_MASTER_KEY }}" > config/master.key
+        run: printf '%s' "$RAILS_MASTER_KEY" > config/master.key
 
       - name: Set up SSH
         env:
@@ -63,7 +64,7 @@ jobs:
           mkdir -p .kamal
           cat > .kamal/secrets <<'SECRETS'
           KAMAL_REGISTRY_PASSWORD=$KAMAL_REGISTRY_PASSWORD
-          RAILS_MASTER_KEY=$(cat config/master.key)
+          RAILS_MASTER_KEY=$RAILS_MASTER_KEY
           POSTGRES_PASSWORD=$POSTGRES_PASSWORD
           DO_SPACES_KEY=$DO_SPACES_KEY
           DO_SPACES_SECRET=$DO_SPACES_SECRET
