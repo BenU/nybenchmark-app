@@ -1,0 +1,219 @@
+# FSMS Metric Definitions
+#
+# Maps OSC Fiscal Stress Monitoring System data to metrics.
+# Two eras: pre-2017 (29-point weighted, fraction scores) and
+# 2017+ (100-point direct scoring).
+#
+# We import from Summary, Financial Scoring, and Environmental Scoring sheets.
+# Raw indicator detail sheets have varying layouts across years and are not imported.
+
+# Fiscal indicator points (from Financial Scoring sheet)
+# Pre-2017: 9 indicators with individual point values (not weighted)
+# 2017+: 9 indicators (munis), 6 indicators (schools) scored 0-max_points
+fiscal_indicators:
+  munis:
+    ind_1:
+      key: fsms_muni_fiscal_ind1_points
+      label: "FSMS Fiscal Indicator 1 Points"
+      description: "Assigned & Unassigned Fund Balance as % of Expenditures - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_2:
+      key: fsms_muni_fiscal_ind2_points
+      label: "FSMS Fiscal Indicator 2 Points"
+      description: "Total Fund Balance as % of Expenditures - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_3:
+      key: fsms_muni_fiscal_ind3_points
+      label: "FSMS Fiscal Indicator 3 Points"
+      description: "Operating Deficit - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_4:
+      key: fsms_muni_fiscal_ind4_points
+      label: "FSMS Fiscal Indicator 4 Points"
+      description: "Cash Ratio - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_5:
+      key: fsms_muni_fiscal_ind5_points
+      label: "FSMS Fiscal Indicator 5 Points"
+      description: "Cash as % of Monthly Expenditures - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_6:
+      key: fsms_muni_fiscal_ind6_points
+      label: "FSMS Fiscal Indicator 6 Points"
+      description: "Short-Term Cash-Flow Debt Issuance - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_7:
+      key: fsms_muni_fiscal_ind7_points
+      label: "FSMS Fiscal Indicator 7 Points"
+      description: "Short-Term Cash-Flow Debt Issuance Trend - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_8:
+      key: fsms_muni_fiscal_ind8_points
+      label: "FSMS Fiscal Indicator 8 Points"
+      description: "Personal Services & Employee Benefits as % of Revenue - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_9:
+      key: fsms_muni_fiscal_ind9_points
+      label: "FSMS Fiscal Indicator 9 Points"
+      description: "Debt Service as % of Revenue - points scored"
+      display_format: decimal
+      value_type: numeric
+
+  schools:
+    ind_1:
+      key: fsms_school_fiscal_ind1_points
+      label: "FSMS Fiscal Indicator 1 Points (Schools)"
+      description: "Unassigned Fund Balance (includes Reserve for Tax Reduction) - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_2:
+      key: fsms_school_fiscal_ind2_points
+      label: "FSMS Fiscal Indicator 2 Points (Schools)"
+      description: "Total Fund Balance - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_3:
+      key: fsms_school_fiscal_ind3_points
+      label: "FSMS Fiscal Indicator 3 Points (Schools)"
+      description: "Operating Deficit - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_4:
+      key: fsms_school_fiscal_ind4_points
+      label: "FSMS Fiscal Indicator 4 Points (Schools)"
+      description: "Cash Ratio - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_5:
+      key: fsms_school_fiscal_ind5_points
+      label: "FSMS Fiscal Indicator 5 Points (Schools)"
+      description: "Cash as % of Monthly Expenditures - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_6:
+      key: fsms_school_fiscal_ind6_points
+      label: "FSMS Fiscal Indicator 6 Points (Schools)"
+      description: "Short-Term Cash-Flow Debt Issuance - points scored"
+      display_format: decimal
+      value_type: numeric
+
+# Environmental indicator points (from Environmental Scoring sheet)
+# Pre-2017: 14 indicators (munis), different set for schools
+# 2017+: 7 indicators (munis), 6 indicators (schools)
+environmental_indicators:
+  munis_post_2017:
+    ind_1:
+      key: fsms_muni_env_ind1_points
+      label: "FSMS Environmental Indicator 1 Points"
+      description: "Change in Population - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_2:
+      key: fsms_muni_env_ind2_points
+      label: "FSMS Environmental Indicator 2 Points"
+      description: "% of Households with Public Assistance - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_3:
+      key: fsms_muni_env_ind3_points
+      label: "FSMS Environmental Indicator 3 Points"
+      description: "% of Population Under 18 & Over 65 - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_4:
+      key: fsms_muni_env_ind4_points
+      label: "FSMS Environmental Indicator 4 Points"
+      description: "% Change in Home Value (vs CPI-Housing) - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_5:
+      key: fsms_muni_env_ind5_points
+      label: "FSMS Environmental Indicator 5 Points"
+      description: "Median Household Income (vs Federal Poverty Line) - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_6:
+      key: fsms_muni_env_ind6_points
+      label: "FSMS Environmental Indicator 6 Points"
+      description: "Unemployment Rate - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_7:
+      key: fsms_muni_env_ind7_points
+      label: "FSMS Environmental Indicator 7 Points"
+      description: "Reliance on State and Federal Aid - points scored"
+      display_format: decimal
+      value_type: numeric
+
+  schools_post_2017:
+    ind_1:
+      key: fsms_school_env_ind1_points
+      label: "FSMS Environmental Indicator 1 Points (Schools)"
+      description: "Child Poverty Rate - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_2:
+      key: fsms_school_env_ind2_points
+      label: "FSMS Environmental Indicator 2 Points (Schools)"
+      description: "% Free and Reduced Price Lunch Eligible - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_3:
+      key: fsms_school_env_ind3_points
+      label: "FSMS Environmental Indicator 3 Points (Schools)"
+      description: "Enrollment Change - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_4:
+      key: fsms_school_env_ind4_points
+      label: "FSMS Environmental Indicator 4 Points (Schools)"
+      description: "Property Value Change - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_5:
+      key: fsms_school_env_ind5_points
+      label: "FSMS Environmental Indicator 5 Points (Schools)"
+      description: "NY State Aid as % of Revenue - points scored"
+      display_format: decimal
+      value_type: numeric
+    ind_6:
+      key: fsms_school_env_ind6_points
+      label: "FSMS Environmental Indicator 6 Points (Schools)"
+      description: "Median Income - points scored"
+      display_format: decimal
+      value_type: numeric
+
+# Composite scores and designations (from Summary sheet)
+composite:
+  fiscal_score:
+    key: fsms_fiscal_score
+    label: "FSMS Fiscal Score"
+    description: "Composite fiscal stress score. Pre-2017: fraction of 29-point max (0.0-1.0). 2017+: direct points (0-100)."
+    display_format: decimal
+    value_type: numeric
+  environmental_score:
+    key: fsms_environmental_score
+    label: "FSMS Environmental Score"
+    description: "Composite environmental stress score. Pre-2017: fraction of max (0.0-1.0). 2017+: direct points (0-100)."
+    display_format: decimal
+    value_type: numeric
+  fiscal_stress_designation:
+    key: fsms_fiscal_stress_designation
+    label: "FSMS Fiscal Stress Designation"
+    description: "Fiscal stress category: Significant Fiscal Stress, Moderate Fiscal Stress, Susceptible to Fiscal Stress, No Designation, or Not filed."
+    display_format: integer
+    value_type: text
+  environmental_stress_designation:
+    key: fsms_environmental_stress_designation
+    label: "FSMS Environmental Stress Designation"
+    description: "Environmental stress category: Significant Environmental Stress, Moderate Environmental Stress, Susceptible Environmental Stress, No Designation, or Not filed."
+    display_format: integer
+    value_type: text

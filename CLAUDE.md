@@ -87,6 +87,7 @@ After updating secrets: `kamal env push` then `kd` to deploy.
 - `rating_agency` - Bond ratings (Moody's, S&P)
 - `derived` - Calculated from other metrics (per capita, ratios)
 - `nyc_checkbook` - NYC Checkbook data (NYC is never in OSC - has own Comptroller)
+- `fsms` - OSC Fiscal Stress Monitoring System scores (2012-2024)
 
 **Observation validation:**
 - `page_reference` required for PDF documents, optional for web
@@ -214,6 +215,36 @@ Avoid inline `style=` attributes; use CSS classes.
 - [x] Fixed `filing_category` returning `:recent_lapse` for cities filing ahead of `latest_majority_year` (e.g., early filers for 2025 when target year is 2024)
 - [x] Changed `== as_of_year` to `>= as_of_year` in `FilingStatus#filing_category`
 
+**Completed (FSMS import):**
+- [x] Added `roo` and `roo-xls` gems for Excel file parsing (.xlsx and .xls OLE2)
+- [x] Added `fsms: 7` to Metric `data_source` enum
+- [x] Created `db/seeds/fsms_data/metric_definitions.yml` — metric definitions for fiscal/environmental indicators, composite scores, and designations
+- [x] Built `FsmsImporter` class in `lib/tasks/fsms_import.rake` with rake tasks: `fsms:import`, `fsms:import_year`, `fsms:preview`
+- [x] Imports from Summary, Financial Scoring, and Environmental Scoring sheets
+- [x] Handles both pre-2017 (29-point weighted, fraction scores) and 2017+ (100-point direct scoring) methodology eras
+- [x] Pre-2017 environmental scoring: falls back to row 5 "Indicator N" labels (row 6 uses descriptive names, not "Ind N")
+- [x] Handles both muni and school district files (2012-2024 munis, 2013-2025 schools)
+- [x] Entity matching by `osc_municipal_code`, skips towns/villages not yet in DB
+- [x] Auto-detects file format from magic bytes (OLE2 vs ZIP/XLSX regardless of extension); handles `2022-schools-all-data-worksheet.xls` which is actually XLSX
+- [x] 28 tests, 160 assertions in `test/tasks/fsms_import_test.rb`
+- [x] Dry run: 172,283 observations across 26 files, 0 errors
+- [ ] **Remaining:** Run `fsms:import` to seed production database, then deploy
+
+*Key files:*
+- `lib/tasks/fsms_import.rake` — `FsmsImporter` class + rake tasks
+- `db/seeds/fsms_data/metric_definitions.yml` — metric key/label/description/format definitions
+- `db/seeds/fsms_data/*.xls(x)` — 26 Excel files (13 muni 2012-2024, 13 school 2013-2025)
+- `test/tasks/fsms_import_test.rb` — unit tests
+
+*FSMS scoring system:*
+- Pre-2017 munis: 29-point max, 9 fiscal indicators, 14 environmental indicators, weighted category subtotals, scores as fractions (0.0-1.0)
+- Pre-2017 schools: 21-point max, 7 fiscal indicators, 6 environmental indicators, scores as fractions
+- 2017+ munis: 100-point max, 9 fiscal indicators (Ind1=25, Ind2=25, Ind3-5=10, Ind6-9=5), 7 environmental indicators
+- 2017+ schools: 100-point max, 6 fiscal indicators (Ind1=25, Ind2=25, Ind3=20, Ind4-6=10), 6 environmental indicators
+- Stress designations: "Significant Fiscal Stress", "Moderate Fiscal Stress", "Susceptible to Fiscal Stress", "No Designation"
+- Environmental designations: same pattern with "Environmental" replacing "Fiscal"
+- "Not filed" entries are skipped (no observation created)
+
 **In Progress (county partisan scatter — branch `feat/county-partisan-scatter`):**
 
 - [x] `lib/tasks/osc_counties.rake` — `CountyEntityCreator` + `CountyOscImporter`, rake tasks: `osc:counties:create_entities`, `osc:counties:import`, `osc:counties:import_year[YEAR]`
@@ -264,9 +295,10 @@ Avoid inline `style=` attributes; use CSS classes.
 12. [ ] **Complete ACFR audit** — Verify remaining cities in AUDIT.md (New Rochelle, Plattsburgh, White Plains, Syracuse, Buffalo, Yonkers, Rochester) against their ACFRs
 13. [ ] Import NYC data from Checkbook NYC (separate data source, all years). After import, request GSC indexing for `https://app.nybenchmark.org/entities/nyc` and other key entity pages.
 14. [ ] **Infrastructure scaling (phased — see `doc/ops.md` for full details)**
-    - **Phase 1 (now):** Resize to `s-1vcpu-2gb` ($12/mo, 50GB disk). Eliminates swap thrashing at current 661K observations. Tune PG: `shared_buffers=512MB`, `effective_cache_size=1.5GB`.
-    - **Phase 2 (NYC import):** No resize needed — 2GB handles ~900K observations fine.
-    - **Phase 3 (counties, ~62 entities):** Resize to `s-2vcpu-4gb` ($24/mo, 80GB disk) before import. Tune PG: `shared_buffers=1GB`, `effective_cache_size=3GB`.
+    - **Current droplet:** `s-2vcpu-4gb` ($24/mo, 4GB RAM, 80GB disk). Covers through Phase 3.
+    - ~~**Phase 1:** Resize to 2GB~~ ✅ Already past this.
+    - ~~**Phase 2 (NYC import):**~~ ✅ 4GB handles this fine.
+    - ~~**Phase 3 (counties + FSMS, ~62 county entities + 172K FSMS observations):**~~ ✅ Current droplet. Tune PG: `shared_buffers=1GB`, `effective_cache_size=3GB`.
     - **Phase 4 (towns + villages, ~1,500 entities):** Resize to `s-4vcpu-8gb` ($48/mo, 160GB disk). Tune PG: `shared_buffers=2GB`, `effective_cache_size=6GB`. ~15-20M observations.
     - **Phase 5 (school districts + authorities, ~1,700 entities):** 8GB droplet still sufficient. ~22-28M observations.
     - **Phase 6 (full Census/DCJS for all entities):** Evaluate managed PostgreSQL if ops burden grows. ~25-30M observations.
@@ -324,6 +356,10 @@ Avoid inline `style=` attributes; use CSS classes.
 - `osc:counties:create_entities` - Create county entities from OSC county CSV
 - `osc:counties:import` - Import all county OSC financial data
 - `osc:counties:import_year[YEAR]` - Import county OSC data for single year
+- `fsms:import` - Import all FSMS scores (2012-2024, munis + schools)
+- `fsms:import[YEAR]` - Import FSMS scores for specific year
+- `fsms:import_year[YEAR]` - Import FSMS scores for single year
+- `fsms:preview` - Dry run FSMS import (validates files, prints stats)
 
 **Account code format:** `A31201` (no dots) - fund + function + object concatenated
 
