@@ -14,7 +14,8 @@ class Metric < ApplicationRecord
     dcjs: 3,            # NYS Division of Criminal Justice Services (crime stats)
     rating_agency: 4,   # Bond ratings (Moody's, S&P, Fitch)
     derived: 5,         # Calculated from other metrics (per capita, ratios)
-    nyc_checkbook: 6    # NYC Checkbook data (NYC 2011+)
+    nyc_checkbook: 6, # NYC Checkbook data (NYC 2011+)
+    fsms: 7           # OSC Fiscal Stress Monitoring System scores
   }, default: :manual, validate: true, suffix: :data_source
 
   # Account type from OSC ACCOUNT_CODE_SECTION (which financial statement section)
