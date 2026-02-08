@@ -60,6 +60,23 @@ jobs:
             StrictHostKeyChecking no
           EOF
 
+      - name: Write Kamal secrets
+        run: |
+          mkdir -p .kamal
+          cat > .kamal/secrets <<'SECRETS'
+          KAMAL_REGISTRY_PASSWORD=$KAMAL_REGISTRY_PASSWORD
+          RAILS_MASTER_KEY=$(cat config/master.key)
+          POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+          DO_SPACES_KEY=$DO_SPACES_KEY
+          DO_SPACES_SECRET=$DO_SPACES_SECRET
+          HTTP_AUTH_USER=$HTTP_AUTH_USER
+          HTTP_AUTH_PASSWORD=$HTTP_AUTH_PASSWORD
+          ADMIN_EMAIL=$ADMIN_EMAIL
+          BREVO_SMTP_USERNAME=$BREVO_SMTP_USERNAME
+          BREVO_SMTP_PASSWORD=$BREVO_SMTP_PASSWORD
+          CENSUS_API_KEY=$CENSUS_API_KEY
+          SECRETS
+
       - name: Deploy with Kamal
         run: bundle exec kamal deploy
 
