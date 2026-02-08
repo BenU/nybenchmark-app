@@ -53,12 +53,10 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
           ssh-keyscan -t ed25519 68.183.56.0 >> ~/.ssh/known_hosts 2>/dev/null
-          cat >> ~/.ssh/config <<EOF
-          Host 68.183.56.0
-            User deploy
-            IdentityFile ~/.ssh/id_deploy
-            StrictHostKeyChecking no
-          EOF
+          eval $(ssh-agent -s)
+          ssh-add ~/.ssh/id_deploy
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
 
       - name: Write Kamal secrets
         run: |
