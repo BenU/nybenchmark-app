@@ -30,7 +30,7 @@ gem "aws-sdk-s3"
 
 # Excel file parsing for FSMS data import
 gem "roo", "~> 2.10"       # .xlsx support
-gem "roo-xls", "~> 1.2"    # .xls (OLE2) support
+gem "roo-xls", "~> 2.0"    # .xls (OLE2) support
 
 # Authorization (Optional but recommended for the future)
 # gem "pundit"
