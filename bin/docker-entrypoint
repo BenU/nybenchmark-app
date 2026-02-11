@@ -4,8 +4,9 @@
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
 
-  # Regenerate sitemap on every deploy (uploads to DO Spaces)
-  ./bin/rails sitemap:refresh || echo "Sitemap refresh failed (non-fatal)"
+  # Regenerate sitemap AFTER server starts (non-blocking).
+  # Runs in background so Puma can begin accepting health checks immediately.
+  (sleep 15 && ./bin/rails sitemap:refresh || echo "Sitemap refresh failed (non-fatal)") &
 fi
 
 exec "${@}"

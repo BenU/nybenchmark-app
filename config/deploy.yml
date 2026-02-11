@@ -36,7 +36,7 @@ registry:
     - KAMAL_REGISTRY_PASSWORD
 
 # 6. Sufficient Deployment Timeout
-deploy_timeout: 120
+deploy_timeout: 240
 drain_timeout: 120
 
 # 7. Builder (Use AMD64 for DigitalOcean)

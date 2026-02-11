@@ -45,6 +45,15 @@ jobs:
       - name: Write REVISION file
         run: echo "${{ github.sha }}" > REVISION
 
+      - name: Validate RAILS_MASTER_KEY
+        run: |
+          KEY_LENGTH=${#RAILS_MASTER_KEY}
+          if [ "$KEY_LENGTH" -ne 32 ]; then
+            echo "::error::RAILS_MASTER_KEY must be exactly 32 hex characters (got $KEY_LENGTH). Update the GitHub secret to match: cat config/master.key"
+            exit 1
+          fi
+          echo "RAILS_MASTER_KEY validated (32 chars)"
+
       - name: Write master.key
         run: printf '%s' "$RAILS_MASTER_KEY" > config/master.key
 
