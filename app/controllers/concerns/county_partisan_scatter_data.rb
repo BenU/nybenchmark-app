@@ -159,7 +159,8 @@ module CountyPartisanScatterData # rubocop:disable Metrics/ModuleLength
       points << {
         x: partisan_info[:conservative_pct],
         y: pct,
-        name: entity.name
+        name: entity.name,
+        slug: entity.slug
       }
     end
 
