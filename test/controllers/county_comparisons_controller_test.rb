@@ -85,6 +85,39 @@ class CountyComparisonsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==========================================
+  # CLICKABLE DOTS (entity slugs in scatter data)
+  # ==========================================
+
+  test "scatter chart data includes entity slugs for clickable dots" do
+    get counties_compare_url(year: 2024)
+    assert_response :success
+
+    # Parse the JSON from the data attribute of any scatter chart container
+    assert_select "[data-scatter-chart-series-value]" do |elements|
+      series_json = elements.first["data-scatter-chart-series-value"]
+      series = JSON.parse(series_json)
+
+      slugs = series.flat_map { |s| s["data"].map { |pt| pt["slug"] } }
+      assert slugs.any?, "Expected scatter data points to include slugs"
+      assert slugs.all?(&:present?), "All scatter data points should have non-blank slugs"
+    end
+  end
+
+  test "scatter chart data slugs match fixture entity slugs" do
+    get counties_compare_url(year: 2024)
+    assert_response :success
+
+    assert_select "[data-scatter-chart-series-value]" do |elements|
+      series_json = elements.first["data-scatter-chart-series-value"]
+      series = JSON.parse(series_json)
+
+      slugs = series.flat_map { |s| s["data"].map { |pt| pt["slug"] } }
+      # Fixture counties: albany-county, allegany-county, tompkins-county
+      assert_includes slugs, "albany-county"
+    end
+  end
+
+  # ==========================================
   # ABOUT SECTION
   # ==========================================
 

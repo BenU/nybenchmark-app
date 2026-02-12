@@ -9,7 +9,7 @@
   normalized_data = data.map do |series|
     {
       name: series[:name],
-      data: series[:data].map { |pt| { x: pt[:x].to_f, y: pt[:y].to_f, name: pt[:name] } },
+      data: series[:data].map { |pt| { x: pt[:x].to_f, y: pt[:y].to_f, name: pt[:name], slug: pt[:slug] } },
       backgroundColor: series[:backgroundColor]
     }
   end

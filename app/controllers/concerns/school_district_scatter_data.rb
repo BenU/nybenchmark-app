@@ -146,6 +146,7 @@ module SchoolDistrictScatterData # rubocop:disable Metrics/ModuleLength
   # rubocop:enable Metrics/CyclomaticComplexity
 
   def build_data_point(id, x_values, y_values, entities)
-    { x: x_values[id], y: y_values[id], name: entities[id]&.name || "Unknown" }
+    entity = entities[id]
+    { x: x_values[id], y: y_values[id], name: entity&.name || "Unknown", slug: entity&.slug }
   end
 end

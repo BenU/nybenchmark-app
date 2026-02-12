@@ -23,7 +23,7 @@ export default class extends Controller {
   }
 
   connect() {
-    this.nameLookup = this.buildCoordinateLookup()
+    this.coordinateLookup = this.buildCoordinateLookup()
     this.createChart()
   }
 
@@ -67,6 +67,18 @@ export default class extends Controller {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        onHover: (_event, elements) => {
+          canvas.style.cursor = elements.length ? "pointer" : "default"
+        },
+        onClick: (_event, elements) => {
+          if (!elements.length) return
+          const el = elements[0]
+          const { x, y } = this.chart.data.datasets[el.datasetIndex].data[el.index]
+          const info = this.findInfo(x, y)
+          if (info?.slug) {
+            window.location.href = `/entities/${info.slug}`
+          }
+        },
         scales: {
           x: { title: { display: true, text: this.xLabelValue } },
           y: yScale
@@ -77,7 +89,7 @@ export default class extends Controller {
             callbacks: {
               title: (context) => {
                 const { x, y } = context[0].parsed
-                return this.findName(x, y) || "Unknown"
+                return this.findInfo(x, y)?.name || "Unknown"
               },
               label: (context) => {
                 return [
@@ -180,15 +192,15 @@ export default class extends Controller {
     this.seriesValue.forEach(series => {
       series.data.forEach(pt => {
         const key = `${Math.round(pt.x * 100)}|${Math.round(pt.y * 100)}`
-        lookup[key] = pt.name
+        lookup[key] = { name: pt.name, slug: pt.slug }
       })
     })
     return lookup
   }
 
-  findName(x, y) {
+  findInfo(x, y) {
     const key = `${Math.round(x * 100)}|${Math.round(y * 100)}`
-    return this.nameLookup[key]
+    return this.coordinateLookup[key]
   }
 
   formatValue(value, format) {
