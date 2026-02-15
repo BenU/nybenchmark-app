@@ -4,7 +4,26 @@ This file provides essential context for Claude Code sessions. For detailed hist
 
 ## Session Startup
 
-At the start of each session, read the most recent `.md` file in `~/.claude/plans/` for current project context and summarize where we left off.
+At the start of each session:
+1. Read the most recent `.md` file in `~/.claude/plans/` for current project context and summarize where we left off.
+2. Read `.claude/settings.local.json` and flag any `allow` rules that grant write access to shared state (production, GitHub, external APIs) or could bypass secret deny rules (e.g., `curl`, `wget`). Only report problems — don't list the whole file if it's clean.
+
+## Tool Usage Rules
+
+**Always use built-in tools instead of Bash equivalents:**
+- **Grep** (not `bash grep/rg`) — for searching file contents
+- **Glob** (not `bash find/ls`) — for finding files by name/pattern
+- **Read** (not `bash cat/head/tail`) — for reading file contents
+
+**Run Python and pip inside Docker** (`docker compose exec`), never directly on the host.
+
+These built-in tools are project-scoped, faster, and don't require permission prompts. The Bash equivalents are not auto-approved and should not be used for these operations.
+
+**Never write or edit files outside the project root** without explicitly asking first. The only exception is `~/.claude/` config files when the user requests changes.
+
+**When a Bash command gets prompted**, tell the user why it's not auto-approved and suggest "Allow once" — never suggest "Always allow" unless the command is clearly safe and the user asks about it. Permission creep from "Always allow" is how dangerous rules accumulate.
+
+**Plan file edits require approval.** Always present the exact wording of plan file (`~/.claude/plans/`) changes to the user BEFORE writing them. The plan is the source of truth for the project — no silent edits, even when the user says "add that to the plan." Show the proposed text, get approval, then write.
 
 ## Communication Style
 
@@ -28,6 +47,30 @@ At the start of each session, read the most recent `.md` file in `~/.claude/plan
 | `dcr` | `docker compose exec web bin/rails` | Run Rails commands |
 | `dci` | `docker compose exec web bin/ci` | Run full CI suite |
 | `kd` | `kamal deploy` | Deploy to production |
+
+## MCP Database Access
+
+Claude Code connects to the development database via MCP (Model Context Protocol) for read-only SQL access. This is configured in `.mcp.json` (gitignored) and starts automatically with each Claude Code session.
+
+**Setup (one-time):**
+1. Ensure Docker containers are running: `dup`
+2. Create the readonly Postgres user: `docker compose exec db psql -U postgres -d nybenchmark_app_development -f /docker-entrypoint-initdb.d/init-readonly-user.sql`
+3. Restart Claude Code to pick up `.mcp.json`
+
+**`.mcp.json` contents** (create in project root if missing):
+```json
+{
+  "mcpServers": {
+    "postgres": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@bytebase/dbhub", "--dsn", "postgresql://readonly:readonly@localhost:5432/nybenchmark_app_development"]
+    }
+  }
+}
+```
+
+**Requires:** Node.js/npx on host, Docker db container running with port 5432 exposed.
 
 ## Git Workflow
 

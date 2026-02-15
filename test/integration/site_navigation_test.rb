@@ -46,6 +46,9 @@ class SiteNavigationTest < ActionDispatch::IntegrationTest
       assert_select "a[href=?]", documents_path, text: "Documents"
       assert_select "a[href=?]", metrics_path, text: "Metrics"
       assert_select "a[href=?]", methodology_path, text: "Methodology"
+      # Footer should NOT link to source code (repo is private)
+      assert_select "a", text: "Source Code", count: 0
+      assert_select "a[href*='github.com/BenU/nybenchmark-app']", count: 0
     end
   end
 

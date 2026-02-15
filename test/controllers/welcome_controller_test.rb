@@ -83,6 +83,21 @@ class WelcomeControllerTest < ActionDispatch::IntegrationTest
     assert_select "article", text: /Nonpartisan, evidence-based/
   end
 
+  test "landing page does not link to source code" do
+    get root_url
+    assert_response :success
+
+    assert_select "a", text: /Source Code/, count: 0
+    assert_select "a[href*='github.com/BenU/nybenchmark-app']", count: 0
+  end
+
+  test "landing page links to methodology instead of source code" do
+    get root_url
+    assert_response :success
+
+    assert_select "a[href=?]", methodology_path, text: /Methodology/
+  end
+
   # ==========================================
   # YEAR SELECTION TESTS
   # ==========================================

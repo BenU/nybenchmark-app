@@ -60,6 +60,24 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==========================================
+  # WIKIPEDIA LINK TESTS
+  # ==========================================
+
+  test "show displays Wikipedia link for city entities" do
+    get entity_url(@entity.slug)
+    assert_response :success
+
+    assert_select "a[href*='en.wikipedia.org']", text: /Wikipedia/
+  end
+
+  test "show does not display Wikipedia link for school districts" do
+    get entity_url(entities(:yonkers_schools).slug)
+    assert_response :success
+
+    assert_select "a[href*='en.wikipedia.org']", count: 0
+  end
+
+  # ==========================================
   # FILTER TESTS
   # ==========================================
 

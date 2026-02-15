@@ -152,6 +152,29 @@ class EntityTest < ActiveSupport::TestCase
     assert entity.valid?
   end
 
+  # ==========================================
+  # WIKIPEDIA SEARCH URL TESTS
+  # ==========================================
+
+  test "wikipedia_search_url for city includes name and New York" do
+    yonkers = entities(:yonkers)
+    assert_equal "https://en.wikipedia.org/w/index.php?search=Yonkers+New+York+city", yonkers.wikipedia_search_url
+  end
+
+  test "wikipedia_search_url for city with spaces encodes correctly" do
+    nr = entities(:new_rochelle)
+    assert_equal "https://en.wikipedia.org/w/index.php?search=New+Rochelle+New+York+city", nr.wikipedia_search_url
+  end
+
+  test "wikipedia_search_url for county includes County in search" do
+    county = entities(:albany_county)
+    assert_equal "https://en.wikipedia.org/w/index.php?search=Albany+County+New+York", county.wikipedia_search_url
+  end
+
+  test "wikipedia_search_url returns nil for school districts" do
+    assert_nil entities(:yonkers_schools).wikipedia_search_url
+  end
+
   test "fixture cities have osc_municipal_code from entity_mapping" do
     # Verify fixtures match the OSC entity mapping
     assert_equal "550262000000", entities(:yonkers).osc_municipal_code

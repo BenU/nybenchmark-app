@@ -5,8 +5,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: nybenchmark_app_development
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-readonly-user.sql:/docker-entrypoint-initdb.d/init-readonly-user.sql
 
   mailpit:
     image: axllent/mailpit:latest
