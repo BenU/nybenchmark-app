@@ -100,6 +100,17 @@ class Entity < ApplicationRecord
     slug
   end
 
+  def wikipedia_search_url
+    return nil if school_district_kind?
+
+    query =
+      case kind
+      when "county" then "#{name} New York"
+      else "#{name} New York #{kind}"
+      end
+    "https://en.wikipedia.org/w/index.php?search=#{query.tr(' ', '+')}"
+  end
+
   private
 
   def school_legal_type_matches_kind

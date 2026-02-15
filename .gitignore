@@ -46,6 +46,9 @@
 # Ignore Mac system files
 .DS_Store
 
+# Ignore MCP server config (local dev credentials)
+.mcp.json
+
 # Ignore bulk seed data (large CSVs/Excel files, re-downloadable from source, already imported to Postgres)
 /db/seeds/nysed_data/
 /db/seeds/osc_data/city_all_years/

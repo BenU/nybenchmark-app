@@ -2,7 +2,12 @@
   <div class="page-header">
     <hgroup>
       <h1><%= @entity.name %></h1>
-      <p><%= @entity.kind.humanize %> in <%= @entity.state %> (New York)</p>
+      <p>
+        <%= @entity.kind.humanize %> in <%= @entity.state %> (New York)
+        <% if @entity.wikipedia_search_url %>
+          · <a href="<%= @entity.wikipedia_search_url %>" target="_blank" rel="noopener">Wikipedia</a>
+        <% end %>
+      </p>
     </hgroup>
 
     <div class="button-group">

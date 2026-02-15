@@ -30,6 +30,26 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "main", text: /Census Bureau/
   end
 
+  test "methodology page has data accuracy section" do
+    get methodology_url
+    assert_response :success
+    assert_select "h2", text: "Data Accuracy"
+    assert_select "main", text: /cannot guarantee completeness/
+  end
+
+  test "methodology page does not have open source section" do
+    get methodology_url
+    assert_response :success
+    assert_select "h2", text: "Open Source", count: 0
+    assert_select "a", text: /MIT license/, count: 0
+  end
+
+  test "methodology page mentions county partisan data source" do
+    get methodology_url
+    assert_response :success
+    assert_select "main", text: /county board of elections/
+  end
+
   # ==========================================
   # NON-FILERS PAGE
   # ==========================================
